@@ -1,0 +1,27 @@
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
+django.setup()
+
+from users.models import User
+from django.core.management import call_command
+
+# 1. Création de votre Super-Administrateur (si n'existe pas)
+# Remplacez '+221770000000' et 'admin123' par ce que vous voulez ci-dessous
+ADMIN_PHONE = os.getenv('ADMIN_PHONE', '+221770000000')
+ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin123')
+
+if not User.objects.filter(phone_number=ADMIN_PHONE).exists():
+    print(f"Création du super-utilisateur {ADMIN_PHONE}...")
+    User.objects.create_superuser(phone_number=ADMIN_PHONE, password=ADMIN_PASS, role='SUB_ADMIN')
+    print("Super-utilisateur créé avec succès.")
+
+# 2. Lancement du script de peuplement (Seed)
+print("Peuplement de la base de données avec des profils fictifs...")
+try:
+    # On importe le script seed si il est présent
+    import seed_all_roles
+    print("Données fictives injectées avec succès.")
+except Exception as e:
+    print(f"Erreur lors du peuplement : {e}")
