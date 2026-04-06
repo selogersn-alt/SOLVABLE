@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Inscription | Logersenegal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; background-color: var(--bg-card);">
+                <div class="card-body p-sm-5 p-4">
+                    <div class="text-center mb-4">
+                        <i class="fa-solid fa-user-plus mb-3" style="color: var(--color-yellow); font-size: 3rem;"></i>
+                        <h2 class="fw-bold" style="color: var(--text-main);">Créer un compte</h2>
+                        <p class="text-muted">Rejoignez la plateforme immobilière de confiance au Sénégal.</p>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-bold" style="color: var(--text-main);">Numéro de Téléphone (Identifiant) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="phone" name="phone" required placeholder="+221 77 000 00 00" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold" style="color: var(--text-main);">Adresse Email <span class="text-muted fw-normal">(Optionnel)</span></label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="nom@exemple.com" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label fw-bold" style="color: var(--text-main);">Quel est votre statut ? <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;" onchange="toggleProFields()">
+                                <option value="TENANT" selected>Locataire (Cherche un bien)</option>
+                                <option value="LANDLORD">Bailleur / Propriétaire</option>
+                                <option value="AGENCY">Agence Immobilière</option>
+                                <option value="BROKER">Courtier</option>
+                                <option value="AGENT">Agent (Indépendant)</option>
+                            </select>
+                        </div>
+
+                        <!-- Champs spécifiques aux professionnels -->
+                        <div id="proFields" style="display: none; background-color: rgba(127, 212, 125, 0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                            <h6 class="fw-bold mb-3" style="color: var(--color-dark-green);"><i class="fa-solid fa-briefcase me-2"></i>Informations Professionnelles</h6>
+                            <div class="mb-3">
+                                <label for="company_name" class="form-label" style="color: var(--text-main);">Nom de l'entreprise ou Cabinet <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Ex: Logersenegal, Agence X..." style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);">
+                            </div>
+                            <div class="mb-2">
+                                <label for="coverage_area" class="form-label" style="color: var(--text-main);">Zone de couverture <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="coverage_area" name="coverage_area" placeholder="Ex: Dakar, Ngor, Almadies, Rufisque..." style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);">
+                                <small class="text-muted d-block mt-1"><i class="fa-solid fa-circle-info me-1"></i>Permet aux usagers de vous trouver dans notre annuaire de professionnels vérifiés.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="no_email" name="no_email" style="border-color: var(--color-light-green);">
+                            <label class="form-check-label text-muted small" for="no_email">
+                                Je n'ai pas d'adresse email
+                            </label>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="password" class="form-label fw-bold" style="color: var(--text-main);">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required placeholder="Minimum 8 caractères" minlength="8" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="password_confirm" class="form-label fw-bold" style="color: var(--text-main);">Confirmer le mot de passe</label>
+                                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required placeholder="Répéter le mot de passe" minlength="8" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" value="" id="terms" required style="border-color: var(--color-light-green);">
+                            <label class="form-check-label text-muted small" for="terms">
+                                J'accepte les <a href="#" style="color: var(--color-light-green);">Conditions d'utilisation</a> et la politique de confidentialité de Logersenegal.
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-secondary-custom w-100 py-3 mb-3" style="font-size: 1.1rem; border-radius: 12px; color: var(--color-dark-green);">S'inscrire gratuitement</button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0" style="color: var(--text-muted);">Vous avez déjà un compte ? <a href="{% url 'login' %}" class="fw-bold text-decoration-none" style="color: var(--color-dark-green);">Se Connecter</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleProFields() {
+        const role = document.getElementById('role').value;
+        const proFields = document.getElementById('proFields');
+        const companyInput = document.getElementById('company_name');
+        const coverageInput = document.getElementById('coverage_area');
+
+        if (role === 'AGENCY' || role === 'BROKER' || role === 'AGENT') {
+            proFields.style.display = 'block';
+            companyInput.required = true;
+            coverageInput.required = true;
+        } else if (role === 'LANDLORD') {
+            proFields.style.display = 'block';
+            companyInput.required = false; // Name optional for simple landlords
+            coverageInput.required = true;
+        } else {
+            proFields.style.display = 'none';
+            companyInput.required = false;
+            coverageInput.required = false;
+        }
+    }
+    
+    // Call on load in case browser autofills dropdown
+    document.addEventListener('DOMContentLoaded', toggleProFields);
+</script>
+{% endblock %}

@@ -1,0 +1,509 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Balises SEO Essentielles -->
+    <title>{% block title %}Solvable - Logersenegal | L'Immobilier de Confiance{% endblock %}</title>
+    <meta name="description" content="Plateforme N°1 de l'immobilier au Sénégal. Trouvez votre appartement, villa, ou studio à Dakar et en région. Contrats sécurisés (Solvable Filiation), vérification d'identité (NILS) et gestion des loyers en toute sérénité.">
+    <meta name="keywords" content="Immobilier Sénégal, Location appartement Dakar, Gestion locative Sénégal, Garantie loyer impayé, NILS, Solvable, Logersenegal, Louer maison Dakar, Courtier immobilier, Sécuriser location">
+    <meta name="author" content="DigitalH - Logersenegal & Solvable">
+    
+    <!-- Open Graph (Pour le partage sur Whatsapp/Facebook) -->
+    <meta property="og:title" content="Solvable - Logersenegal : L'Immobilier en toute confiance">
+    <meta property="og:description" content="Location d'appartements et de maisons au Sénégal avec garantie de loyer, vérification d'identité et profil NILS.">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon Dynamique (Maison SOLVABLE) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%237fd47d' d='M543.8 287.6c17 0 32-14 32-32.1c1-9-3-17-11-24L512 185V64c0-17.7-14.3-32-32-32H448c-17.7 0-32 14.3-32 32v36.7L305.8 3.4C297.1-4.8 279-4.8 270.2 3.4L8.4 246.4c-9.1 8-11.7 21.6-6 32.5s18.8 14.3 32 12.3L48 288.7v175.4c0 26.5 21.5 48 48 48h48v-112c0-26.5 21.5-48 48-48h64c26.5 0 48 21.5 48 48v112h80c26.5 0 48-21.5 48-48V289.8l10.8 1.4c2.6 .3 5.2-.6 7.6-1.5zM224 432c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24zm48-24a48 48 0 1 1-96 0 48 48 0 1 1 96 0zM352 144a64 64 0 1 1-128 0 64 64 0 1 1 128 0zm-64-16a16 16 0 1 0 0-32 16 16 0 1 0 0 32zm80 80c0-44.2-35.8-80-80-80s-80 35.8-80 80v32h160v-32z'/></svg>">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Animate.css (Pour des animations fluides) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        /* Définition des Variables de Thème (Thème Clair par défaut) */
+        :root {
+            --color-dark-green: #0b4629;   
+            --color-light-green: #7fd47d;  
+            --color-yellow: #f5c42f;       
+            
+            /* Couleurs dynamiques selon le thème */
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            --bg-navbar: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #6c757d;
+            --border-color: rgba(0,0,0,0.05);
+            --shadow-color: rgba(0,0,0,0.05);
+        }
+
+        /* Variables pour le Thème Sombre */
+        [data-theme="dark"] {
+            /* On garde les couleurs de la marque mais on modifie les fonds et les textes */
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --bg-navbar: #181818;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: rgba(255,255,255,0.05);
+            --shadow-color: rgba(0,0,0,0.3);
+            --color-light-green: #5eb05c; /* Légèrement ajusté pour le dark mode */
+        }
+
+        /* Override Bootstrap Classes for Dark Mode Contrast */
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        .text-dark {
+            color: var(--text-main) !important;
+        }
+        
+        .bg-light {
+            background-color: var(--bg-card) !important;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Navbar Styling */
+        .navbar-custom {
+            background-color: var(--bg-navbar);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px var(--shadow-color);
+            padding: 12px 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--text-main) !important;
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.5px;
+        }
+
+        /* Compensation pour la navbar fixe */
+        body {
+            padding-top: 85px; /* Ajustement précis DigitalH */
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 75px;
+            }
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-main) !important;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--color-light-green) !important;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background-color: var(--color-dark-green);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(11, 70, 41, 0.2);
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #083820;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary-custom {
+            background-color: var(--color-yellow);
+            color: var(--color-dark-green);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-custom:hover {
+            background-color: #e3b320;
+            color: var(--color-dark-green);
+            transform: translateY(-2px);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            margin-left: 15px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .theme-toggle-btn:hover {
+            transform: rotate(15deg);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--color-dark-green);
+            color: white;
+            padding: 50px 0 20px 0;
+            margin-top: 50px;
+        }
+        
+        .footer-logo {
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .footer-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--color-yellow);
+        }
+
+        /* Ads Styling */
+        .ad-container {
+            max-width: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .ad-container img {
+            width: 100%;
+            height: auto;
+            transition: opacity 0.3s ease;
+        }
+        .ad-container img:hover {
+            opacity: 0.9;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand animate__animated animate__fadeInLeft" href="{% url 'home' %}">
+                <i class="fa-solid fa-house-circle-check" style="color: var(--color-light-green); font-size: 2rem; margin-right: 12px;"></i>
+                LOGERSENEGAL
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: var(--border-color);">
+                <i class="fa-solid fa-bars" style="color: var(--text-main);"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center mt-3 mt-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'properties_list' %}">Annonces immo.</a>
+                    </li>
+                    {% if not user.is_authenticated or user.role != 'TENANT' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'nils_search' %}"><i class="fa-solid fa-magnifying-glass me-1"></i>Vérifier candidat</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="annuaireDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user-tie me-1"></i>Annuaires Vérifié
+                        </a>
+                        <ul class="dropdown-menu shadow border-0" aria-labelledby="annuaireDropdown" style="background-color: var(--bg-card);">
+                            <li><a class="dropdown-item" href="{% url 'professionals_list' %}" style="color: var(--text-main);">Tous les professionnels</a></li>
+                            <li><a class="dropdown-item" href="{% url 'professionals_list' %}?role=AGENCY" style="color: var(--text-main);">Agences Immobilières</a></li>
+                            <li><a class="dropdown-item" href="{% url 'professionals_list' %}?role=BROKER" style="color: var(--text-main);">Courtiers</a></li>
+                            <li><a class="dropdown-item" href="{% url 'professionals_list' %}?role=AGENT" style="color: var(--text-main);">Agents Indépendants</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}">A propos</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a href="{% url 'create_property' %}" class="btn btn-sm mt-2 mt-lg-0 w-100" style="background-color: transparent; border: 1px solid var(--color-light-green); color: var(--color-light-green); border-radius: 50px; padding: 8px 15px;">
+                            <i class="fa-solid fa-plus me-1"></i> Publier
+                        </a>
+                    </li>
+                    
+                    {% if user.is_authenticated %}
+                        <li class="nav-item ms-lg-3 dropdown">
+                            <a class="btn btn-secondary-custom btn-sm mt-2 mt-lg-0 dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" alt="Profile" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" class="me-2">
+                                {% else %}
+                                    <i class="fa-solid fa-user me-2"></i>
+                                {% endif %}
+                                <span>Mon Compte</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown" style="background-color: var(--bg-card);">
+                                <li><a class="dropdown-item" href="{% url 'dashboard' %}" style="color: var(--text-main);"><i class="fa-solid fa-gauge me-2"></i>Tableau de Bord</a></li>
+                                <li><hr class="dropdown-divider" style="border-color: var(--border-color);"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Déconnexion</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-3">
+                            <a href="{% url 'login' %}" class="btn btn-primary-custom btn-sm mt-2 mt-lg-0 w-100">Se connecter</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <button class="theme-toggle-btn mt-3 mt-lg-0" id="themeToggle" title="Changer de thème">
+                            <i class="fa-solid fa-moon d-none d-lg-block"></i>
+                            <span class="d-lg-none ms-2">Thème Clair/Sombre</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Publicités Haut (Top Ads) -->
+    {% if ads_top %}
+    <div class="container mt-4 animate__animated animate__fadeIn">
+        {% for ad in ads_top %}
+        <div class="ad-container text-center">
+            {% if ad.ad_type == 'BANNER' %}
+            <a href="{{ ad.target_url }}" target="_blank">
+                {% if ad.image %}
+                    <img src="{{ ad.image.url }}" class="img-fluid rounded-3 shadow-sm" alt="{{ ad.title }}">
+                {% endif %}
+            </a>
+            {% else %}
+                <div class="bg-card p-2 rounded shadow-sm border">
+                    {{ ad.script_content|safe }}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Contenu Principal -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Publicités Bas (Bottom Ads) -->
+    {% if ads_bottom %}
+    <div class="container mb-4">
+        {% for ad in ads_bottom %}
+        <div class="ad-container text-center">
+            {% if ad.ad_type == 'BANNER' %}
+            <a href="{{ ad.target_url }}" target="_blank">
+                {% if ad.image %}
+                    <img src="{{ ad.image.url }}" class="img-fluid rounded-3 shadow-sm" alt="{{ ad.title }}">
+                {% endif %}
+            </a>
+            {% else %}
+                <div class="bg-card p-2 rounded shadow-sm border">
+                    {{ ad.script_content|safe }}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Pied de Page -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="footer-logo">
+                        <i class="fa-solid fa-house-circle-check" style="color: var(--color-light-green);"></i> LOGERSENEGAL
+                    </div>
+                    <p style="color: rgba(255, 255, 255, 0.7);">
+                        Trouvez le logement idéal au Sénégal, certifiez vos locataires et louez l'esprit tranquille.
+                    </p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--color-yellow);">Liens Utiles</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'about' %}" class="footer-link">À propos de nous</a></li>
+                        <li class="mb-2"><a href="{% url 'professionals_list' %}" class="footer-link">Annuaire des Professionnels</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}" class="footer-link">Toutes les propriétés</a></li>
+                        <li class="mb-2"><a href="{% url 'home' %}#comment-ca-marche" class="footer-link">Garantie NILS</a></li>
+                        <li class="mb-2"><a href="{% url 'home' %}" class="footer-link">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--color-yellow);">Suivez-nous</h5>
+                    <div>
+                        <a href="#" class="text-white me-3 fs-4"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-white me-3 fs-4"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-white me-3 fs-4"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr style="border-color: rgba(255, 255, 255, 0.2);">
+            <div class="text-center" style="color: rgba(255, 255, 255, 0.5); font-size: 0.9rem;">
+                &copy; <span id="currentYear"></span> Logersenegal. Tous droits réservés.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    {% if user.is_authenticated %}
+    <a href="{% url 'support-chat' %}" class="support-fab shadow-lg" title="Assistance LogerSN">
+        <i class="fa-solid fa-headset"></i>
+    </a>
+    <div class="support-tooltip">
+        <i class="fa-solid fa-circle-sparkles me-2 text-warning"></i>Besoin d'aide ? Chattez avec nous !
+    </div>
+    {% endif %}
+
+    <!-- Modal Pop-up Publicitaire Classique -->
+    {% if ad_popup %}
+    <div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg bg-transparent">
+                <div class="modal-body p-0 position-relative text-center">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 shadow-lg" data-bs-dismiss="modal" aria-label="Close" style="background-color: var(--color-dark-green); padding: 10px; border-radius: 50%;"></button>
+                    {% if ad_popup.ad_type == 'BANNER' %}
+                        <a href="{{ ad_popup.target_url }}" target="_blank">
+                            {% if ad_popup.image %}
+                                <img src="{{ ad_popup.image.url }}" class="img-fluid rounded-4 shadow-lg border border-3 border-white animate__animated animate__zoomIn" alt="{{ ad_popup.title }}" style="max-height: 80vh;">
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <div class="bg-white p-4 rounded-4 shadow-lg border animate__animated animate__zoomIn">
+                            {{ ad_popup.script_content|safe }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal Pop-up Immobilier Premium DigitalH -->
+    {% if property_popup %}
+    <div class="modal fade" id="propertyPromoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; background: var(--bg-card);">
+                <div class="position-relative">
+                    {% if property_popup.images.first %}
+                        <img src="{{ property_popup.images.first.image_url.url }}" class="img-fluid w-100" style="height: 250px; object-fit: cover;">
+                    {% endif %}
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 p-2 bg-dark rounded-circle" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="position-absolute bottom-0 start-0 p-3 w-100" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                        <span class="badge bg-yellow text-dark mb-1">OFFRE PREMIUM</span>
+                        <h4 class="text-white fw-bold mb-0">{{ property_popup.title }}</h4>
+                    </div>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3"><i class="fa-solid fa-location-dot me-1"></i> {{ property_popup.neighborhood }}, {{ property_popup.city }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="fw-bold mb-0" style="color: var(--color-dark-green);">{{ property_popup.rent_price|floatformat:0 }} F <span class="small font-weight-normal">/ mois</span></h3>
+                        <a href="{% url 'property_detail' property_popup.id %}" class="btn btn-yellow fw-bold rounded-pill px-4">Voir l'offre <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestionnaire de Pop-ups DigitalH (Délai 10s + 1 vue par session)
+            setTimeout(function() {
+                if (!sessionStorage.getItem('digitalh_popup_shown')) {
+                    var adModalElem = document.getElementById('promoModal');
+                    var propModalElem = document.getElementById('propertyPromoModal');
+                    
+                    if (propModalElem) {
+                        new bootstrap.Modal(propModalElem).show();
+                        sessionStorage.setItem('digitalh_popup_shown', 'true');
+                    } else if (adModalElem) {
+                        new bootstrap.Modal(adModalElem).show();
+                        sessionStorage.setItem('digitalh_popup_shown', 'true');
+                    }
+                }
+            }, 10000); // 10 secondes de délai raisonnable
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Script pour le Theme Sombre/Clair -->
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = themeToggleBtn.querySelector('i');
+        const htmlElement = document.documentElement;
+
+        // Fonction pour appliquer le thème
+        function applyTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            if(theme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                themeIcon.style.color = '#f5c42f'; // Jaune pour le soleil
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                themeIcon.style.color = 'var(--text-main)';
+            }
+        }
+
+        // Vérifier les préférences stockées ou celles du système
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            applyTheme('dark');
+        }
+
+        // Changer de thème au clic
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,195 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}Statistiques Réelles | Solvable{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-radius: 15px;
+        transition: transform 0.2s;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .stat-card:hover { font-weight: bold; transform: translateY(-5px); }
+    .bg-solvable { background: linear-gradient(135deg, #7fd47d 0%, #083820 100%); color: white; }
+    .chart-container { height: 350px; margin-bottom: 30px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark"><i class="fas fa-chart-line mr-2"></i>Tableau de Bord des Indicateurs Réels</h1>
+            </div>
+            <div class="col-sm-6 text-right">
+                <a href="?export=excel" class="btn btn-success shadow-sm">
+                    <i class="fas fa-file-excel mr-2"></i>Exporter Toutes les Données (Excel)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <div class="container-fluid">
+        <!-- Summary Widgets Row 1 -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info shadow">
+                    <div class="inner"><h3>{{ total_users }}</h3><p>Utilisateurs Inscrits</p></div>
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success shadow">
+                    <div class="inner"><h3>{{ active_filiations }}</h3><p>Contrats Actifs</p></div>
+                    <div class="icon"><i class="fas fa-file-signature"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-primary shadow">
+                    <div class="inner"><h3>{{ collection_rate }}%</h3><p>Taux de Recouvrement</p></div>
+                    <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-teal shadow" style="background-color: #20c997 !important; color: white;">
+                    <div class="inner"><h3>{{ occupancy_rate }}%</h3><p>Taux d'Occupation</p></div>
+                    <div class="icon"><i class="fas fa-door-open"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Widgets Row 2 -->
+        <div class="row mt-2">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning shadow text-white">
+                    <div class="inner"><h3>{{ kyc_compliance_rate }}%</h3><p>Conformité KYC Totale</p></div>
+                    <div class="icon"><i class="fas fa-id-card"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-indigo shadow" style="background-color: #6610f2 !important; color: white;">
+                    <div class="inner"><h3>{{ pro_verification_rate }}%</h3><p>Pros Vérifiés</p></div>
+                    <div class="icon"><i class="fas fa-user-check"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-orange shadow text-white" style="background-color: #fd7e14 !important;">
+                    <div class="inner"><h3>{{ resolution_rate }}%</h3><p>Résolution Litiges</p></div>
+                    <div class="icon"><i class="fas fa-check-double"></i></div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger shadow">
+                    <div class="inner"><h3>{{ contestation_rate }}%</h3><p>Taux de Contestation</p></div>
+                    <div class="icon"><i class="fas fa-balance-scale"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Growth Chart -->
+            <div class="col-md-8">
+                <div class="card card-outline card-success shadow-sm">
+                    <div class="card-header"><h3 class="card-title">Évolution Globale (Derniers mois)</h3></div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pie Charts -->
+            <div class="col-md-4">
+                <div class="card card-outline card-info shadow-sm">
+                    <div class="card-header"><h3 class="card-title">Statut des Paiements</h3></div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="paymentPie"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card card-outline card-primary shadow-sm mt-3">
+                    <div class="card-header"><h3 class="card-title">Répartition par Rôle</h3></div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="rolePie"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+    new Chart(ctxGrowth, {
+        type: 'line',
+        data: {
+            labels: {{ labels_months|safe }},
+            datasets: [
+                {
+                    label: 'Utilisateurs Cumulative',
+                    data: {{ data_users }},
+                    borderColor: '#7fd47d',
+                    backgroundColor: 'rgba(127, 212, 125, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Contrats Cumulative',
+                    data: {{ data_contracts }},
+                    borderColor: '#083820',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    const ctxPayment = document.getElementById('paymentPie').getContext('2d');
+    new Chart(ctxPayment, {
+        type: 'doughnut',
+        data: {
+            labels: ['À temps', 'Retard', 'Impayés'],
+            datasets: [{
+                data: [{{ paid_payments }}, {{ late_payments }}, {{ unpaid_payments }}],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+
+    const ctxRole = document.getElementById('rolePie').getContext('2d');
+    const roleStats = {{ users_by_role|safe }};
+    new Chart(ctxRole, {
+        type: 'bar',
+        data: {
+            labels: roleStats.map(s => s.role),
+            datasets: [{
+                label: 'Nombre d\'utilisateurs',
+                data: roleStats.map(s => s.count),
+                backgroundColor: '#17a2b8'
+            }]
+        },
+        options: { indexAxis: 'y', maintainAspectRatio: false }
+    });
+</script>
+{% endblock %}

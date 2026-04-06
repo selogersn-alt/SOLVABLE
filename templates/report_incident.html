@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Déclarer un Incident | Solvable{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0" style="background-color: var(--bg-card); border-radius: 15px;">
+                <div class="card-body p-sm-5 p-4">
+                    <div class="text-center mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-danger mb-3" style="font-size: 3rem;"></i>
+                        <h2 class="fw-bold" style="color: var(--text-main);">Déclarer un Incident</h2>
+                        <p class="text-muted">Signalez un impayé, une dégradation ou un conflit lié à l'un de vos locataires pour enclencher une médiation Solvable.</p>
+                    </div>
+
+                    {% if has_filiations %}
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            {% for field in form %}
+                            <div class="mb-4">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-bold" style="color: var(--text-main);">
+                                    {{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <div class="form-text text-muted">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+
+                            <div class="alert alert-warning small bg-transparent mt-4" style="border-radius: 10px; border-color: #ffc107 !important; color: var(--text-main);">
+                                <i class="fa-solid fa-circle-info me-2 text-warning"></i> <strong>Important :</strong> Toute fausse déclaration impactera sévèrement votre propre profil Bailleur. Des preuves documentaires vous seront demandées par notre équipe de médiation locale.
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-danger py-3" style="border-radius: 50px; font-weight: 600;">
+                                    <i class="fa-solid fa-paper-plane me-2"></i> Soumettre le Signalement
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-light text-center border mt-4 p-4" style="background-color: var(--bg-body); border-radius: 10px; border-color: var(--border-color) !important;">
+                            <i class="fa-solid fa-circle-xmark text-muted mb-3 d-block" style="font-size: 2rem;"></i>
+                            <p class="text-muted mb-0">Vous n'avez aucun contrat locatif actif en cours. Vous ne pouvez déclarer des incidents que pour des locataires sous enquête Filiation Solvable.</p>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-dark" style="color: var(--text-main); border-color: var(--border-color);">Retour au tableau de bord</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

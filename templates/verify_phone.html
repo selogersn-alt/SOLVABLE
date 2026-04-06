@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Vérification du Téléphone | Solvable{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background-color: var(--bg-body);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card border-0 shadow-lg" style="background-color: var(--bg-card); border-radius: 20px;">
+                    <div class="card-body p-4 p-md-5 text-center">
+                        <div class="mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-light-green rounded-circle" style="width: 80px; height: 80px; background-color: rgba(127, 212, 125, 0.1);">
+                                <i class="fa-solid fa-mobile-screen-button" style="font-size: 2.5rem; color: var(--color-light-green);"></i>
+                            </div>
+                        </div>
+                        
+                        <h2 class="fw-bold mb-3" style="color: var(--text-main);">Vérification de sécurité</h2>
+                        <p class="text-muted mb-4">
+                            Pour activer pleinement votre compte, veuillez saisir le code de vérification à 6 chiffres qui vous a été communiqué par l'administrateur Solvable.
+                        </p>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="otp_code" class="form-label small text-uppercase fw-bold text-muted">Code de vérification (OTP)</label>
+                                <input type="text" name="otp_code" id="otp_code" class="form-control form-control-lg text-center fw-bold" 
+                                       placeholder="000000" maxlength="6" required 
+                                       style="letter-spacing: 0.5rem; border-radius: 12px; border: 2px solid var(--border-color); background-color: var(--bg-body); color: var(--text-main);">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-lg w-100 py-3 fw-bold" 
+                                    style="background-color: var(--color-light-green); color: var(--color-dark-green); border-radius: 12px;">
+                                Valider mon numéro
+                            </button>
+                        </form>
+
+                        <div class="mt-4 pt-4 border-top">
+                            <p class="small text-muted mb-0">
+                                Vous n'avez pas encore reçu votre code ? <br>
+                                Contactez-nous sur WhatsApp pour obtenir votre validation immédiate.
+                            </p>
+                            <a href="https://wa.me/221764443313" target="_blank" class="btn btn-link text-decoration-none mt-2" style="color: #25D366;">
+                                <i class="fa-brands fa-whatsapp me-2"></i>Contacter l'administrateur
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

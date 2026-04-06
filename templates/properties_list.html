@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Annonces Immobilières | Location Appartement & Villa Dakar - Logersenegal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .property-card {
+        background: var(--bg-card);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px var(--shadow-color);
+        transition: transform 0.3s ease;
+        border: 1px solid var(--border-color);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .property-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .property-image-wrapper {
+        position: relative;
+        height: 220px;
+        background-color: #e9ecef;
+    }
+    
+    [data-theme="dark"] .property-image-wrapper {
+        background-color: #2a2a2a;
+    }
+
+    .property-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .property-type-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--color-dark-green);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .property-price {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: var(--color-yellow);
+        color: var(--color-dark-green);
+        padding: 5px 15px;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .property-details {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .property-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text-main);
+    }
+
+    .property-location {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .property-location i {
+        color: var(--color-light-green);
+        margin-right: 5px;
+    }
+    
+    .property-footer {
+        margin-top: auto;
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+    }
+
+    .page-header {
+        background-color: var(--color-dark-green);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .page-header h1 {
+        font-weight: 800;
+    }
+
+    /* Carousel Custom Styling */
+    .carousel-indicators [data-bs-target] {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin: 0 4px;
+        background-color: white;
+    }
+    .carousel-indicators .active {
+        background-color: var(--color-yellow);
+    }
+    .carousel-control-prev, .carousel-control-next {
+        width: 15%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .property-card:hover .carousel-control-prev,
+    .property-card:hover .carousel-control-next {
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mt-4 text-center text-md-start">
+    <div class="container py-4">
+        <h1 class="fw-800 display-5" style="color: var(--text-main);">Nos Annonces Immobilières</h1>
+        <p class="lead fw-bold mb-0" style="color: var(--color-yellow);">Trouvez l'appartement ou la villa idéale au Sénégal</p>
+    </div>
+</div>
+
+{% if boosted_slider %}
+<!-- Bandeau Défilant Premium DigitalH -->
+<div class="container mb-5 mt-n3">
+    <div class="card border-0 shadow-lg overflow-hidden animate__animated animate__slideInLeft" style="border-radius: 20px; background: linear-gradient(135deg, var(--color-dark-green), #053b21); transition: all 0.5s ease-in-out;">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-5 p-5 text-white">
+                <div class="badge bg-yellow text-dark mb-4 text-uppercase fw-bold p-2 px-3 rounded-pill animate__animated animate__fadeInDown" style="font-size: 0.7rem; letter-spacing: 2px;"> <i class="fa-solid fa-bolt me-1 text-danger"></i> Sélection Premium</div>
+                <h2 class="display-6 fw-800 mb-3 text-shadow">Nos Exclusivités du Jour</h2>
+                <p class="opacity-75 mb-4 d-none d-md-block">Découvrez les meilleures opportunités immobilières certifiées par DigitalH pour votre confort.</p>
+                <a href="#all-properties" class="btn btn-outline-yellow rounded-pill px-4 fw-bold shadow-sm">Explorer tout <i class="fa-solid fa-arrow-right ms-1"></i></a>
+            </div>
+            <div class="col-md-7">
+                <div id="boostedCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+                    <div class="carousel-inner h-100">
+                        {% for boost_prop in boosted_slider %}
+                        <div class="carousel-item h-100 {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
+                            <div class="position-relative h-100" style="min-height: 400px; height: 100%;">
+                                {% if boost_prop.images.first %}
+                                    <img src="{{ boost_prop.images.first.image_url.url }}" class="d-block w-100 h-100" alt="{{ boost_prop.title }}" style="object-fit: cover;">
+                                {% endif %}
+                                <div class="position-absolute bottom-0 start-0 w-100 p-4" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <div class="text-white">
+                                            <h4 class="fw-bold mb-1 text-white">{{ boost_prop.title }}</h4>
+                                            <p class="opacity-75 small mb-0"><i class="fa-solid fa-location-dot me-1"></i> {{ boost_prop.neighborhood }}, {{ boost_prop.city }}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <h3 class="fw-800 mb-0" style="color: var(--color-yellow);">{{ boost_prop.rent_price|floatformat:0 }} <small class="fw-normal" style="font-size: 1rem;">FCFA</small></h3>
+                                            <a href="{% url 'property_detail' boost_prop.id %}" class="btn btn-sm btn-yellow text-dark fw-bold rounded-pill px-3 mt-2">Détails <i class="fa-solid fa-chevron-right ms-1"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="container mb-5">
+    <!-- Barre de Filtres Réelle -->
+    <div class="row align-items-center mb-4 pb-3" style="border-bottom: 1px solid var(--border-color);">
+        <div class="col-md-2 mb-3 mb-md-0">
+            <h5 class="mb-0 fw-bold">Annonces</h5>
+            <span class="text-muted small">{{ properties.count }} résultat(s)</span>
+        </div>
+        <div class="col-md-10">
+            <form method="GET" action="{% url 'properties_list' %}" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="small text-muted fw-bold">Ville</label>
+                    <select name="city" class="form-select" style="background-color: var(--bg-card); color: var(--text-main); border-color: var(--border-color);">
+                        <option value="ALL">Toutes les villes</option>
+                        {% for code, name in cities %}
+                        <option value="{{ code }}" {% if current_filters.city == code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small text-muted fw-bold">Quartier</label>
+                    <select name="neighborhood" class="form-select" style="background-color: var(--bg-card); color: var(--text-main); border-color: var(--border-color);">
+                        <option value="ALL">Tous les quartiers</option>
+                        {% for code, name in neighborhoods %}
+                        <option value="{{ name }}" {% if current_filters.neighborhood == name %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted fw-bold">Type</label>
+                    <select name="property_type" class="form-select" style="background-color: var(--bg-card); color: var(--text-main); border-color: var(--border-color);">
+                        <option value="ALL">Tous types</option>
+                        {% for code, name in property_types %}
+                        <option value="{{ code }}" {% if current_filters.property_type == code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted fw-bold">Prix Max</label>
+                    <input type="number" name="max_price" class="form-control" placeholder="FCFA" value="{{ current_filters.max_price }}" style="background-color: var(--bg-card); color: var(--text-main); border-color: var(--border-color);">
+                </div>
+                <div class="col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-success flex-grow-1"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#advancedFiltersModal">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                    <a href="{% url 'properties_list' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+                </div>
+
+                <!-- Modal Filtres Avancés -->
+                <div class="modal fade" id="advancedFiltersModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content" style="background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">
+                            <div class="modal-header border-0 pb-0">
+                                <h5 class="modal-title fw-bold">Filtres Avancés</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="row g-3">
+                                    <h6 class="fw-bold mb-2">Équipements & Commodités</h6>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="wifi" value="on" id="f_wifi" {% if current_filters.wifi %}checked{% endif %}>
+                                            <label class="form-check-label" for="f_wifi">WiFi</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="swimming_pool" value="on" id="f_pool" {% if current_filters.swimming_pool %}checked{% endif %}>
+                                            <label class="form-check-label" for="f_pool">Piscine</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="air_conditioning" value="on" id="f_ac" {% if current_filters.air_conditioning %}checked{% endif %}>
+                                            <label class="form-check-label" for="f_ac">Climatisation</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="has_garage" value="on" id="f_garage" {% if current_filters.has_garage %}checked{% endif %}>
+                                            <label class="form-check-label" for="f_garage">Garage / Parking</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="generator" value="on" id="f_gen" {% if current_filters.generator %}checked{% endif %}>
+                                            <label class="form-check-label" for="f_gen">Groupe Électrogène</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-success px-4">Appliquer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Grille des propriétés -->
+    <div class="row g-4">
+        {% for property in properties %}
+        <div class="col-md-6 col-lg-4">
+            {% include 'partials/property_card.html' with property=property %}
+        </div>
+
+        {% if forloop.counter|divisibleby:6 and ads_in_feed %}
+            <div class="col-12 mt-4 mb-4 animate__animated animate__fadeIn">
+                <div class="ad-container text-center py-3 bg-light rounded-4 shadow-sm border border-2 border-dashed border-success">
+                    <small class="text-uppercase fw-bold text-success d-block mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">Sponsorisé par DigitalH</small>
+                    {% with ads_in_feed|random as ad %}
+                        {% if ad.ad_type == 'BANNER' %}
+                        <a href="{{ ad.target_url }}" target="_blank">
+                            {% if ad.image %}
+                                <img src="{{ ad.image.url }}" class="img-fluid rounded-3" alt="{{ ad.title }}" style="max-height: 250px; width: auto;">
+                            {% endif %}
+                        </a>
+                        {% else %}
+                            <div class="p-2">
+                                {{ ad.script_content|safe }}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        {% endif %}
+        {% empty %}
+        <div class="col-12 py-5 text-center">
+            <div style="font-size: 3rem; color: var(--border-color); margin-bottom: 20px;">
+                <i class="fa-solid fa-house-circle-exclamation"></i>
+            </div>
+            <h4 class="fw-bold">Aucune annonce disponible</h4>
+            <p class="text-muted">Il n'y a pas de propriétés publiées pour le moment. Revenez plus tard !</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

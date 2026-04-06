@@ -1,0 +1,14 @@
+<IfModule mod_passenger.c>
+  PassengerAppRoot /home/votre-nom-utilisateur-o2switch/public_html
+  PassengerAppType wsgi
+  PassengerStartupFile passenger_wsgi.py
+  PassengerPython /home/votre-nom-utilisateur-o2switch/virtualenv/public_html/3.10/bin/python
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ http://127.0.0.1:%{SERVER_PORT}/ [P,QSA,L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ http://127.0.0.1:%{SERVER_PORT}/$1 [P,QSA,L]
+</IfModule>

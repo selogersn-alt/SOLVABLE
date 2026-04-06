@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Connexion | Logersenegal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; background-color: var(--bg-card);">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fa-solid fa-house-circle-check mb-3" style="color: var(--color-light-green); font-size: 3rem;"></i>
+                        <h2 class="fw-bold" style="color: var(--text-main);">Bon retour !</h2>
+                        <p class="text-muted">Connectez-vous à votre espace personnel.</p>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-bold" style="color: var(--text-main);">Numéro de téléphone (Identifiant)</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required placeholder="+221 77 000 00 00" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label for="password" class="form-label fw-bold mb-0" style="color: var(--text-main);">Mot de passe</label>
+                                <a href="{% url 'password_recovery' %}" class="small text-decoration-none" style="color: var(--color-light-green);">Oublié ?</a>
+                            </div>
+                            <input type="password" class="form-control mt-2" id="password" name="password" required placeholder="Votre mot de passe" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3 mb-3" style="font-size: 1.1rem; border-radius: 12px;">Se Connecter</button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0" style="color: var(--text-muted);">Vous n'avez pas de compte ? <a href="{% url 'register' %}" class="fw-bold text-decoration-none" style="color: var(--color-yellow);">S'inscrire</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

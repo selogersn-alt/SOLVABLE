@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Annuaire des Professionnels Vérifiés | Logersenegal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tiny { font-size: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background-color: var(--bg-body);">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3" style="color: var(--text-main);">Annuaire des Professionnels Logersenegal</h1>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                Trouvez un professionnel de l'immobilier de confiance avec qui collaborer. Tous les profils listés ici ont été vérifiés et certifiés par notre équipe.
+            </p>
+        </div>
+
+        <div class="row pt-4 mb-4">
+            <div class="col-md-6 mb-3">
+                <select id="roleFilter" class="form-select border-0 shadow-sm" style="background-color: var(--bg-card); color: var(--text-main); padding: 12px; border-radius: 10px;" onchange="filterPros()">
+                    <option value="ALL">Tous les statuts</option>
+                    <option value="AGENCY">Agences Immobilières</option>
+                    <option value="BROKER">Courtiers</option>
+                    <option value="AGENT">Agents (Indépendants)</option>
+                    <option value="LANDLORD">Bailleurs</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <input type="text" id="zoneFilter" class="form-control border-0 shadow-sm" placeholder="Rechercher par zone de couverture..." style="background-color: var(--bg-card); color: var(--text-main); padding: 12px; border-radius: 10px;" onkeyup="filterPros()">
+            </div>
+        </div>
+
+        {% if professionals %}
+        <div class="row g-4" id="proList">
+            {% for pro in professionals %}
+            <div class="col-md-6 col-lg-4 pro-card" data-role="{{ pro.role }}" data-zone="{{ pro.coverage_area|lower|default:'' }}">
+                <div class="card h-100 border-0 shadow-sm" style="background-color: var(--bg-card); border-radius: 15px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 6px; background-color: var(--color-light-green);"></div>
+                    <div class="card-body p-4 text-center mt-2">
+                        <div class="mb-3 position-relative d-inline-block">
+                            {% if pro.profile_picture %}
+                                <img src="{{ pro.profile_picture.url }}" class="rounded-circle shadow-sm" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid var(--color-light-green);">
+                            {% else %}
+                                <i class="fa-solid fa-circle-user" style="font-size: 3.5rem; color: var(--color-dark-green);"></i>
+                            {% endif %}
+                        </div>
+                        <h5 class="fw-bold mb-1 text-truncate px-2" style="color: var(--text-main);">
+                            {% if pro.company_name %}{{ pro.company_name }}{% else %}{{ pro.email|default:"Professionnel" }}{% endif %}
+                        </h5>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">{{ pro.get_role_display }}</span>
+                            <span class="badge bg-primary" title="Professionnel Vérifié par Logersenegal"><i class="fa-solid fa-certificate"></i> Vérifié</span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted fw-bold d-block">{{ pro.nils_profile.nils_number }}</small>
+                            <div class="text-warning mt-1">
+                                {% for i in "1234567891"|make_list %}
+                                    {% if forloop.counter <= pro.nils_profile.average_rating %}
+                                        <i class="fa-solid fa-star tiny"></i>
+                                    {% elif forloop.counter|add:"-0.5" <= pro.nils_profile.average_rating %}
+                                        <i class="fa-solid fa-star-half-stroke tiny"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star tiny"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-1 tiny text-muted">({{ pro.nils_profile.average_rating }}/10)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-start mb-4" style="font-size: 0.95rem;">
+                            {% if pro.coverage_area %}
+                                <p class="mb-2 text-muted"><i class="fa-solid fa-map-location-dot me-2" style="color: var(--color-light-green);"></i> <strong>Zone:</strong> <span class="text-truncate">{{ pro.coverage_area }}</span></p>
+                            {% endif %}
+                            <p class="mb-2 text-muted"><i class="fa-solid fa-phone me-2" style="color: var(--color-light-green);"></i> {{ pro.phone_number }}</p>
+                            {% if pro.email %}
+                            <p class="mb-0 text-muted text-truncate"><i class="fa-solid fa-envelope me-2" style="color: var(--color-light-green);"></i> {{ pro.email }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2 mt-auto">
+                            <!-- Link to Whatsapp -->
+                            <a href="https://wa.me/{{ pro.phone_number|cut:' ' }}" target="_blank" class="btn btn-sm text-white" style="background-color: #25D366; border-radius: 8px;">
+                                <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp
+                            </a>
+                            <!-- Link to call -->
+                            <a href="tel:{{ pro.phone_number }}" class="btn btn-sm btn-outline-secondary" style="border-radius: 8px;">
+                                <i class="fa-solid fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Empty state message (hidden initially) -->
+        <div id="noResultsMsg" class="text-center py-5 d-none">
+            <i class="fa-solid fa-folder-open mb-3" style="font-size: 3rem; color: var(--border-color);"></i>
+            <h5 class="text-muted">Aucun professionnel ne correspond à vos critères.</h5>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-folder-open mb-3" style="font-size: 3rem; color: var(--border-color);"></i>
+            <h5 class="text-muted">Aucun professionnel vérifié n'est disponible pour le moment.</h5>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterPros() {
+        const roleFilter = document.getElementById('roleFilter').value;
+        const zoneFilter = document.getElementById('zoneFilter').value.toLowerCase();
+        const proCards = document.querySelectorAll('.pro-card');
+        let visibleCount = 0;
+
+        proCards.forEach(card => {
+            const role = card.getAttribute('data-role');
+            const zone = card.getAttribute('data-zone');
+            
+            const matchesRole = (roleFilter === 'ALL' || role === roleFilter);
+            const matchesZone = (zone.includes(zoneFilter));
+            
+            if (matchesRole && matchesZone) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        if(noResultsMsg) {
+            if (visibleCount === 0) {
+                noResultsMsg.classList.remove('d-none');
+            } else {
+                noResultsMsg.classList.add('d-none');
+            }
+        }
+    }
+</script>
+{% endblock %}

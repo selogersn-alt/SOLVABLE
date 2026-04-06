@@ -1,0 +1,89 @@
+{% load static %}
+<div class="property-card shadow-sm border-0 h-100 animate__animated animate__fadeInUp">
+    <div class="property-image-wrapper position-relative" style="height: 240px; overflow: hidden; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+        {% if property.images.all %}
+            <!-- Image Carousel -->
+            <div id="carousel-{{ property.id }}" class="carousel slide h-100" data-bs-ride="false">
+                <div class="carousel-inner h-100">
+                    {% for image in property.images.all %}
+                    <div class="carousel-item h-100 {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image_url.url }}" class="property-img w-100 h-100" alt="{{ property.title }}" style="object-fit: cover;" onerror="this.onerror=null; this.outerHTML='<div class=\'w-100 h-100 d-flex align-items-center justify-content-center bg-light\'><i class=\'fa-solid {{ property.get_icon_class }}\' style=\'font-size: 4rem; color: var(--border-color);\'></i></div>';">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if property.images.count > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ property.id }}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Précédent</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ property.id }}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Suivant</span>
+                    </button>
+                    <!-- Indicators -->
+                    <div class="carousel-indicators mb-0" style="bottom: 5px;">
+                        {% for i in property.images.all %}
+                        <button type="button" data-bs-target="#carousel-{{ property.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="true" aria-label="Slide {{ forloop.counter }}"></button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                <i class="fa-solid {{ property.get_icon_class }}" style="font-size: 4rem; color: var(--border-color);"></i>
+            </div>
+        {% endif %}
+        
+        <div class="property-type-badge" style="position: absolute; bottom: 15px; left: 15px; background: var(--color-yellow); color: var(--color-dark-green); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 2;">
+            {{ property.get_property_type_display }}
+        </div>
+        
+        {% if property.owner.nils_profile %}
+        <div style="position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.95); color: var(--color-dark-green); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.15); z-index: 2;">
+            <i class="fa-solid fa-shield-halved text-success me-1"></i> Bailleur Vérifié
+        </div>
+        {% endif %}
+        
+        <div class="property-price" style="position: absolute; bottom: 15px; right: 15px; background: var(--color-dark-green); color: white; padding: 5px 15px; border-radius: 8px; font-weight: 700; z-index: 2; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            {{ property.rent_price|floatformat:0 }} FCFA<span style="font-size: 0.7rem; font-weight: 400;">/mois</span>
+        </div>
+
+        {% if property.is_boosted %}
+        <div class="property-ads-badge" style="position: absolute; top: 15px; left: 15px; background: var(--color-light-green); color: var(--color-dark-green); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; border: 1px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 2; text-transform: uppercase; letter-spacing: 1px;">
+            <i class="fa-solid fa-star me-1"></i> Publicité
+        </div>
+        {% endif %}
+    </div>
+    <div class="property-details p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h3 class="property-title h6 fw-bold mb-0 text-truncate" title="{{ property.title }}">{{ property.title }}</h3>
+            <small class="text-muted" style="font-size: 0.75rem;"><i class="fa-regular fa-clock me-1"></i>{{ property.created_at|timesince }}</small>
+        </div>
+        
+        <div class="property-location mb-3 text-muted small">
+            <i class="fa-solid fa-location-dot me-1 text-success"></i> {{ property.neighborhood }}, {{ property.city }}
+        </div>
+
+        <!-- Technical Features Icons -->
+        <div class="d-flex flex-wrap gap-3 mb-3 pb-3 border-bottom border-light">
+            {% if property.surface > 0 %}
+            <div class="small text-muted" title="Surface"><i class="fa-solid fa-ruler-combined me-1"></i>{{ property.surface }} m²</div>
+            {% endif %}
+            {% if property.bedrooms > 0 %}
+            <div class="small text-muted" title="Chambres"><i class="fa-solid fa-bed me-1"></i>{{ property.bedrooms }}</div>
+            {% endif %}
+            {% if property.toilets > 0 %}
+            <div class="small text-muted" title="Toilettes"><i class="fa-solid fa-restroom me-1"></i>{{ property.toilets }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Direct Contact Icons -->
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-2">
+                <a href="https://wa.me/{{ property.owner.phone_number }}" target="_blank" class="btn btn-sm btn-outline-success border-0" title="WhatsApp"><i class="fa-brands fa-whatsapp fs-5"></i></a>
+                <a href="tel:{{ property.owner.phone_number }}" class="btn btn-sm btn-outline-primary border-0" title="Appeler"><i class="fa-solid fa-phone fs-6"></i></a>
+            </div>
+            <a href="{% url 'property_detail' property.id %}" class="btn btn-success btn-sm px-3 rounded-pill fw-bold">Détails</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,757 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Tableau de Bord | Logersenegal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-sidebar {
+        background-color: var(--bg-card);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px var(--shadow-color);
+        padding: 20px 0;
+        height: 100%;
+    }
+    .nav-pills .nav-link {
+        color: var(--text-main);
+        padding: 12px 20px;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
+    }
+    .nav-pills .nav-link:hover {
+        background-color: rgba(127, 212, 125, 0.1);
+        color: var(--color-light-green);
+    }
+    .nav-pills .nav-link.active {
+        background-color: rgba(127, 212, 125, 0.1);
+        color: var(--color-light-green);
+        border-left: 4px solid var(--color-light-green);
+        font-weight: bold;
+    }
+    .status-badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    /* Messagerie Styles */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background-color: var(--bg-body);
+    }
+    .chat-header {
+        background-color: var(--bg-card);
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px;
+        border-radius: 12px 12px 0 0;
+    }
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    .msg-sent {
+        background-color: var(--color-light-green) !important;
+        color: var(--color-dark-green) !important;
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+        box-shadow: 0 2px 8px rgba(127, 212, 125, 0.2);
+    }
+    .msg-received {
+        background-color: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        border: 1px solid var(--border-color);
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+        box-shadow: 0 2px 8px var(--shadow-color);
+    }
+    .quick-aid-btn {
+        font-size: 0.75rem;
+        padding: 6px 15px;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        color: var(--text-main);
+        transition: all 0.2s;
+        white-space: nowrap;
+        margin-right: 8px;
+        margin-bottom: 8px;
+    }
+    .quick-aid-btn:hover {
+        border-color: var(--color-light-green);
+        color: var(--color-light-green);
+        background-color: rgba(127, 212, 125, 0.05);
+    }
+    .chat-input-area {
+        padding: 20px;
+        background-color: var(--bg-card);
+        border-top: 1px solid var(--border-color);
+        border-radius: 0 0 12px 12px;
+    }
+    .chat-messages {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+    }
+    .list-group-item.active-chat {
+        background-color: rgba(127, 212, 125, 0.2) !important;
+        border-color: rgba(127, 212, 125, 0.3) !important;
+    }
+    .list-group-item:hover:not(.active-chat) {
+        background-color: rgba(127, 212, 125, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold" style="color: var(--text-main);">Mon Espace Personnel</h2>
+            <p class="text-muted">Bienvenue, {{ user.email }}</p>
+
+            {% if not user.is_phone_verified %}
+            <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" style="border-radius: 12px; background-color: rgba(255, 193, 7, 0.1);">
+                <i class="fa-solid fa-triangle-exclamation me-3" style="font-size: 1.5rem; color: #ffc107;"></i>
+                <div class="flex-grow-1">
+                    <h6 class="m-0 fw-bold" style="color: #664d03;">Compte non vérifié !</h6>
+                    <small class="text-muted">Votre numéro de téléphone n'est pas encore vérifié. Votre visibilité est limitée.</small>
+                </div>
+                <a href="{% url 'verify_phone' %}" class="btn btn-sm btn-warning fw-bold px-3 ms-3" style="border-radius: 8px;">Vérifier maintenant</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="dashboard-sidebar">
+                <div class="text-center mb-4 px-3">
+                    <div class="mb-3">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-light-green);">
+                        {% else %}
+                            <i class="fa-solid fa-circle-user" style="font-size: 5rem; color: var(--color-light-green);"></i>
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-secondary">{{ user.get_role_display }}</span>
+                        {% if user.role != 'TENANT' and user.is_verified_pro %}
+                            <span class="badge bg-primary" title="Professionnel Vérifié par Solvable"><i class="fa-solid fa-certificate"></i> Vérifié</span>
+                        {% endif %}
+                    </div>
+                    <h5 class="fw-bold m-0 text-truncate" style="color: var(--text-main);">{{ user.email|default:user.phone_number }}</h5>
+                    <small class="text-muted d-block">{{ user.phone_number }}</small>
+                    <div class="mt-2 text-warning d-flex align-items-center justify-content-center">
+                        {% for i in "1234567891"|make_list %}{# Workaround for range 10 #}
+                            {% if forloop.counter <= user.nils_profile.average_rating %}
+                                <i class="fa-solid fa-star small"></i>
+                            {% elif forloop.counter|add:"-0.5" <= user.nils_profile.average_rating %}
+                                <i class="fa-solid fa-star-half-stroke small"></i>
+                            {% else %}
+                                <i class="fa-regular fa-star small"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="ms-2 small text-muted">({{ user.nils_profile.average_rating|default:"0" }}/10)</span>
+                    </div>
+                </div>
+                
+                <ul class="nav nav-pills flex-column" id="dashboard-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="overview-tab" data-bs-toggle="pill" href="#overview" role="tab"><i class="fa-solid fa-chart-pie me-2"></i> Vue d'ensemble</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="profile-tab" data-bs-toggle="pill" href="#profile" role="tab"><i class="fa-solid fa-id-card me-2"></i> Profil NILS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="filiations-tab" data-bs-toggle="pill" href="#filiations" role="tab"><i class="fa-solid fa-file-signature me-2"></i> Mes Contrats</a>
+                    </li>
+                    {% if user.role != 'TENANT' %}
+                    <li class="nav-item">
+                        <a class="nav-link" id="properties-tab" data-bs-toggle="pill" href="#properties" role="tab"><i class="fa-solid fa-house-chimney-window me-2"></i> Mes Annonces</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" id="chat-tab" data-bs-toggle="pill" href="#chat" role="tab">
+                            <i class="fa-solid fa-comments me-2"></i> Messagerie 
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="applications-tab" data-bs-toggle="pill" href="#applications" role="tab">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Candidatures
+                            {% if received_applications.count > 0 %}
+                                <span class="badge rounded-pill bg-danger ms-1">{{ received_applications.count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Déconnexion</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="tab-content" id="dashboard-tabContent">
+                
+                <!-- VUE D'ENSEMBLE -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100" style="background-color: var(--bg-card); border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <h5 class="fw-bold mb-3" style="color: var(--text-main);">Indice de Confiance NILS</h5>
+                                    {% if user.nils_profile %}
+                                        <div class="text-center mb-4">
+                                            <!-- Gauge CSS Custom -->
+                                            <div class="position-relative d-inline-block">
+                                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                                    <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-color)" stroke-width="8" />
+                                                    <circle id="nils-gauge-circle" cx="60" cy="60" r="54" fill="none" 
+                                                            stroke="{% if user.nils_profile.reputation_status == 'GREEN' %}var(--color-light-green){% elif user.nils_profile.reputation_status == 'YELLOW' %}var(--color-yellow){% else %}#dc3545{% endif %}" 
+                                                            stroke-width="12" 
+                                                            stroke-dasharray="339.29" 
+                                                            stroke-dashoffset="339.29" 
+                                                            stroke-linecap="round"
+                                                            style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);" />
+                                                </svg>
+                                                <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                                    <span class="d-block fw-800 fs-3">{{ user.nils_profile.score }}</span>
+                                                    <small class="text-muted" style="font-size: 0.6rem;">pts</small>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                (function() {
+                                                    const circle = document.getElementById('nils-gauge-circle');
+                                                     const nilsScoreVal = parseFloat("{{ user.nils_profile.score|default:0 }}");
+                                                    const circumference = 339.29;
+                                                    const nilsOffset = circumference - (nilsScoreVal / 100) * circumference;
+                                                    setTimeout(() => {
+                                                        if(circle) circle.style.strokeDashoffset = nilsOffset;
+                                                    }, 300);
+                                                })();
+                                            </script>
+                                             <div class="mt-2 fw-bold text-uppercase" style="color: {% if user.nils_profile.reputation_status == 'GREEN' %}#7fd47d{% elif user.nils_profile.reputation_status == 'YELLOW' %}#f5c42f{% else %}#dc3545{% endif %};">
+                                                Profil {{ user.nils_profile.get_reputation_status_display }}
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small">ID NILS: <strong>{{ user.nils_profile.nils_number }}</strong>. Votre score reflète votre historique de paiement certifié sur la plateforme.</p>
+                                    {% else %}
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="status-badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i> Profil non créé</div>
+                                        </div>
+                                        <p class="text-muted small">Veuillez soumettre vos documents pour générer votre indice de confiance.</p>
+                                        <a href="{% url 'kyc_submit' %}" class="btn btn-sm btn-success w-100 shadow-sm"><i class="fa-solid fa-id-card me-2"></i>Commencer</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100" style="background-color: var(--bg-card); border-radius: 15px;">
+                                <div class="card-body p-4">
+                                    <h5 class="fw-bold mb-3" style="color: var(--text-main);">Gestion Immobilière</h5>
+                                    <div class="row text-center g-2 mt-2">
+                                        <div class="col-6">
+                                            <div class="p-3 bg-light rounded shadow-sm" style="border: 1px solid var(--border-color);">
+                                                <h3 class="fw-bold text-success m-0">{{ approved_count }}</h3>
+                                                <small class="text-muted">En ligne</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-3 bg-light rounded shadow-sm" style="border: 1px solid var(--border-color);">
+                                                <h3 class="fw-bold text-warning m-0">{{ pending_count }}</h3>
+                                                <small class="text-muted">En attente</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid mt-3">
+                                        <a href="{% url 'create_property' %}" class="btn btn-sm btn-primary-custom">
+                                            <i class="fa-solid fa-plus me-1"></i> Nouvelle Annonce
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activités Récentes -->
+                    <div class="card border-0 shadow-sm" style="background-color: var(--bg-card); border-radius: 15px;">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-3" style="color: var(--text-main);">Activités Récentes</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent px-0 py-3" style="border-color: var(--border-color);">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-circle bg-success text-white me-3" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fa-solid fa-user-check"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-0 fw-bold" style="color: var(--text-main);">Connexion réussie</p>
+                                            <small class="text-muted">Aujourd'hui à {{ "now"|date:"H:i" }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROFIL NILS -->
+                <div class="tab-pane fade" id="profile" role="tabpanel">
+                    <div class="card border-0 shadow-sm" style="background-color: var(--bg-card); border-radius: 15px;">
+                        <div class="card-body p-4">
+                            <h4 class="fw-bold mb-4" style="color: var(--text-main);">Identité & KYC</h4>
+                            <p class="text-muted">Ces informations restent confidentielles et servent uniquement à générer votre indice de confiance Solvable (NILS).</p>
+                            
+                            <div class="text-center mt-5 mb-4">
+                                <i class="fa-solid fa-shield-halved text-success mb-3" style="font-size: 4rem;"></i>
+                                <h5 style="color: var(--text-main);">Processus de Vérification Sécurisé</h5>
+                                <p class="text-muted small px-md-5">Nous utilisons la reconnaissance faciale et l'analyse documentaire pour garantir l'intégrité de tous nos membres.</p>
+                                
+                                <a href="{% url 'kyc_submit' %}" class="btn btn-primary-custom px-4 mt-3">Transmettre mes documents sécurisés</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MES CONTRATS FILIATIONS -->
+                <div class="tab-pane fade" id="filiations" role="tabpanel">
+                    <div class="card border-0 shadow-sm" style="background-color: var(--bg-card); border-radius: 15px;">
+                        <div class="card-body p-4">
+                            <h4 class="fw-bold mb-4" style="color: var(--text-main);">Mes Baux & Locations</h4>
+                            <p class="text-muted">Gérez vos contrats de location sécurisés par Solvable (Filiations).</p>
+                            
+                            <h5 class="fw-bold mt-4" style="color: var(--color-dark-green);">Je suis Bailleur (Mes Locataires)</h5>
+                            {% if user.tenant_filiations.all %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mt-3" style="color: var(--text-main);">
+                                    <thead style="background-color: rgba(127, 212, 125, 0.1);">
+                                        <tr>
+                                            <th>Bien Immobilier</th>
+                                            <th>Locataire (Tél/NILS)</th>
+                                            <th>Loyer Mensuel</th>
+                                            <th>Statut</th>
+                                            <th>Début</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for filiation in user.tenant_filiations.all %}
+                                        <tr>
+                                            <td>{{ filiation.property.title|default:"Non spécifié" }}</td>
+                                            <td>{{ filiation.tenant.phone_number }}<br><small class="text-muted">{{ filiation.tenant.nils_profile.nils_number|default:"-" }}</small></td>
+                                            <td>{{ filiation.monthly_rent }} FCFA</td>
+                                            <td>
+                                                <span class="badge {% if filiation.status == 'ACTIVE' %}bg-success{% elif filiation.status == 'PENDING_APPROVAL' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                    {{ filiation.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ filiation.start_date|date:"d M Y" }}</td>
+                                            <td>
+                                                {% if filiation.status == 'PENDING_APPROVAL' %}
+                                                    <a href="{% url 'approve_filiation' filiation.id %}" class="btn btn-sm btn-success px-2 py-1">
+                                                        <i class="fa-solid fa-check"></i> Étudier
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'record_payment' %}?filiation={{ filiation.id }}" class="btn btn-sm btn-outline-success border-0 px-2 py-1 mb-1 mb-lg-0" title="Enregistrer un paiement">
+                                                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                                                    </a>
+                                                    <a href="{% url 'report_incident' %}?filiation={{ filiation.id }}" class="btn btn-sm btn-outline-danger border-0 px-2 py-1" title="Signaler un incident">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light border text-center" style="background-color: var(--bg-body); border-color: var(--border-color) !important;">
+                                <p class="text-muted mb-2">Vous n'avez aucun contrat actif en tant que bailleur.</p>
+                                <a href="{% url 'nils_search' %}" class="btn btn-sm btn-outline-success">Ajouter un locataire</a>
+                            </div>
+                            {% endif %}
+                            
+                            <h5 class="fw-bold mt-5" style="color: var(--color-yellow);">Je suis Locataire (Mes Baux)</h5>
+                            {% if user.landlord_filiations.all %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mt-3" style="color: var(--text-main);">
+                                    <thead style="background-color: rgba(245, 196, 47, 0.1);">
+                                        <tr>
+                                            <th>Bien Immobilier</th>
+                                            <th>Bailleur (Tél)</th>
+                                            <th>Loyer Mensuel</th>
+                                            <th>Statut</th>
+                                            <th>Début</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for filiation in user.landlord_filiations.all %}
+                                        <tr>
+                                            <td>{{ filiation.property.title|default:"Non spécifié" }}</td>
+                                            <td>{{ filiation.landlord.phone_number }}</td>
+                                            <td>{{ filiation.monthly_rent }} FCFA</td>
+                                            <td>
+                                                <span class="badge {% if filiation.status == 'ACTIVE' %}bg-success{% elif filiation.status == 'PENDING_APPROVAL' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                    {{ filiation.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ filiation.start_date|date:"d M Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'filiation_details' filiation.id %}" class="btn btn-sm btn-outline-info border-0 px-2 py-1">
+                                                    <i class="fa-solid fa-eye"></i> Détails
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light border text-center" style="background-color: var(--bg-body); border-color: var(--border-color) !important;">
+                                <p class="text-muted mb-0">Vous n'êtes actuellement locataire sur aucun bien Solvable.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MES ANNONCES (POUR PROS) -->
+                {% if user.role != 'TENANT' %}
+                <div class="tab-pane fade" id="properties" role="tabpanel">
+                    <div class="card border-0 shadow-sm" style="background-color: var(--bg-card); border-radius: 15px;">
+                        <div class="card-body p-4">
+                            <h4 class="fw-bold mb-4" style="color: var(--text-main);">Mes Annonces Immobilières</h4>
+                            {% if properties %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Bien</th>
+                                            <th>Prix</th>
+                                            <th class="text-center">Vues 👁️</th>
+                                            <th class="text-center">Clics 🖱️</th>
+                                            <th>Statut</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for prop in properties %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if prop.images.first %}
+                                                        <img src="{{ prop.images.first.image_url.url }}" class="rounded me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="rounded me-3 bg-light d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                                            <i class="fa-solid {{ prop.get_icon_class }} text-muted"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-bold text-truncate" style="max-width: 150px;">{{ prop.title }}</span>
+                                                        <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i>{{ prop.city }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ prop.rent_price|floatformat:0 }} <small>FCFA</small></td>
+                                            <td class="text-center fw-bold"><span class="badge bg-light text-dark border">{{ prop.views_count }}</span></td>
+                                            <td class="text-center fw-bold"><span class="badge bg-light text-success border">{{ prop.clicks_count }}</span></td>
+                                            <td>
+                                                {% if not prop.is_paid %}
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25"><i class="fa-solid fa-circle-exclamation me-1"></i>Non Payée</span>
+                                                {% elif prop.is_published %}
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25"><i class="fa-solid fa-circle-check me-1"></i>Validée</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 text-dark"><i class="fa-solid fa-clock me-1"></i>En attente</span>
+                                                {% endif %}
+                                                
+                                                {% if prop.is_boosted %}
+                                                    <br><small class="text-success fw-bold"><i class="fa-solid fa-bolt me-1"></i>Boosté</small>
+                                                {% endif %}
+                                                {% if prop.is_featured_popup %}
+                                                    <br><small class="text-info fw-bold"><i class="fa-solid fa-up-right-from-square me-1"></i>Pop-up actif</small>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="btn-group shadow-sm">
+                                                    <a href="{% url 'property_detail' prop.id %}" class="btn btn-sm btn-outline-primary" title="Voir l'annonce"><i class="fa-solid fa-eye"></i></a>
+                                                    
+                                                    {% if not prop.is_paid %}
+                                                        <a href="{% url 'initiate_payment' prop.id 'PUBLICATION' %}" class="btn btn-sm btn-success fw-bold" title="Régulariser 100F"><i class="fa-solid fa-credit-card me-1"></i> Payer</a>
+                                                    {% else %}
+                                                        <a href="{% url 'initiate_payment' prop.id 'BOOST' %}" class="btn btn-sm btn-outline-success" title="Booster l'annonce (100F/j)"><i class="fa-solid fa-bolt"></i></a>
+                                                        <a href="{% url 'initiate_payment' prop.id 'POPUP' %}" class="btn btn-sm btn-outline-info" title="Mise en avant Pop-up (500F/j)"><i class="fa-solid fa-up-right-from-square"></i></a>
+                                                    {% endif %}
+
+                                                    <a href="{% url 'edit_property' prop.id %}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></a>
+                                                    <a href="{% url 'delete_property' prop.id %}" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fa-solid fa-trash-can"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fa-solid fa-house-chimney-medical text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    <h5>Aucune annonce publiée</h5>
+                                    <p class="text-muted small">Commencez par ajouter votre premier bien immobilier sur Solvable.</p>
+                                    <a href="{% url 'create_property' %}" class="btn btn-primary-custom">Publier une annonce</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CANDIDATURES -->
+                <div class="tab-pane fade" id="applications" role="tabpanel">
+                    <div class="card border-0 shadow-sm" style="background-color: var(--bg-card); border-radius: 15px;">
+                        <div class="card-body p-4">
+                            {% if user.role == 'TENANT' %}
+                                <h5 class="fw-bold mb-4" style="color: var(--text-main);">Mes candidatures envoyées</h5>
+                                {% if my_applications %}
+                                    <div class="table-responsive">
+                                        <table class="table align-middle" style="color: var(--text-main);">
+                                            <thead>
+                                                <tr class="text-muted small">
+                                                    <th>Bien immobilier</th>
+                                                    <th>Date</th>
+                                                    <th>Statut</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for app in my_applications %}
+                                                    <tr style="border-bottom: 1px solid var(--border-color);">
+                                                        <td>
+                                                            <div class="fw-bold">{{ app.property.title }}</div>
+                                                            <small class="text-muted">{{ app.property.location }}</small>
+                                                        </td>
+                                                        <td>{{ app.created_at|date:"d M Y" }}</td>
+                                                        <td>
+                                                            <span class="badge rounded-pill {% if app.status == 'ACCEPTED' %}bg-success{% elif app.status == 'REJECTED' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                                {{ app.get_status_display }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            {% if app.status == 'ACCEPTED' %}
+                                                                <a href="{% url 'start_filiation' app.id %}" class="btn btn-sm fw-bold" style="background-color: var(--color-light-green); color: white; border-radius: 20px;">
+                                                                    <i class="fa-solid fa-link me-1"></i> Je poursuis pour cette offre
+                                                                </a>
+                                                            {% else %}
+                                                                <a href="{% url 'property_detail' app.property.id %}" class="btn btn-sm btn-outline-secondary">Voir l'annonce</a>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-center text-muted py-5">Vous n'avez pas encore postulé à une annonce.</p>
+                                {% endif %}
+                            {% else %}
+                                <h5 class="fw-bold mb-4" style="color: var(--text-main);">Candidatures reçues</h5>
+                                {% if received_applications %}
+                                    <div class="table-responsive">
+                                        <table class="table align-middle" style="color: var(--text-main);">
+                                            <thead>
+                                                <tr class="text-muted small">
+                                                    <th>Candidat (NILS)</th>
+                                                    <th>Bien</th>
+                                                    <th>Message</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for app in received_applications %}
+                                                    <tr style="border-bottom: 1px solid var(--border-color);">
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                {% for nils in app.applicant.nils_profiles.all %}
+                                                                    <div class="fw-bold">{{ nils.nils_number }}</div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </td>
+                                                        <td>{{ app.property.title }}</td>
+                                                        <td class="small text-muted">{{ app.message|truncatechars:50 }}</td>
+                                                        <td>
+                                                            <div class="d-flex gap-2">
+                                                                <a href="{% url 'nils_search' %}?q={{ app.applicant.phone_number }}" class="btn btn-sm btn-outline-primary border-0" title="Vérifier NILS"><i class="fa-solid fa-magnifying-glass"></i></a>
+                                                                {% if app.status == 'PENDING' %}
+                                                                    <form action="{% url 'update_application_status' app.id %}" method="POST" class="d-inline">
+                                                                        {% csrf_token %}
+                                                                        <button type="submit" name="action" value="accept" class="btn btn-sm btn-success py-1 px-2"><i class="fa-solid fa-check"></i></button>
+                                                                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger py-1 px-2"><i class="fa-solid fa-times"></i></button>
+                                                                    </form>
+                                                                {% else %}
+                                                                    <span class="badge {% if app.status == 'ACCEPTED' %}bg-success{% else %}bg-danger{% endif %} small">{{ app.get_status_display }}</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-center text-muted py-5">Aucune candidature reçue pour le moment.</p>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- MESSAGERIE (CHAT) -->
+                <div class="tab-pane fade" id="chat" role="tabpanel">
+                    <div class="row g-3">
+                        <!-- Liste des conversations -->
+                        <div class="col-lg-4 col-md-5 mb-3 mb-md-0">
+                            <div class="card border-0 shadow-sm w-100" style="background-color: var(--bg-card); border-radius: 12px; overflow: hidden; height: 600px;">
+                                <div class="p-3" style="background-color: var(--bg-body); border-bottom: 1px solid var(--border-color);">
+                                    <h6 class="mb-0 fw-bold" style="color: var(--text-main);">Mes Discussions</h6>
+                                </div>
+                                <div class="list-group list-group-flush h-100" style="overflow-y: auto;">
+                                    {% if conversations %}
+                                        {% for conv in conversations %}
+                                            <a href="?conv={{ conv.id }}#chat" class="list-group-item list-group-item-action p-3 {% if active_conversation.id == conv.id %}active-chat{% endif %}" style="background-color: transparent; border-color: var(--border-color);">
+                                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                                    <h6 class="mb-1 text-truncate fw-bold" style="color: var(--text-main);">{{ conv.get_topic_display }}</h6>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">Active</small>
+                                                </div>
+                                                <p class="mb-1 text-muted small text-truncate">
+                                                    {% if conv.messages.last %}
+                                                        {{ conv.messages.last.content }}
+                                                    {% else %}
+                                                        Commencez la discussion
+                                                    {% endif %}
+                                                </p>
+                                            </a>
+                                        {% endfor %}
+                                    {% else %}
+                                        <!-- Placeholder Support -->
+                                        <div class="p-4 text-center">
+                                            <p class="text-muted small">Aucune discussion en cours.</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Zone de Chat -->
+                        <div class="col-lg-8 col-md-7">
+                            <div class="chat-container shadow-sm w-100" style="height: 600px; max-height: 80vh;">
+                                <div class="chat-header d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-dark-green); color: white; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fa-solid fa-headset text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="m-0 fw-bold" style="color: var(--text-main);">Support Technique - Logersenegal</h6>
+                                        <small class="text-success"><i class="fa-solid fa-circle me-1" style="font-size: 0.5rem;"></i>Service en ligne</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-messages d-flex flex-column p-4" id="chat-box" style="flex-grow: 1; overflow-y: auto; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px;">
+                                    {% if active_conversation %}
+                                        {% for msg in active_conversation.messages.all %}
+                                            <div class="message-bubble {% if msg.sender == user %}msg-sent{% else %}msg-received{% endif %} mb-3 animate__animated animate__fadeInUp animate__faster">
+                                                <div class="fw-bold small mb-1" style="opacity: 0.8; font-size: 0.7rem;">
+                                                    {% if msg.sender.is_staff %}<i class="fa-solid fa-shield-halved me-1 text-success"></i>Support Logersenegal{% else %}{{ msg.sender.phone_number }}{% endif %}
+                                                </div>
+                                                <p class="mb-1">{{ msg.content }}</p>
+                                                <div class="d-flex justify-content-end">
+                                                    <small style="font-size: 0.6rem; opacity: 0.6;">{{ msg.created_at|date:"H:i" }}</small>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center my-auto p-5">
+                                            <div class="mb-4">
+                                                <i class="fa-solid fa-comments text-muted opacity-25" style="font-size: 4rem;"></i>
+                                            </div>
+                                            <h5 class="text-muted fw-bold">Bienvenue sur Logersenegal Chat</h5>
+                                            <p class="text-muted small">Sélectionnez une discussion ou contactez le support pour toute aide sur vos documents ou votre profil.</p>
+                                            <div class="d-flex flex-wrap justify-content-center mt-3">
+                                                <button onclick="setChatMessage('Bonjour, j\'ai besoin d\'aide pour mon dossier KYC.')" class="quick-aid-btn">Aide Documents KYC</button>
+                                                <button onclick="setChatMessage('Comment puis-je obtenir mon numéro NILS ?')" class="quick-aid-btn">Obtenir mon NILS</button>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="chat-input-area p-3">
+                                    {% if active_conversation %}
+                                        <div class="d-flex flex-nowrap overflow-auto mb-2 pb-1" style="scrollbar-width: none;">
+                                            <button onclick="setChatMessage('Je vous envoie ma pièce d\'identité ici.')" class="quick-aid-btn text-success"><i class="fa-solid fa-id-card me-1"></i>Envoi CNI</button>
+                                            <button onclick="setChatMessage('Mon numéro NILS est : ')" class="quick-aid-btn"><i class="fa-solid fa-hashtag me-1"></i>Envoyer NILS</button>
+                                            <button onclick="setChatMessage('Pouvez-vous valider mon annonce immobilière ?')" class="quick-aid-btn text-warning"><i class="fa-solid fa-house-circle-check me-1"></i>Validation Annonce</button>
+                                        </div>
+                                    {% endif %}
+                                    <form method="POST" action="{% if active_conversation %}{% url 'send-message' active_conversation.id %}{% else %}{% url 'send-message-new' %}{% endif %}">
+                                        {% csrf_token %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <label for="chat-file" class="btn btn-light rounded-circle shadow-sm" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                                    <i class="fa-solid fa-paperclip text-muted"></i>
+                                                    <input type="file" id="chat-file" class="d-none">
+                                                </label>
+                                            </div>
+                                            <div class="flex-grow-1 position-relative">
+                                                <input type="text" name="content" id="chat-input" class="form-control border-0 shadow-sm px-4 py-3" required 
+                                                       placeholder="Écrivez votre message..." 
+                                                       style="background-color: var(--bg-body); color: var(--text-main); border-radius: 30px; padding-right: 60px;">
+                                                <button class="btn border-0 position-absolute" type="submit" 
+                                                        style="right: 10px; top: 50%; transform: translateY(-50%); background-color: var(--color-light-green); color: var(--color-dark-green); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fa-solid fa-paper-plane" style="font-size: 0.9rem;"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gérer les aides rapides
+    function setChatMessage(text) {
+        document.getElementById("chat-input").value = text;
+        document.getElementById("chat-input").focus();
+    }
+
+    // Automatique Chat Scroll
+    document.addEventListener("DOMContentLoaded", function() {
+        var chatBox = document.getElementById("chat-box");
+        if(chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // Gérer l'ouverture de l'onglet Chat si on recharge via URL avec le hash #chat
+        if(window.location.hash === '#chat') {
+            var chatTab = new bootstrap.Tab(document.querySelector('#chat-tab'));
+            chatTab.show();
+        }
+    });
+</script>
+{% endblock %}

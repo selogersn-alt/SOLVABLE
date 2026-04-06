@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Soumettre mon dossier KYC | Solvable{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0" style="background-color: var(--bg-card); border-radius: 15px;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fa-solid fa-id-card text-success mb-3" style="font-size: 3rem;"></i>
+                        <h2 class="fw-bold" style="color: var(--text-main);">Vérification d'Identité</h2>
+                        <p class="text-muted">Pour obtenir votre Profil NILS et louer en toute sécurité, veuillez nous transmettre les éléments suivants.</p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold" style="color: var(--text-main);">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-primary-custom py-3" style="border-radius: 50px; font-weight: 600;">
+                                <i class="fa-solid fa-cloud-arrow-up me-2"></i> Soumettre mon dossier sécurisé
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

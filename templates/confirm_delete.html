@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-danger bg-opacity-10 py-4 text-center border-0">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="fw-bold text-danger mb-0">Confirmation de suppression</h2>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <p class="lead mb-4">Êtes-vous sûr de vouloir supprimer l'annonce suivante ?</p>
+                    
+                    <div class="p-3 bg-light rounded-3 mb-4 border-start border-4 border-danger">
+                        <h5 class="fw-bold mb-1">{{ property.title }}</h5>
+                        <p class="text-muted small mb-0"><i class="fa-solid fa-location-dot me-1"></i>{{ property.neighborhood }}, {{ property.city }}</p>
+                        <p class="fw-bold text-dark mt-2">{{ property.rent_price|floatformat:0 }} FCFA / mois</p>
+                    </div>
+                    
+                    <p class="text-muted small mb-5">
+                        <i class="fa-solid fa-circle-info me-1"></i> Cette action est irréversible. Toutes les données relatives à cette annonce seront définitivement supprimées de la plateforme DigitalH.
+                    </p>
+                    
+                    <form method="POST" class="d-grid gap-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger py-3 rounded-pill fw-bold shadow-sm">
+                            <i class="fa-solid fa-trash-can me-2"></i> Supprimer définitivement
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary py-3 rounded-pill fw-bold border-0">
+                            Annuler et revenir au Dashboard
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

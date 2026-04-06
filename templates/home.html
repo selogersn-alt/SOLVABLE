@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Logersenegal - Accueil | Immobilier de Confiance au Sénégal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section Styling - Mobile Responsive */
+    .hero-section {
+        background-color: var(--bg-body);
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .hero-shape {
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(127, 212, 125, 0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        z-index: 0;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        color: var(--text-main);
+    }
+
+    .hero-title {
+        font-weight: 800;
+        font-size: clamp(2.5rem, 5vw, 4rem); /* Responsive typography */
+        line-height: 1.2;
+        margin-bottom: 20px;
+    }
+
+    .hero-title span {
+        color: var(--color-light-green); /* Remplacé yellow par vert pour meilleur contraste sur blanc */
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+        font-weight: 400;
+        max-width: 600px;
+        color: var(--text-muted);
+    }
+
+    .search-box {
+        background: var(--bg-card);
+        padding: 8px;
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 15px 35px var(--shadow-color);
+        max-width: 650px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .search-input {
+        background: transparent;
+        color: var(--text-main);
+        border: none;
+        padding: 15px 20px;
+        font-size: 1.1rem;
+        width: 100%;
+        outline: none;
+        border-radius: 60px 0 0 60px;
+    }
+    
+    .search-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Features Section */
+    .feature-card {
+        background: var(--bg-card);
+        padding: 40px 30px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px var(--shadow-color);
+        height: 100%;
+        transition: transform 0.3s ease;
+        border: 1px solid var(--border-color);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .feature-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px auto;
+        font-size: 2rem;
+    }
+
+    /* Icon Colors adapting to theme implicitly */
+    .icon-green { background: rgba(127, 212, 125, 0.15); color: var(--color-light-green); }
+    .icon-yellow { background: rgba(245, 196, 47, 0.15); color: var(--color-yellow); }
+    .icon-dark { background: rgba(11, 70, 41, 0.15); color: var(--text-main); }
+
+    /* For Mobile Adjustments */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 60px 0;
+            text-align: center;
+        }
+        .hero-subtitle {
+            margin: 0 auto 30px auto;
+        }
+        .search-box {
+            flex-direction: column;
+            border-radius: 20px;
+            padding: 15px;
+        }
+        .search-input {
+            border-radius: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            text-align: center;
+        }
+        .search-box .btn-secondary-custom, .search-box .btn-primary-custom {
+            width: 100%;
+            margin-left: 0 !important;
+            border-radius: 10px;
+        }
+        .search-box i {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-shape"></div>
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <span class="badge mb-3 px-3 py-2 rounded-pill" style="background-color: var(--bg-card); color: var(--text-main); font-weight:600; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-color);">
+                    <i class="fa-solid fa-star text-warning me-1"></i> La Plateforme Immo N°1 au Sénégal
+                </span>
+                <h1 class="hero-title">Trouvez la maison de vos rêves, <span>sans friction</span>.</h1>
+                <p class="hero-subtitle">Logersenegal vous offre des annonces vérifiées et des contrats de location sécurisés à Dakar et partout au Sénégal.</p>
+                
+                <form method="GET" action="{% url 'properties_list' %}" class="search-box">
+                    <i class="fa-solid fa-location-dot text-muted ms-3"></i>
+                    <input type="text" name="neighborhood" class="search-input" placeholder="Où souhaitez-vous habiter ? (ex: Almadies, Ngor...)">
+                    <button type="submit" class="btn-primary-custom px-4 ms-2">Rechercher</button>
+                </form>
+            </div>
+            
+            <div class="col-lg-5 d-none d-lg-block text-center mt-5 mt-lg-0">
+                <i class="fa-solid fa-house-chimney" style="font-size: 15rem; color: var(--border-color); filter: drop-shadow(0 20px 30px var(--shadow-color));"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: var(--text-main);">Comment ça marche ?</h2>
+            <p class="text-muted">La tranquillité d'esprit pour louer ou mettre en location.</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Card 1 -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper icon-green">
+                        <i class="fa-solid fa-magnifying-glass-location"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3" style="color: var(--text-main);">1. Trouvez un bien</h4>
+                    <p class="text-muted">Parcourez notre catalogue Loger SN pour trouver des appartements, villas ou locaux commerciaux certifiés.</p>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper icon-yellow">
+                        <i class="fa-solid fa-id-card-clip"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3" style="color: var(--text-main);">2. Profil NILS Certifié</h4>
+                    <p class="text-muted">Créez votre profil de confiance en deux minutes avec votre carte d'identité pour garantir votre sérieux.</p>
+                </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper icon-dark">
+                        <i class="fa-solid fa-handshake-simple"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3" style="color: var(--text-main);">3. Signez et Louez</h4>
+                    <p class="text-muted">Le contrat "Solvable Filiation" est créé numériquement. Le suivi des paiements des loyers est automatisé.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NILS Verification Portal (TRUST SECTION) -->
+<section class="py-5" style="background: linear-gradient(135deg, var(--color-dark-green), #083820); color: white;">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge mb-3 px-3 py-2 rounded-pill" style="background: rgba(127, 212, 125, 0.2); color: var(--color-light-green); border: 1px solid rgba(127, 212, 125, 0.3);">PORTAIL DE CONFIANCE</span>
+                <h1 class="fw-bold display-5 mb-4">Ne louez plus jamais à l'aveugle.</h1>
+                <p class="fs-5 opacity-75 mb-4">Vérifiez instantanément la fiabilité d'un locataire grâce à son historique de paiement certifié sur le réseau Solvable. Sécurisez votre patrimoine en 30 secondes.</p>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="text-center">
+                        <div class="fs-2 fw-bold text-success">98.5%</div>
+                        <div class="small opacity-50">Score Précision</div>
+                    </div>
+                    <div class="text-center border-start ps-4">
+                        <div class="fs-2 fw-bold text-warning">Zero</div>
+                        <div class="small opacity-50">Litiges non résolus</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 offset-lg-1">
+                <div class="card border-0 shadow-lg p-4 p-md-5" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+                    <h3 class="fw-bold mb-4">Lancer une vérification</h3>
+                    <form action="{% url 'nils_search' %}" method="get">
+                        <div class="mb-4">
+                            <label class="small text-uppercase opacity-50 fw-bold mb-2">Entrez ses coordonnées</label>
+                            <input type="text" name="query" class="form-control form-control-lg bg-transparent text-white border-0 border-bottom rounded-0 px-0" placeholder="N° NILS ou Téléphone..." style="border-color: rgba(255, 255, 255, 0.3) !important;">
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5" style="background-color: var(--color-light-green); color: var(--color-dark-green); box-shadow: 0 10px 20px rgba(127, 212, 125, 0.3);">
+                            Vérifier maintenant <i class="fa-solid fa-shield-halved ms-2"></i>
+                        </button>
+                    </form>
+                    <p class="text-center small opacity-50 mt-4 mb-0">Accès sécurisé pour les bailleurs & agents certifiés</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Properties -->
+<section class="py-5" style="background-color: var(--bg-body);">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold m-0" style="color: var(--text-main);">Découvrez nos dernières pépites</h2>
+                <p class="text-muted">Des biens exclusifs vérifiés par nos experts.</p>
+            </div>
+            <a href="{% url 'properties_list' %}" class="btn btn-outline-success rounded-pill fw-bold">Voir tout <i class="fa-solid fa-arrow-right ms-2"></i></a>
+        </div>
+        
+        <div class="row g-4">
+            {% for prop in featured_properties %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius: 20px; transition: transform 0.3s ease; border: 1px solid var(--border-color) !important;">
+                    <div class="position-relative">
+                        {% if prop.images.first %}
+                        <img src="{{ prop.images.first.image_url.url }}" class="card-img-top" alt="{{ prop.title }}" style="height: 220px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 220px;">
+                            <i class="fa-solid {{ prop.get_icon_class }} text-muted opacity-25" style="font-size: 5rem;"></i>
+                        </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill fw-bold">
+                                {{ prop.rent_price|floatformat:0 }} FCFA
+                            </span>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 m-3">
+                            <span class="badge bg-success text-white shadow-sm px-3 py-2 rounded-pill small">
+                                <i class="fa-solid fa-shield-check me-1"></i> Certifié
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="text-success small fw-bold mb-2 text-uppercase letter-spacing-1">{{ prop.get_property_type_display }}</div>
+                        <h5 class="card-title fw-bold mb-2 text-truncate" style="color: var(--text-main);">{{ prop.title }}</h5>
+                        <p class="text-muted small mb-3"><i class="fa-solid fa-location-dot me-2"></i>{{ prop.neighborhood }}, {{ prop.city }}</p>
+                        <div class="d-flex gap-3 text-muted small border-top pt-3">
+                            {% if prop.bedrooms > 0 %}<span><i class="fa-solid fa-bed me-1"></i> {{ prop.bedrooms }} Ch.</span>{% endif %}
+                            {% if prop.surface > 0 %}<span><i class="fa-solid fa-maximize me-1"></i> {{ prop.surface }}m²</span>{% endif %}
+                        </div>
+                        <a href="{% url 'property_detail' prop.id %}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Bientôt de nouvelles annonces certifiées...</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<section class="py-5" style="background-color: var(--bg-card); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="container text-center py-5">
+        <h2 class="fw-bold mb-4" style="color: var(--text-main);">Prêt à rejoindre l'expérience Solvable ?</h2>
+        <p class="mb-4 text-muted" style="max-width: 600px; margin: 0 auto;">Rejoignez la plus grande communauté immobilière de confiance au Sénégal.</p>
+        <div class="d-flex justify-content-center flex-column flex-sm-row gap-3">
+            <a href="{% url 'create_property' %}" class="btn btn-primary-custom"><i class="fa-solid fa-house-medical me-2"></i>Déposer une annonce</a>
+            <a href="{% url 'properties_list' %}" class="btn btn-outline-dark text-main" style="border-radius: 50px; padding: 10px 25px; font-weight: 600; border: 1px solid var(--border-color); color: var(--text-main);"><i class="fa-solid fa-key me-2"></i>Je cherche une location</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
