@@ -16,6 +16,14 @@ if not User.objects.filter(phone_number=ADMIN_PHONE).exists():
     print(f"Création du super-utilisateur {ADMIN_PHONE}...")
     User.objects.create_superuser(phone_number=ADMIN_PHONE, password=ADMIN_PASS, role='SUB_ADMIN')
     print("Super-utilisateur créé avec succès.")
+else:
+    # Si l'utilisateur existe déjà, on met à jour son mot de passe pour qu'il corresponde à la variable Render
+    u = User.objects.get(phone_number=ADMIN_PHONE)
+    u.set_password(ADMIN_PASS)
+    u.is_staff = True
+    u.is_superuser = True
+    u.save()
+    print(f"Accès administrateur mis à jour pour {ADMIN_PHONE}.")
 
 # 2. Lancement du script de peuplement (Seed)
 print("Peuplement de la base de données avec des profils fictifs...")
