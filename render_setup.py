@@ -35,7 +35,20 @@ else:
     u.save()
     print(f"Accès administrateur mis à jour pour {ADMIN_PHONE}.")
 
-# 2. Lancement du script de peuplement (Seed)
+# 3. Configuration des Tarifs DigitalH (si n'existe pas)
+from logersn.models import PricingConfig
+if not PricingConfig.objects.exists():
+    print("Initialisation des tarifs par défaut...")
+    PricingConfig.objects.create(
+        publication_fee_rent=100.0,
+        publication_fee_sale=500.0,
+        publication_fee_furnished=300.0,
+        boost_daily_fee=100.0,
+        popup_daily_fee=500.0
+    )
+    print("Tarifs DigitalH initialisés avec succès.")
+
+# 4. Lancement du script de peuplement (Seed)
 print("Peuplement de la base de données avec des profils fictifs...")
 try:
     # On importe le script seed si il est présent
