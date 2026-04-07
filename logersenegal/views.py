@@ -40,6 +40,7 @@ def home_view(request):
     doc_q = request.GET.get('doc_query', '').strip()
     country_q = request.GET.get('country_query', '').strip()
     
+    query = name_q or phone_q or doc_q # Toujours défini pour le template
     results = None
     query_triggered = False
     
@@ -69,8 +70,6 @@ def home_view(request):
             results_found=results.count() if results else 0,
             ip_address=request.META.get('REMOTE_ADDR')
         )
-
-    query = name_q or phone_q or doc_q # Pour l'affichage dans le template
 
     # 4. Annonces Classiques
     featured_properties = Property.objects.filter(is_published=True).order_by('-created_at')[:3]
