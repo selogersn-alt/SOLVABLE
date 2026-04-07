@@ -102,3 +102,26 @@ AMENITIES_CHOICES = [
     ('WINDOW_COVERINGS', 'Stores / Rideaux'),
 ]
 
+COUNTRY_CHOICES = [
+    ('SN', 'Sénégal'),
+    ('FR', 'France'),
+    ('CI', 'Côte d\'Ivoire'),
+    ('ML', 'Mali'),
+    ('GN', 'Guinée'),
+    ('MR', 'Mauritanie'),
+    ('GM', 'Gambie'),
+    ('BF', 'Burkina Faso'),
+    ('NE', 'Niger'),
+    ('BJ', 'Bénin'),
+    ('TG', 'Togo'),
+    ('CM', 'Cameroun'),
+    ('GA', 'Gabon'),
+    ('MA', 'Maroc'),
+    ('TN', 'Tunisie'),
+    ('US', 'États-Unis'),
+    ('CA', 'Canada'),
+    ('ES', 'Espagne'),
+    ('IT', 'Italie'),
+    ('OTHER', 'Autre'),
+]
+
