@@ -13,6 +13,9 @@ from chat.models import Conversation, Message
 from solvable.models import PropertyApplication, RentalFiliation, PaymentHistory
 from logersn.models import Favorite
 from django.http import JsonResponse
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 
 def home_view(request):
     featured_properties = Property.objects.filter(is_published=True).order_by('-created_at')[:3]
@@ -335,6 +338,56 @@ def password_recovery_view(request):
         return JsonResponse({'exists': user_exists})
         
     return render(request, 'recovery.html')
+
+def password_reset_confirm_view(request, uidb64, token):
+    """Interface Frontend pour définir un nouveau mot de passe après réception du lien WhatsApp."""
+    try:
+        from django.utils.encoding import force_str
+        from django.utils.http import urlsafe_base64_decode
+        from django.contrib.auth.tokens import default_token_generator
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password = request.POST.get('password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if new_password and new_password == confirm_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.")
+                return redirect('login')
+            else:
+                messages.error(request, "Les mots de passe ne correspondent pas ou sont invalides.")
+        
+        return render(request, 'password_reset_confirm_public.html', {'user': user})
+    else:
+        messages.error(request, "Le lien de réinitialisation est invalide ou a expiré.")
+        return redirect('recovery')
+
+@login_required
+def admin_generate_reset_link(request, user_id):
+    """Génère un lien de réinitialisation pour l'administrateur à envoyer manuellement via WhatsApp."""
+    from django.utils.http import urlsafe_base64_encode
+    from django.utils.encoding import force_bytes
+    from django.contrib.auth.tokens import default_token_generator
+    
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Accès interdit'}, status=403)
+        
+    user = get_object_or_404(User, pk=user_id)
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    
+    # Construire l'URL absolue
+    reset_url = request.build_absolute_uri(
+        reverse('password_reset_confirm_public', kwargs={'uidb64': uid, 'token': token})
+    )
+    
+    return JsonResponse({'reset_url': reset_url, 'phone': user.phone_number})
 
 @login_required
 def edit_property_view(request, property_id):
@@ -687,6 +740,40 @@ def filiation_details_view(request, filiation_id):
         'is_landlord': request.user == filiation.landlord
     }
     return render(request, 'filiation_details.html', context)
+
+def generate_lease_pdf_view(request, filiation_id):
+    """Génère un contrat de bail professionnel au format PDF le réseau de confiance Solvable."""
+    from solvable.models import RentalFiliation
+    from xhtml2pdf import pisa
+    from io import BytesIO
+    from django.template.loader import get_template
+    from django.http import HttpResponse
+
+    filiation = get_object_or_404(RentalFiliation, id=filiation_id)
+    
+    # Sécurité : Seuls le bailleur, le locataire ou le staff peuvent générer le document
+    if request.user != filiation.landlord and request.user != filiation.tenant and not request.user.is_staff:
+        messages.error(request, "Accès refusé.")
+        return redirect('dashboard')
+        
+    template = get_template('lease_agreement_pdf.html')
+    context = {
+        'filiation': filiation,
+        'today': timezone.now(),
+    }
+    
+    html = template.render(context)
+    result = BytesIO()
+    # Encodage UTF-8 pour supporter les caractères spéciaux (accents)
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        filename = f"Contrat_Bail_Solvable_{filiation.tenant.last_name}.pdf"
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+        
+    return HttpResponse("Erreur technique lors de la génération du contrat PDF. Veuillez contacter le support DigitalH.", status=500)
 
 @login_required
 def contest_item_view(request, item_type, item_id):

@@ -12,7 +12,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('phone_number', 'first_name', 'last_name', 'role', 'phone_otp', 'is_phone_verified', 'is_verified_pro', 'is_active')
     search_fields = ('email', 'phone_number', 'company_name', 'first_name', 'last_name', 'phone_otp')
     list_filter = ('role', 'is_verified_pro', 'is_active', 'is_staff', 'is_phone_verified')
-    actions = ['verify_professionals', 'revoke_professionals', 'generate_recovery_code', 'send_otp_whatsapp']
+    actions = ['verify_professionals', 'revoke_professionals', 'generate_recovery_code', 'send_otp_whatsapp', 'generate_frontend_reset_link']
     ordering = ('-date_joined',)
     
     fieldsets = (
@@ -29,6 +29,32 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
     filter_horizontal = ('groups', 'user_permissions')
+
+    @admin.action(description="🔗 Générer Lien de Réinitialisation Autonome WhatsApp")
+    def generate_frontend_reset_link(self, request, queryset):
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.utils.html import format_html
+        from django.urls import reverse
+        
+        for user in queryset:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Construire l'URL absolue
+            reset_url = request.build_absolute_uri(
+                reverse('password_reset_confirm_public', kwargs={'uidb64': uid, 'token': token})
+            )
+            
+            clean_phone = user.phone_number.replace('+', '').replace(' ', '').replace('-', '')
+            wa_msg = f"Bonjour, pour réinitialiser votre mot de passe Solvable en toute autonomie, veuillez cliquer sur ce lien sécurisé : {reset_url}. L'équipe Solvable."
+            wa_url = f"https://wa.me/{clean_phone}?text={wa_msg.replace(' ', '%20')}"
+            
+            self.message_user(request, format_html(
+                'Lien de reset généré pour {}. <a href="{}" target="_blank" style="background-color: #25D366; color: white; padding: 5px 12px; border-radius: 5px; text-decoration: none; margin-left: 10px; font-weight: bold;"><i class="fa-brands fa-whatsapp"></i> Envoyer Lien WhatsApp</a>',
+                user.phone_number, wa_url
+            ))
 
     @admin.action(description="🔑 Générer un Code de Secours & Envoyer via WhatsApp")
     def generate_recovery_code(self, request, queryset):

@@ -20,10 +20,32 @@ class RentalFiliationAdmin(admin.ModelAdmin):
 
 @admin.register(IncidentReport)
 class IncidentReportAdmin(admin.ModelAdmin):
-    list_display = ('reporter', 'reported_tenant', 'amount_due', 'status', 'is_contested', 'created_at')
-    list_filter = ('status', 'is_contested')
+    list_display = ('reporter', 'reported_tenant', 'amount_due', 'status', 'is_validated', 'is_contested', 'created_at')
+    list_filter = ('status', 'is_validated', 'is_contested')
     search_fields = ('reporter__email', 'reported_tenant__email', 'contestation_reason')
-    actions = ['mark_as_impacted', 'mark_as_resolved', 'reject_incident_after_dispute']
+    actions = ['mark_as_impacted', 'mark_as_resolved', 'reject_incident_after_dispute', 'send_vigilance_whatsapp', 'validate_incident']
+
+    @admin.action(description="✅ VALIDER l'incident (Preuves vérifiées)")
+    def validate_incident(self, request, queryset):
+        updated = queryset.update(is_validated=True)
+        self.message_user(request, f"{updated} incidents ont été officiellement validés.")
+
+    @admin.action(description="📲 Envoyer Alerte Vigilance WhatsApp au Locataire")
+    def send_vigilance_whatsapp(self, request, queryset):
+        from django.utils.html import format_html
+        
+        for incident in queryset:
+            tenant = incident.reported_tenant
+            clean_phone = tenant.phone_number.replace('+', '').replace(' ', '').replace('-', '')
+            amount = incident.amount_due
+            
+            wa_msg = f"Bonjour {tenant.first_name}, un incident de paiement ({incident.get_incident_type_display()}) a été pré-enregistré sur votre profil NILS pour un montant de {amount} FCFA. Vous avez 48h pour régulariser ou contester avant impact définitif sur votre score de solvabilité national. L'équipe Solvable."
+            wa_url = f"https://wa.me/{clean_phone}?text={wa_msg.replace(' ', '%20')}"
+            
+            self.message_user(request, format_html(
+                'Alerte prête pour {}. <a href="{}" target="_blank" style="background-color: #dc3545; color: white; padding: 5px 12px; border-radius: 5px; text-decoration: none; margin-left: 10px; font-weight: bold;"><i class="fa-brands fa-whatsapp"></i> Envoyer Alerte</a>',
+                tenant.phone_number, wa_url
+            ))
 
     @admin.action(description="Définit le litige comme IMPACTED (Pénalise le score NILS)")
     def mark_as_impacted(self, request, queryset):

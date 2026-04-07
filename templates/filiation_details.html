@@ -27,6 +27,11 @@
                     <p><strong>Statut :</strong> <span class="badge bg-success">{{ filiation.get_status_display }}</span></p>
                 </div>
             </div>
+            <div class="mt-4 pt-3 border-top">
+                <a href="{% url 'generate_lease_pdf' filiation.id %}" target="_blank" class="btn btn-primary-custom px-4 py-2">
+                    <i class="fa-solid fa-file-pdf me-2"></i> Télécharger le Bail Confiance Solvable (PDF)
+                </a>
+            </div>
         </div>
     </div>
 

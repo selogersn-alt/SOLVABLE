@@ -33,10 +33,11 @@ from .views import (
     filiation_details_view, contest_item_view, mediation_room_view, update_incident_status_view, about_view, verified_professionals_view,
     download_receipt_view, apply_to_property_view, start_filiation_view,
     approve_filiation_view, terminate_filiation_view, update_application_status_view,
+    generate_lease_pdf_view,
     verify_phone_view, public_profile_view,
     edit_property_view, delete_property_view,  # Gestion pro
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
-    password_recovery_view, # DigitalH Recovery
+    password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
@@ -80,6 +81,7 @@ urlpatterns = [
     path('contrat/demarrer/<uuid:application_id>/', start_filiation_view, name='start_filiation'),
     path('contrat/approuver/<uuid:filiation_id>/', approve_filiation_view, name='approve_filiation'),
     path('contrat/resilier/<uuid:filiation_id>/', terminate_filiation_view, name='terminate_filiation'),
+    path('contrat/<uuid:filiation_id>/pdf/', generate_lease_pdf_view, name='generate_lease_pdf'),
     path('connexion/', login_view, name='login'),
     path('inscription/', register_view, name='register'),
     path('deconnexion/', logout_view, name='logout'),
@@ -87,6 +89,8 @@ urlpatterns = [
     path('verifier-telephone/', verify_phone_view, name='verify_phone'),
     path('profil-public/<uuid:user_id>/', public_profile_view, name='public_profile'),
     path('recuperation-compte/', password_recovery_view, name='password_recovery'),
+    path('reinitialiser-mot-de-passe/<uidb64>/<token>/', password_reset_confirm_view, name='password_reset_confirm_public'),
+    path('admin/generer-lien-reset/<uuid:user_id>/', admin_generate_reset_link, name='admin_generate_reset_link'),
 
     # Moteur de Paiement DigitalH
     path('paiement/configurer/<uuid:property_id>/<str:payment_type>/', checkout_payment_view, name='checkout_payment'),

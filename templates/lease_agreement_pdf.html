@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .logo {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .title {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 10px;
+        }
+        .grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .grid td {
+            padding: 5px;
+            vertical-align: top;
+        }
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 50px;
+            font-size: 9pt;
+            text-align: center;
+            color: #777;
+        }
+        .signature-box {
+            margin-top: 40px;
+            width: 100%;
+        }
+        .signature-box td {
+            width: 50%;
+            height: 100px;
+            border: 1px dashed #ccc;
+            text-align: center;
+            vertical-align: top;
+            padding-top: 10px;
+        }
+        .nils-badge {
+            background-color: #000;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SOLVABLE SÉNÉGAL</div>
+        <div class="title">CONTRAT DE BAIL À USAGE D'HABITATION</div>
+        <div style="font-size: 10pt; color: #555;">Document généré via le réseau de confiance NILS</div>
+    </div>
+
+    <div class="section">
+        <p><strong>Réf. Contrat :</strong> SOLV-{{ filiation.id|stringformat:".8"|upper }} | <strong>Date :</strong> {{ today|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">ARTICLE 1 : LES PARTIES</div>
+        <table class="grid">
+            <tr>
+                <td>
+                    <strong>LE BAILLEUR :</strong><br>
+                    Nom : {{ filiation.landlord.get_full_name }}<br>
+                    NILS : <span class="nils-badge">{{ filiation.landlord.nils_profile.nils_number|default:"EN COURS" }}</span><br>
+                    Tél : {{ filiation.landlord.phone_number }}
+                </td>
+                <td>
+                    <strong>LE PRENEUR (LOCATAIRE) :</strong><br>
+                    Nom : {{ filiation.tenant.get_full_name }}<br>
+                    NILS : <span class="nils-badge">{{ filiation.tenant.nils_profile.nils_number|default:"EN COURS" }}</span><br>
+                    Tél : {{ filiation.tenant.phone_number }}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">ARTICLE 2 : DÉSIGNATION DU BIEN</div>
+        <div class="box">
+            Le présent contrat concerne le bien suivant : 
+            <strong>{{ filiation.property.get_property_type_display }}</strong> situé à 
+            <strong>{{ filiation.property.neighborhood }}, {{ filiation.property.city }}</strong>.
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">ARTICLE 3 : CONDITIONS FINANCIÈRES</div>
+        <ul>
+            <li><strong>Loyer Mensuel :</strong> {{ filiation.monthly_rent|floatformat:0 }} FCFA</li>
+            <li><strong>Date de paiement :</strong> Avant le {{ filiation.property.payment_day|default:"5" }} de chaque mois.</li>
+            <li><strong>Dépôt de garantie :</strong> {{ filiation.monthly_rent|floatformat:0 }} FCFA (1 mois de caution).</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title">ARTICLE 4 : CLAUSE DE MÉDIATION SOLVABLE (NILS)</div>
+        <p style="font-style: italic; font-size: 10pt;">
+            Les parties conviennent expressément que le présent contrat est placé sous la surveillance du réseau <strong>NILS (Numéro d'Identification de Logement Solvable)</strong>. 
+            En cas d'impayé de loyer ou de dégradation du bien dépassant 15 jours de retard, le Bailleul se réserve le droit de signaler l'incident sur la plateforme SOLVABLE. 
+            Tout signalement validé par la médiation SOLVABLE entraînera une dégradation immédiate du score de solvabilité du Preneur, visible par l'ensemble du réseau immobilier national.
+        </p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">ARTICLE 5 : DURÉE</div>
+        <p>Le bail est consenti pour une durée de 12 mois renouvelable par tacite reconduction, commençant le <strong>{{ filiation.start_date|date:"d/m/Y" }}</strong>.</p>
+    </div>
+
+    <table class="signature-box">
+        <tr>
+            <td>
+                <strong>Signature du Bailleur</strong><br>
+                <span style="font-size: 8pt; color: #aaa;">(Précédé de "Lu et approuvé")</span>
+            </td>
+            <td>
+                <strong>Signature du Preneur</strong><br>
+                <span style="font-size: 8pt; color: #aaa;">(Précédé de "Lu et approuvé")</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        Solvable Sénégal - www.solvable-sn.onrender.com<br>
+        La confiance immobilière par la transparence.
+    </div>
+</body>
+</html>
