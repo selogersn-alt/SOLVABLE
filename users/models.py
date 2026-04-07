@@ -73,12 +73,19 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.is_staff = True
         super().save(*args, **kwargs)
         if self.profile_picture:
-            from PIL import Image
-            img = Image.open(self.profile_picture.path)
-            if img.height > 500 or img.width > 500:
-                output_size = (500, 500)
-                img.thumbnail(output_size)
-                img.save(self.profile_picture.path)
+            try:
+                import os
+                from PIL import Image
+                # Sécurité DigitalH : Vérifier si le fichier existe réellement sur le serveur
+                if os.path.exists(self.profile_picture.path):
+                    img = Image.open(self.profile_picture.path)
+                    if img.height > 500 or img.width > 500:
+                        output_size = (500, 500)
+                        img.thumbnail(output_size)
+                        img.save(self.profile_picture.path)
+            except (FileNotFoundError, Exception):
+                # On ignore l'erreur si le fichier est manquant (fréquent sur Render/Ephemeral Storage)
+                pass
 
     @property
     def nils_profile(self):
