@@ -20,10 +20,10 @@ from django.utils.encoding import force_bytes, force_str
 def home_view(request):
     from django.db.models import Sum, Count, Q
     from solvable.models import IncidentReport
-    from users.models import NILS_Profile
+    from users.models import NILS_Profile, SearchLog
     from logersn.constants import COUNTRY_CHOICES  # On aura besoin des pays pour le moteur
     
-    # 1. Statistiques Globales Solvable
+    # 1. Statistiques Globales Solvable (Pour tous les visiteurs)
     stats = {
         'total_unpaid': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).aggregate(Sum('amount_due'))['amount_due__sum'] or 0,
         'profiles_flagged': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).values('reported_tenant').distinct().count(),
@@ -31,18 +31,25 @@ def home_view(request):
         'active_mediation': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IN_MEDIATION).count(),
     }
     
-    # 2. Bande passante (Ticker) des nouveaux signalements
+    # 2. Bande passante (Ticker) des nouveaux signalements (Anonymisé pour le public)
     recent_incidents = IncidentReport.objects.filter(is_validated=True).order_by('-created_at')[:10]
 
-    # 3. Logique de Recherche Chirurgicale (Multi-critères pour précision 100%)
+    # 3. Logique de Recherche Chirurgicale (Sécurisée : Uniquement pour Pros connectés)
     name_q = request.GET.get('name_query', '').strip()
     phone_q = request.GET.get('phone_query', '').strip()
     doc_q = request.GET.get('doc_query', '').strip()
     country_q = request.GET.get('country_query', '').strip()
     
     results = None
-    # On déclenche la recherche si au moins un champ d'identification est rempli
+    query_triggered = False
+    
     if name_q or phone_q or doc_q:
+        query_triggered = True
+        # SECURITE AUDIT : Vérifier si l'utilisateur est un pro
+        if not request.user.is_authenticated or (request.user.role == 'TENANT' and not request.user.is_staff):
+            messages.warning(request, "L'accès aux données de solvabilité NILS est réservé aux bailleurs et agences identifiés. Veuillez vous connecter.")
+            return redirect('login')
+            
         filters = Q()
         if name_q:
             filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
@@ -54,8 +61,14 @@ def home_view(request):
             filters &= Q(user__document_country=country_q)
             
         results = NILS_Profile.objects.filter(filters).distinct()
-
-    query = name_q or phone_q or doc_q # Pour l'affichage dans le template
+        
+        # --- SECURITY LOGGING ---
+        SearchLog.objects.create(
+            searcher=request.user,
+            query=f"HOME|N:{name_q}|T:{phone_q}|D:{doc_q}|C:{country_q}",
+            results_found=results.count() if results else 0,
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
 
     # 4. Annonces Classiques
     featured_properties = Property.objects.filter(is_published=True).order_by('-created_at')[:3]
@@ -1136,22 +1149,6 @@ def verify_phone_view(request):
             
     return render(request, 'verify_phone.html')
 
-@login_required
-def update_application_status_view(request, application_id):
-    from solvable.models import PropertyApplication
-    application = get_object_or_404(PropertyApplication, id=application_id, property__owner=request.user)
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'accept':
-            application.status = 'ACCEPTED'
-            messages.success(request, f"Candidature acceptée ! Le locataire peut désormais finaliser son bail.")
-        elif action == 'reject':
-            application.status = 'REJECTED'
-            messages.warning(request, f"Candidature rejetée.")
-        
-        application.save()
-        
     return redirect('dashboard')
 
 @login_required

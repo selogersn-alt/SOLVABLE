@@ -212,20 +212,37 @@ class NILS_Profile(models.Model):
             elif payment.status in [PaymentHistory.StatusEnum.UNPAID, PaymentHistory.StatusEnum.REPORTED]:
                 penalties = penalties + 30
 
+        # DigitalH Audit Fix: Only validated incidents impact the score
         # Fetch incidents: IMPACTED (-30) and RESOLVED (-1)
-        impacted_incidents_count = IncidentReport.objects.filter(reported_tenant=self.user, status=IncidentReport.StatusEnum.IMPACTED).count()
-        resolved_incidents_count = IncidentReport.objects.filter(reported_tenant=self.user, status=IncidentReport.StatusEnum.RESOLVED).count()
+        impacted_incidents_count = IncidentReport.objects.filter(
+            reported_tenant=self.user, 
+            status=IncidentReport.StatusEnum.IMPACTED,
+            is_validated=True
+        ).count()
+        resolved_incidents_count = IncidentReport.objects.filter(
+            reported_tenant=self.user, 
+            status=IncidentReport.StatusEnum.RESOLVED
+        ).count()
         
-        penalties = penalties + (impacted_incidents_count * 30) + (resolved_incidents_count * 1)
+        # DigitalH Audit Fix: IN_MEDIATION impacts score by -10 to alert (Yellow status)
+        mediation_incidents_count = IncidentReport.objects.filter(
+            reported_tenant=self.user, 
+            status=IncidentReport.StatusEnum.IN_MEDIATION
+        ).count()
+        
+        penalties = penalties + (impacted_incidents_count * 30) + (resolved_incidents_count * 1) + (mediation_incidents_count * 10)
 
         # Integration of star ratings into the 100-point score
-        # High ratings provide bonuses, low ratings provide penalties
         avg = self.average_rating
         if avg > 0:
             if avg >= 9: bonuses += 10 # Excellent conduct
             elif avg >= 7: bonuses += 5 # Good conduct
             elif avg <= 3: penalties += 20 # Bad conduct
             elif avg <= 1: penalties += 50 # Critical issues
+
+        # DigitalH Audit Fix: Cap bonuses to prevent "hiding" serious incidents
+        # Max bonus allowed is 50.
+        bonuses = min(bonuses, 50)
 
         # Calculate final score bounded between 0 and 100
         computed_score = base_score + bonuses - penalties
