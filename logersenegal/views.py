@@ -26,7 +26,7 @@ def home_view(request):
     # 1. Statistiques Globales Solvable
     stats = {
         'total_unpaid': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).aggregate(Sum('amount_due'))['amount_due__sum'] or 0,
-        'profiles_flagged': NILS_Profile.objects.filter(total_incidents__gt=0).count(),
+        'profiles_flagged': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).values('reported_tenant').distinct().count(),
         'resolved_cases': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.RESOLVED).count(),
         'active_mediation': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IN_MEDIATION).count(),
     }

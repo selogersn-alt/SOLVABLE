@@ -141,6 +141,24 @@ class NILS_Profile(models.Model):
         return f"{self.nils_number} ({self.user.phone_number})"
     
     @property
+    def total_incidents(self):
+        """Nombre total d'incidents impactants rattachés à ce profil."""
+        from solvable.models import IncidentReport
+        return IncidentReport.objects.filter(reported_tenant=self.user, status=IncidentReport.StatusEnum.IMPACTED).count()
+
+    @property
+    def amount_unpaid(self):
+        """Montant total des loyers impayés non résolus."""
+        from solvable.models import IncidentReport
+        from django.db.models import Sum
+        res = IncidentReport.objects.filter(
+            reported_tenant=self.user, 
+            status=IncidentReport.StatusEnum.IMPACTED,
+            incident_type=IncidentReport.IncidentTypeEnum.UNPAID_RENT
+        ).aggregate(Sum('amount_due'))
+        return res['amount_due__sum'] or 0
+
+    @property
     def average_rating(self):
         """Calculates the average star rating (1-10) received across all terminated filiations."""
         from solvable.models import RentalFiliation
