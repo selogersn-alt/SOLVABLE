@@ -18,11 +18,48 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 
 def home_view(request):
+    from django.db.models import Sum, Count, Q
+    from solvable.models import IncidentReport
+    from users.models import NILS_Profile
+    from logersn.constants import COUNTRY_CHOICES  # On aura besoin des pays pour le moteur
+    
+    # 1. Statistiques Globales Solvable
+    stats = {
+        'total_unpaid': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).aggregate(Sum('amount_due'))['amount_due__sum'] or 0,
+        'profiles_flagged': NILS_Profile.objects.filter(total_incidents__gt=0).count(),
+        'resolved_cases': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.RESOLVED).count(),
+        'active_mediation': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IN_MEDIATION).count(),
+    }
+    
+    # 2. Bande passante (Ticker) des nouveaux signalements
+    recent_incidents = IncidentReport.objects.filter(is_validated=True).order_by('-created_at')[:10]
+
+    # 3. Logique de Recherche Multi-Critères (Si POST ou GET search)
+    query = request.GET.get('nils_query', '').strip()
+    results = None
+    if query:
+        # Recherche élargie : Nom, Prénom, Tél, CNI, Pays
+        results = NILS_Profile.objects.filter(
+            Q(nils_number__icontains=query) |
+            Q(user__phone_number__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__cni_number__icontains=query) |
+            Q(user__document_country__icontains=query)
+        ).distinct()
+
+    # 4. Annonces Classiques
     featured_properties = Property.objects.filter(is_published=True).order_by('-created_at')[:3]
     boosted_properties = Property.objects.filter(is_published=True, is_boosted=True).order_by('?')[:12]
+    
     return render(request, 'home.html', {
         'featured_properties': featured_properties,
-        'boosted_properties': boosted_properties
+        'boosted_properties': boosted_properties,
+        'stats': stats,
+        'recent_incidents': recent_incidents,
+        'results': results,
+        'query': query,
+        'countries': COUNTRY_CHOICES
     })
 
 def about_view(request):
