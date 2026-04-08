@@ -6,3 +6,7 @@ db.sqlite3
 media/
 static/
 .DS_Store
+
+# O2switch / cPanel config files (NEVER PUSH TO GIT)
+.htaccess
+passenger_wsgi.py
