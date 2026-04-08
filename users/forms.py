@@ -16,6 +16,20 @@ class KYCProfileForm(forms.ModelForm):
             'selfie_image': 'Selfie avec la carte',
         }
 
+class SolvencyDocumentForm(forms.ModelForm):
+    class Meta:
+        from .models import SolvencyDocument
+        model = SolvencyDocument
+        fields = ['doc_type', 'file']
+        labels = {
+            'doc_type': 'Type de document',
+            'file': 'Fichier (PDF ou Image)'
+        }
+        widgets = {
+            'doc_type': forms.Select(attrs={'class': 'form-select', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
+            'file': forms.FileInput(attrs={'class': 'form-control', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
+        }
+
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import User
 

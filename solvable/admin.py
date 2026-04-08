@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils import timezone
-from .models import RentalFiliation, IncidentReport, PaymentHistory, PropertyApplication
+from .models import RentalFiliation, IncidentReport, PaymentHistory, PropertyApplication, ProfessionalFraudReport
 
 @admin.register(RentalFiliation)
 class RentalFiliationAdmin(admin.ModelAdmin):
@@ -99,3 +99,37 @@ class PropertyApplicationAdmin(admin.ModelAdmin):
     list_display = ('applicant', 'property', 'status', 'created_at')
     list_filter = ('status', 'created_at')
     search_fields = ('applicant__phone_number', 'applicant__email', 'property__title')
+
+@admin.register(ProfessionalFraudReport)
+class ProfessionalFraudReportAdmin(admin.ModelAdmin):
+    list_display = ('reported_pro_name', 'reported_pro_phone', 'is_validated', 'is_critical_alert', 'created_at')
+    list_filter = ('is_validated', 'is_critical_alert', 'created_at')
+    search_fields = ('reported_pro_name', 'reported_pro_phone', 'fraud_description')
+    actions = ['validate_fraud', 'mark_as_critical', 'unmark_critical', 'link_to_existing_user']
+    
+    @admin.action(description="✅ VALIDER le signalement de fraude")
+    def validate_fraud(self, request, queryset):
+        queryset.update(is_validated=True)
+        self.message_user(request, "Signalements validés et visibles sur la liste noire.")
+        
+    @admin.action(description="🔥 Mettre en ALERTE CRITIQUE (Bande défilante)")
+    def mark_as_critical(self, request, queryset):
+        queryset.update(is_critical_alert=True, is_validated=True)
+        self.message_user(request, "Alertes activées sur le bandeau défilant du site.")
+        
+    @admin.action(description="🧊 Retirer l'alerte critique")
+    def unmark_critical(self, request, queryset):
+        queryset.update(is_critical_alert=False)
+
+    @admin.action(description="🔗 Tenter de lier aux comptes existants")
+    def link_to_existing_user(self, request, queryset):
+        from users.models import User
+        count = 0
+        for report in queryset:
+            if report.reported_pro_phone:
+                user = User.objects.filter(phone_number__icontains=report.reported_pro_phone).first()
+                if user:
+                    report.reported_user = user
+                    report.save()
+                    count += 1
+        self.message_user(request, f"{count} signalements ont été liés à des comptes utilisateurs.")

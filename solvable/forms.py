@@ -54,16 +54,28 @@ class IncidentReportForm(forms.ModelForm):
     def __init__(self, *args, landlord=None, **kwargs):
         super().__init__(*args, **kwargs)
         if landlord:
-            # Un Pro peut signaler sur ses contrats, ou pour n'importe quel locataire s'il a un NILS
             from solvable.models import RentalFiliation
-            # Si c'est une agence/courtier, on élargit un peu (ils peuvent avoir des contrats partout)
+            # Un Pro peut signaler sur ses contrats, ou pour n'importe quel locataire s'il a un NILS
             if landlord.role in ['AGENCY', 'BROKER', 'AGENT']:
-                self.fields['rental_filiation'].queryset = RentalFiliation.objects.filter(status=RentalFiliation.StatusEnum.ACTIVE)
+                self.fields['rental_filiation'].queryset = RentalFiliation.objects.all() # Plus large pour les pros
             else:
-                self.fields['rental_filiation'].queryset = RentalFiliation.objects.filter(landlord=landlord, status=RentalFiliation.StatusEnum.ACTIVE)
+                self.fields['rental_filiation'].queryset = RentalFiliation.objects.filter(landlord=landlord)
         
-        # Le fichier de preuve est rendu explicitement obligatoire via Django
         self.fields['evidence_file'].required = True
+        self.fields['rental_filiation'].required = False # Rendu optionnel pour signalement direct
+
+class ProfessionalFraudReportForm(forms.ModelForm):
+    class Meta:
+        from .models import ProfessionalFraudReport
+        model = ProfessionalFraudReport
+        fields = ['reported_pro_name', 'reported_pro_phone', 'reported_pro_email', 'fraud_description', 'proof_file']
+        widgets = {
+            'reported_pro_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nom ou Raison Sociale'}),
+            'reported_pro_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '77XXXXXXX'}),
+            'reported_pro_email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'fraud_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'proof_file': forms.FileInput(attrs={'class': 'form-control'}),
+        }
 
 class PaymentHistoryForm(forms.ModelForm):
     class Meta:

@@ -45,6 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     coverage_area = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zone de couverture")
     role = models.CharField(max_length=20, choices=RoleEnum.choices, default=RoleEnum.TENANT, verbose_name="Statut du compte")
     is_verified_pro = models.BooleanField(default=False, verbose_name="Professionnel Vérifié (Badge)")
+    is_solvable = models.BooleanField(default=False, verbose_name="Locataire Solvable (Badge)")
     profile_picture = models.FileField(upload_to='profile_pics/', null=True, blank=True, verbose_name="Photo de profil ou Logo")
     is_phone_verified = models.BooleanField(default=False, verbose_name="Téléphone vérifié")
     phone_otp = models.CharField(max_length=6, null=True, blank=True, verbose_name="Code OTP")
@@ -272,3 +273,34 @@ class SearchLog(models.Model):
 
     def __str__(self):
         return f"Search by {self.searcher} for '{self.query}' at {self.timestamp}"
+
+class SolvencyDocument(models.Model):
+    class DocTypeEnum(models.TextChoices):
+        PAYSLIP = 'PAYSLIP', 'Bulletin de Salaire'
+        CONTRACT = 'CONTRACT', 'Contrat de Travail'
+        BANK_STATEMENT = 'BANK_STATEMENT', 'Relevé Bancaire'
+        NINEA = 'NINEA', 'NINEA (Auto-entrepreneur)'
+        ADMIN_DOC = 'ADMIN_DOC', 'Document Administratif'
+
+    class StatusEnum(models.TextChoices):
+        PENDING = 'PENDING', 'En attente'
+        VERIFIED = 'VERIFIED', 'Vérifié'
+        REJECTED = 'REJECTED', 'Rejeté'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='solvency_docs')
+    doc_type = models.CharField(max_length=50, choices=DocTypeEnum.choices)
+    file = models.FileField(upload_to='solvency_docs/')
+    status = models.CharField(max_length=20, choices=StatusEnum.choices, default=StatusEnum.PENDING)
+    
+    rejection_reason = models.TextField(null=True, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.get_doc_type_display()} - {self.user.phone_number}"
+
+    def save(self, *args, **kwargs):
+        # Si le document est vérifié, on peut marquer l'utilisateur comme solvable (si admin le décide)
+        # Mais on laisse la gestion du badge is_solvable à l'admin manuellement ou via une vue dédiée
+        super().save(*args, **kwargs)

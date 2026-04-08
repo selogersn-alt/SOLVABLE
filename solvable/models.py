@@ -49,10 +49,20 @@ class IncidentReport(models.Model):
         BAD_BEHAVIOR = 'BAD_BEHAVIOR', 'Mauvais comportement / Conflit'
         OTHER = 'OTHER', 'Autre'
 
+    class NotifierTypeEnum(models.TextChoices):
+        SELF = 'SELF', 'Pour moi-même (Propriétaire / Bailleur)'
+        INTERMEDIARY = 'INTERMEDIARY', 'Pour le compte d\'un client tiers (Mandat)'
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    rental_filiation = models.ForeignKey(RentalFiliation, on_delete=models.CASCADE, related_name='incidents')
+    rental_filiation = models.ForeignKey(RentalFiliation, on_delete=models.CASCADE, related_name='incidents', null=True, blank=True, help_text="Optionnel si pas de contrat direct dans l'app")
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_incidents')
-    reported_tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incidents_against_me')
+    notifier_role = models.CharField(max_length=20, choices=NotifierTypeEnum.choices, default=NotifierTypeEnum.SELF, verbose_name="Rôle du déclarant")
+    
+    reported_tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incidents_against_me', null=True, blank=True)
+    reported_phone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Téléphone de la personne signalée (si pas encore sur l'app)")
+    reported_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Nom de la personne signalée")
+    
+    property_address = models.CharField(max_length=255, null=True, blank=True, verbose_name="Adresse du bien concerné (si pas via contrat app)")
     incident_type = models.CharField(max_length=50, choices=IncidentTypeEnum.choices, default=IncidentTypeEnum.UNPAID_RENT)
     amount_due = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, help_text="Seulement pour les loyers impayés ou dégradations")
     description = models.TextField()
@@ -124,3 +134,29 @@ class MediationMessage(models.Model):
 
     def __str__(self):
         return f"Mediation message from {self.sender} at {self.created_at}"
+
+class ProfessionalFraudReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pro_reports_made')
+    
+    # Identification du Pro (inscrit ou non)
+    reported_pro_name = models.CharField(max_length=255, verbose_name="Nom du Professionnel / Agence")
+    reported_pro_phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Téléphone (si connu)")
+    reported_pro_email = models.CharField(max_length=150, blank=True, null=True, verbose_name="Email (si connu)")
+    
+    reported_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reports_against_me_pro', verbose_name="Utilisateur inscrit (si match trouvé)")
+    
+    fraud_description = models.TextField(verbose_name="Détails de la fraude ou dette")
+    proof_file = models.FileField(upload_to='pro_fraud_proofs/', verbose_name="Preuve (Reçu, Photo, Screenshot)")
+    
+    is_validated = models.BooleanField(default=False, verbose_name="Validé par DigitalH Admin")
+    is_critical_alert = models.BooleanField(default=False, verbose_name="Afficher en Alerte Critique (Bande défilante)")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Fraud Report against {self.reported_pro_name} by {self.reporter}"
+
+    class Meta:
+        verbose_name = "Signalement de Fraude Pro"
+        verbose_name_plural = "Signalements de Fraude Pro"

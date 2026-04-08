@@ -34,11 +34,12 @@ from .views import (
     download_receipt_view, apply_to_property_view, start_filiation_view,
     approve_filiation_view, terminate_filiation_view, update_application_status_view,
     generate_lease_pdf_view,
-    verify_phone_view, public_profile_view,
+    public_profile_view,
     edit_property_view, delete_property_view,  # Gestion pro
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
-    cgu_view, privacy_view, toggle_favorite_view, chat_poll_view
+    cgu_view, privacy_view, toggle_favorite_view, chat_poll_view,
+    report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ads.views import ads_txt_view  # Certification Google
@@ -104,6 +105,11 @@ urlpatterns = [
     path('confidentialite/', privacy_view, name='privacy'),
     path('favori/basculer/<uuid:property_id>/', toggle_favorite_view, name='toggle_favorite'),
     path('chat/poll/<uuid:conversation_id>/', chat_poll_view, name='chat-poll'),
+    
+    # Nouvelles Routes Signalement & Solvabilité
+    path('signalement/professionnel/nouveau/', report_pro_fraud_view, name='report_pro_fraud'),
+    path('liste-noire-pros/', fraud_list_view, name='fraud_list'),
+    path('locataire/solvabilite/soumettre/', submit_solvency_docs_view, name='submit_solvency_docs'),
     
     # API Documentation (Point 8)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

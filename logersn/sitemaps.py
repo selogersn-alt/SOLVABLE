@@ -2,29 +2,29 @@ from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from .models import Property
 
-class StaticViewSitemap(Sitemap):
-    priority = 1.0
-    changefreq = 'daily'
+class PropertySitemap(Sitemap):
+    changefreq = "daily"
+    priority = 0.9
 
     def items(self):
-        # Liste vos pages statiques principales (Accueil, Liste des biens...)
-        return ['home', 'properties_list']
+        # On indexe tous les biens immobiliers
+        return Property.objects.all().order_by('-created_at')
 
-    def location(self, item):
-        return reverse(item)
+    def lastmod(self, obj):
+        return obj.updated_at
 
-class PropertySitemap(Sitemap):
-    priority = 0.8
+    def location(self, obj):
+        # URL vers la page de détails du bien
+        return f"/properties/{obj.id}/"
+
+class StaticViewSitemap(Sitemap):
+    priority = 0.5
     changefreq = 'weekly'
 
     def items(self):
-        # Google indexera toutes vos annonces publiées
-        return Property.objects.filter(is_published=True).order_by('-created_at')
+        # On peut ajouter ici les noms de vos URLs de base
+        # Assurez-vous qu'elles existent dans vos urls.py
+        return ['home'] 
 
-    def lastmod(self, obj):
-        # Date de dernière modification (ou création ici)
-        return obj.created_at
-
-    def location(self, obj):
-        # Utilise le bloc dynamique du site pour pointer vers l'annonce
-        return reverse('property_detail', args=[obj.id])
+    def location(self, item):
+        return reverse(item)

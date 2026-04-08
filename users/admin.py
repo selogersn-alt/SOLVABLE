@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, KYCProfile, NILS_Profile
+from .models import User, KYCProfile, NILS_Profile, SolvencyDocument
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
@@ -179,3 +179,34 @@ class NILS_ProfileAdmin(admin.ModelAdmin):
             color, label
         )
     reputation_badge.short_description = "Réputation"
+
+@admin.register(SolvencyDocument)
+class SolvencyDocumentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'doc_type', 'status', 'uploaded_at')
+    list_filter = ('status', 'doc_type')
+    actions = ['verify_and_badge', 'reject_document']
+    
+    @admin.action(description="✅ Valider et accorder le Badge Solvable (Supprime le fichier)")
+    def verify_and_badge(self, request, queryset):
+        for doc in queryset:
+            doc.status = 'VERIFIED'
+            doc.verified_at = timezone.now()
+            doc.user.is_solvable = True
+            doc.user.save()
+            doc.save()
+            
+            # Sécurité DigitalH : Suppression physique du document sensible après validation
+            if doc.file:
+                import os
+                try:
+                    if os.path.exists(doc.file.path):
+                        os.remove(doc.file.path)
+                    doc.file = None
+                    doc.save()
+                except:
+                    pass
+        self.message_user(request, "Documents validés. Les badges ont été accordés et les fichiers supprimés pour confidentialité.")
+
+    @admin.action(description="❌ Rejeter le document")
+    def reject_document(self, request, queryset):
+        queryset.update(status='REJECTED')

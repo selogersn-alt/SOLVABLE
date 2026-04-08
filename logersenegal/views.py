@@ -720,36 +720,50 @@ def create_filiation_view(request):
 def report_incident_view(request):
     from solvable.forms import IncidentReportForm
     from solvable.models import RentalFiliation
-    from users.models import NILS_Profile
+    from users.models import NILS_Profile, User
     
     filiation_id = request.GET.get('filiation', None)
     
     if request.method == 'POST':
-        # DigitalH : Ajout de request.FILES pour les preuves obligatoires
         form = IncidentReportForm(request.POST, request.FILES, landlord=request.user)
         if form.is_valid():
             incident = form.save(commit=False)
             incident.reporter = request.user
-            incident.reported_tenant = incident.rental_filiation.tenant
             
-            # Logique de bénéficiaire via NILS (Procuration Agence/Courtier)
+            # Si une filiation est fournie
+            if incident.rental_filiation:
+                incident.reported_tenant = incident.rental_filiation.tenant
+                # Vérifier si c'est de la vente (interdit de signaler)
+                if incident.rental_filiation.property and incident.rental_filiation.property.listing_category == 'SALE':
+                    messages.error(request, "Impossible de signaler un incident sur un bien en vente.")
+                    return redirect('dashboard')
+            else:
+                # Signalement direct sans contrat app
+                reported_phone = request.POST.get('reported_phone')
+                if reported_phone:
+                    # Chercher si le locataire existe
+                    tenant = User.objects.filter(phone_number__icontains=reported_phone).first()
+                    if tenant:
+                        incident.reported_tenant = tenant
+                incident.reported_phone = reported_phone
+                incident.reported_name = request.POST.get('reported_name')
+                incident.property_address = request.POST.get('property_address')
+
+            # Logique de bénéficiaire
             beneficiary_nils = form.cleaned_data.get('landlord_nils_beneficiary')
             if beneficiary_nils:
                 try:
                     prof = NILS_Profile.objects.get(nils_number__iexact=beneficiary_nils)
                     incident.beneficiary = prof.user
                 except NILS_Profile.DoesNotExist:
-                    messages.warning(request, f"Le numéro NILS bénéficiaire '{beneficiary_nils}' est inconnu. Le bailleur du contrat sera utilisé par défaut.")
-                    incident.beneficiary = incident.rental_filiation.landlord
+                    incident.beneficiary = request.user
             else:
-                # Par défaut, le propriétaire du contrat est le bénéficiaire
-                incident.beneficiary = incident.rental_filiation.landlord
+                incident.beneficiary = incident.rental_filiation.landlord if incident.rental_filiation else request.user
                 
-            # Par sécurité, un incident doit être validé par un admin avant d'impacter lourdement le NILS
             incident.is_validated = False
             incident.save()
             
-            messages.success(request, f"L'incident a été déclaré et soumis à validation administrateur. Les preuves sont en cours d'examen.")
+            messages.success(request, "Signalement enregistré et soumis à validation.")
             return redirect('dashboard')
     else:
         initial_data = {}
@@ -1226,3 +1240,53 @@ def chat_poll_view(request, conversation_id):
         })
         
     return JsonResponse({'messages': data})
+
+@login_required
+def report_pro_fraud_view(request):
+    from solvable.forms import ProfessionalFraudReportForm
+    if request.method == 'POST':
+        form = ProfessionalFraudReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reporter = request.user
+            from users.models import User
+            pro_phone = form.cleaned_data.get('reported_pro_phone')
+            if pro_phone:
+                matching_user = User.objects.filter(phone_number__icontains=pro_phone).first()
+                if matching_user:
+                    report.reported_user = matching_user
+            report.save()
+            messages.success(request, "Votre signalement a été reçu et sera vérifié.")
+            return redirect('fraud_list')
+    else:
+        form = ProfessionalFraudReportForm()
+    return render(request, 'fraud_report_form.html', {'form': form})
+
+def fraud_list_view(request):
+    from solvable.models import ProfessionalFraudReport
+    frauds = ProfessionalFraudReport.objects.filter(is_validated=True).order_by('-created_at')
+    return render(request, 'fraud_list.html', {'frauds': frauds})
+
+@login_required
+def submit_solvency_docs_view(request):
+    from users.forms import SolvencyDocumentForm
+    from users.models import SolvencyDocument
+    
+    if request.user.role != 'TENANT':
+        messages.warning(request, "Réservé aux locataires.")
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        form = SolvencyDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.user = request.user
+            doc.save()
+            messages.success(request, "Document soumis.")
+            return redirect('dashboard')
+    else:
+        form = SolvencyDocumentForm()
+        
+    existing_docs = request.user.solvency_docs.all().order_by('-uploaded_at')
+    
+    return render(request, 'solvency_docs_submit.html', {'form': form, 'existing_docs': existing_docs})

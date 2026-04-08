@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Obtenir mon Badge Solvable | Logersenegal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeInUp">
+                <div class="card-header bg-dark-green text-white p-4 border-0">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-light-green p-3 rounded-circle me-3">
+                            <i class="fa-solid fa-medal fa-2x text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">Badge Locataire Solvable</h3>
+                            <p class="mb-0 opacity-75">Certifiez votre sérieux pour rassurer les bailleurs.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4 p-lg-5">
+                    <div class="alert alert-info border-0 rounded-3 mb-4">
+                        <i class="fa-solid fa-shield-halved me-2"></i>
+                        <strong>Confidentialité DigitalH :</strong> Vos documents sont cryptés et utilisés uniquement pour validation. Ils seront <strong>supprimés définitivement</strong> une fois votre badge attribué.
+                    </div>
+
+                    {% if not user.is_solvable %}
+                    <form method="POST" enctype="multipart/form-data" class="mb-5">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Type de document</label>
+                                {{ form.doc_type }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Fichier (PDF ou Image)</label>
+                                {{ form.file }}
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary-custom w-100 py-3">
+                                    <i class="fa-solid fa-cloud-arrow-up me-2"></i>Soumettre le document
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4 mb-5">
+                        <div class="display-1 text-success mb-3"><i class="fa-solid fa-circle-check"></i></div>
+                        <h4 class="fw-bold">Félicitations !</h4>
+                        <p class="text-muted">Votre profil est certifié <strong>Solvable</strong>. Ce badge est visible par tous les bailleurs sur vos candidatures.</p>
+                    </div>
+                    {% endif %}
+
+                    <h5 class="fw-bold mb-4">Historique de vos documents</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in existing_docs %}
+                                <tr>
+                                    <td>
+                                        <i class="fa-solid fa-file-contract me-2 text-primary"></i>
+                                        {{ doc.get_doc_type_display }}
+                                    </td>
+                                    <td class="small">{{ doc.uploaded_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% if doc.status == 'VERIFIED' %}
+                                            <span class="badge bg-success rounded-pill"><i class="fa-solid fa-check me-1"></i>Vérifié</span>
+                                        {% elif doc.status == 'REJECTED' %}
+                                            <span class="badge bg-danger rounded-pill" title="{{ doc.rejection_reason }}"><i class="fa-solid fa-xmark me-1"></i>Rejeté</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark rounded-pill"><i class="fa-solid fa-clock me-1"></i>En attente</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted small">Aucun document soumis pour le moment.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-dark-green { background-color: var(--color-dark-green); }
+    .bg-light-green { background-color: var(--color-light-green); }
+</style>
+{% endblock %}

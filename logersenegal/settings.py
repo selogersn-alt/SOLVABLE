@@ -27,10 +27,11 @@ SECRET_KEY = 'django-insecure-^gda*3#uhe6a6$lb#l23y*=_m-9%c&54(!pp*(rp_v%pn@^%gx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', '.logersn.com', 'solvable-sn.onrender.com']
+ALLOWED_HOSTS = ['logersenegal.com', 'www.logersenegal.com', 'solvable-sn.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://solvable.logersn.com',
+    'https://logersenegal.com',
+    'https://www.logersenegal.com',
     'https://solvable-sn.onrender.com',
 ]
 
@@ -61,6 +62,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
 ]
 
+SITE_ID = 1
+
 AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
@@ -87,6 +90,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'ads.context_processors.ads_processor',
+                'solvable.context_processors.fraud_alerts_processor',
             ],
         },
     },
@@ -99,10 +103,17 @@ WSGI_APPLICATION = 'logersenegal.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'gaak4328_loger_app',
+        'USER': 'gaak4328_loger_app', 
+        'PASSWORD': '5KMtFH-8kz3PgtJ', 
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
 }
 
 
