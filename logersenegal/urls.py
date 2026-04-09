@@ -18,6 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.sitemaps.views import sitemap
 from logersn.sitemaps import StaticViewSitemap, PropertySitemap
+from solvable.views import (
+    filiation_details_view, report_incident_view, update_incident_status_view,
+    record_payment_view, mediation_room_view, download_receipt_view,
+    apply_to_property_view, start_filiation_view, approve_filiation_view,
+    terminate_filiation_view, update_application_status_view
+)
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -29,10 +35,7 @@ from .views import (
     dashboard_view, create_property_view, send_message_view,
     initiate_chat_view, start_support_view, verify_phone_view,
     kyc_submit_view, nils_search_view, create_filiation_view,
-    report_incident_view, record_payment_view,
-    filiation_details_view, contest_item_view, mediation_room_view, update_incident_status_view, about_view, verified_professionals_view,
-    download_receipt_view, apply_to_property_view, start_filiation_view,
-    approve_filiation_view, terminate_filiation_view, update_application_status_view,
+    contest_item_view, about_view, verified_professionals_view,
     generate_lease_pdf_view,
     public_profile_view,
     edit_property_view, delete_property_view,  # Gestion pro
