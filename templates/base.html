@@ -273,71 +273,49 @@
             </div>
 
             <!-- Menu Offcanvas (De gauche à droite) -->
-            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color: var(--bg-body); width: 280px; visibility: visible !important;">
-                <div class="offcanvas-header border-bottom">
-                    <h5 class="offcanvas-title fw-bold" id="offcanvasNavbarLabel">LOGERSENEGAL</h5>
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 280px;">
+                <div class="offcanvas-header border-bottom bg-light">
+                    <h5 class="offcanvas-title fw-bold" id="offcanvasNavbarLabel" style="color: #000;">LOGERSENEGAL</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
-                <div class="offcanvas-body p-0">
-                    <!-- Liens spécifiques Mobile -->
-                    <div class="mobile-nav-wrapper p-3">
-                        <ul class="nav flex-column gap-2">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark fw-bold py-3 border-bottom d-flex align-items-center" href="{% url 'home' %}">
-                                    <i class="fa-solid fa-house me-3 text-success"></i> Accueil
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark fw-bold py-3 border-bottom d-flex align-items-center" href="{% url 'properties_list' %}">
-                                    <i class="fa-solid fa-building me-3 text-success"></i> Annonces immo.
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark fw-bold py-3 border-bottom d-flex align-items-center" href="{% url 'nils_search' %}">
-                                    <i class="fa-solid fa-magnifying-glass me-3 text-success"></i> Vérifier candidat
-                                </a>
-                            </li>
+                <div class="offcanvas-body p-0" style="background-color: #fff;">
+                    <div class="p-3">
+                        <!-- Navigation Mobile Simple -->
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <a href="{% url 'home' %}" style="text-decoration: none; color: #333; font-weight: 600; padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                                <i class="fa-solid fa-house me-3" style="color: #198754;"></i> Accueil
+                            </a>
+                            <a href="{% url 'properties_list' %}" style="text-decoration: none; color: #333; font-weight: 600; padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                                <i class="fa-solid fa-building me-3" style="color: #198754;"></i> Annonces immo.
+                            </a>
+                            <a href="{% url 'nils_search' %}" style="text-decoration: none; color: #333; font-weight: 600; padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                                <i class="fa-solid fa-shield-check me-3" style="color: #198754;"></i> Vérifier candidat
+                            </a>
                             
-                            <li class="nav-item mt-4">
-                                <span class="text-muted small fw-bold px-3">GUIDES & AIDE</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark py-2 d-flex align-items-center" href="{% url 'guide_locataires' %}">
-                                    <i class="fa-solid fa-circle-chevron-right me-3 small"></i> Guide Locataires
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark py-2 d-flex align-items-center" href="{% url 'guide_bailleurs' %}">
-                                    <i class="fa-solid fa-circle-chevron-right me-3 small"></i> Guide Bailleurs
-                                </a>
-                            </li>
+                            <div style="padding: 20px 15px 10px; font-size: 0.8rem; color: #999; font-weight: bold; text-transform: uppercase;">Guides & Aide</div>
+                            <a href="{% url 'guide_locataires' %}" style="text-decoration: none; color: #555; padding: 10px 15px; display: block;">Guide Locataires</a>
+                            <a href="{% url 'guide_bailleurs' %}" style="text-decoration: none; color: #555; padding: 10px 15px; display: block;">Guide Bailleurs</a>
+                            <a href="{% url 'guide_agences' %}" style="text-decoration: none; color: #555; padding: 10px 15px; display: block;">Guide Agences</a>
+                            <a href="{% url 'guide_courtiers' %}" style="text-decoration: none; color: #555; padding: 10px 15px; display: block;">Guide Courtiers</a>
 
-                            <li class="nav-item mt-4">
-                                <span class="text-muted small fw-bold px-3">COMPTE</span>
-                            </li>
+                            <div style="padding: 20px 15px 10px; font-size: 0.8rem; color: #999; font-weight: bold; text-transform: uppercase;">Compte</div>
                             {% if user.is_authenticated %}
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark py-2" href="{% url 'dashboard' %}"><i class="fa-solid fa-gauge me-3"></i> Tableau de bord</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-danger py-2" href="{% url 'logout' %}"><i class="fa-solid fa-power-off me-3"></i> Déconnexion</a>
-                                </li>
+                                <a href="{% url 'dashboard' %}" style="text-decoration: none; color: #333; padding: 15px; border-bottom: 1px solid #eee; display: block;">
+                                    <i class="fa-solid fa-gauge me-3"></i> Mon Tableau de bord
+                                </a>
+                                <a href="{% url 'logout' %}" style="text-decoration: none; color: #dc3545; padding: 15px; display: block;">
+                                    <i class="fa-solid fa-power-off me-3"></i> Déconnexion
+                                </a>
                             {% else %}
-                                <li class="nav-item p-3">
-                                    <a href="{% url 'login' %}" class="btn btn-primary-custom w-100">Se connecter</a>
-                                </li>
+                                <div style="padding: 15px;">
+                                    <a href="{% url 'login' %}" class="btn btn-success w-100 py-3 fw-bold" style="border-radius: 10px;">SE CONNECTER</a>
+                                </div>
                             {% endif %}
-                            
-                            <li class="nav-item mt-auto p-3">
-                                <button class="btn btn-light w-100 text-start border" id="themeToggleMobile">
-                                    <i class="fa-solid fa-circle-half-stroke me-2"></i> Changer le thème
-                                </button>
-                            </li>
-                        </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Menu PC (Toujours en ligne) -->
             <div class="collapse navbar-collapse d-none d-lg-block" id="navbarDesktop">
                 <ul class="navbar-nav ms-auto align-items-center">
