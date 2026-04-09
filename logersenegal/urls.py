@@ -27,7 +27,6 @@ from solvable.views import (
 
 sitemaps = {
     'static': StaticViewSitemap,
-    'properties': PropertySitemap,
 }
 from .views import (
     home_view, properties_list_view, property_detail_view, 
