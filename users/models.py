@@ -82,18 +82,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name} ({self.phone_number})"
 
     def save(self, *args, **kwargs):
-        # Génération du slug pour les liens personnalisés
-        if not self.slug:
-            from django.utils.text import slugify
-            base_name = self.company_name or f"{self.first_name}-{self.last_name}"
-            if not base_name or base_name == "None-None":
-                base_name = str(self.id).split('-')[0]
-            
-            new_slug = slugify(base_name)
-            # Vérifier l'unicité
-            if User.objects.filter(slug=new_slug).exists():
-                new_slug = f"{new_slug}-{str(self.id).split('-')[0]}"
-            self.slug = new_slug
+        # Génération du slug pour les liens personnalisés (Désactivé temporairement pour corriger l'Erreur 500)
+        # if not self.slug:
+        #     from django.utils.text import slugify
+        #     base_name = self.company_name or f"{self.first_name}-{self.last_name}"
+        #     if not base_name or base_name == "None-None":
+        #         base_name = str(self.id).split('-')[0]
+        #     
+        #     new_slug = slugify(base_name)
+        #     # Vérifier l'unicité
+        #     if User.objects.filter(slug=new_slug).exists():
+        #         new_slug = f"{new_slug}-{str(self.id).split('-')[0]}"
+        #     self.slug = new_slug
 
         # Automatisation DigitalH : Les admins et conseillers ont un accès staff automatique
         if self.role in [self.RoleEnum.SUB_ADMIN, self.RoleEnum.CUSTOMER_SUPPORT]:
