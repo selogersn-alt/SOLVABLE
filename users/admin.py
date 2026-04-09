@@ -187,7 +187,7 @@ class SolvencyDocumentAdmin(admin.ModelAdmin):
     list_filter = ('status', 'doc_type')
     actions = ['verify_and_badge', 'reject_document']
     
-    @admin.action(description="✅ Valider et accorder le Badge Solvable (Calcul auto 70% et 3 mois)")
+    @admin.action(description="✅ Valider et accorder le Badge Solvable (Calcul auto 70%% et 3 mois)")
     def verify_and_badge(self, request, queryset):
         from datetime import timedelta
         for doc in queryset:
