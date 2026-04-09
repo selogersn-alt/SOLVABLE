@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.sitemaps.views import sitemap
-from logersn.sitemaps import StaticViewSitemap, PropertySitemap
+from logersn.sitemaps import StaticViewSitemap
 from solvable.views import (
     filiation_details_view, report_incident_view, update_incident_status_view,
     record_payment_view, mediation_room_view, download_receipt_view,
