@@ -830,13 +830,22 @@ def public_profile_view(request, user_id=None, slug=None):
     properties = Property.objects.filter(owner=viewed_user, is_published=True)
     
     # Statistiques basiques d'activité
+    # Sécurité : vérifier si date_joined existe
+    days_joined = (timezone.now() - viewed_user.date_joined).days if viewed_user.date_joined else 0
+    
     stats = {
         'total_properties': properties.count(),
-        'experience_years': (timezone.now() - viewed_user.date_joined).days // 365,
+        'experience_years': max(0, days_joined // 365),
     }
     
-    # Lien de partage personnalisé
-    share_url = request.build_absolute_uri(reverse('public_profile_slug', kwargs={'slug': viewed_user.slug})) if viewed_user.slug else request.build_absolute_uri()
+    # Lien de partage personnalisé (Sécurisé)
+    try:
+        if viewed_user.slug:
+            share_url = request.build_absolute_uri(reverse('public_profile_slug', kwargs={'slug': viewed_user.slug}))
+        else:
+            share_url = request.build_absolute_uri(reverse('public_profile', kwargs={'user_id': viewed_user.id}))
+    except:
+        share_url = request.build_absolute_uri()
     
     return render(request, 'public_profile.html', {
         'viewed_user': viewed_user,
