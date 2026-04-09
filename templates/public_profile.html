@@ -81,7 +81,7 @@
     <script>
         function shareProfile() {
             const shareData = {
-                title: "{{ viewed_user.company_name|default:viewed_user.get_full_name }} | Loger Sénégal",
+                title: "{{ viewed_user.company_name|default:viewed_user.get_full_name|escapejs }} | Loger Sénégal",
                 text: "Découvrez le catalogue de ce professionnel certifié sur Loger Sénégal.",
                 url: "{{ share_url|safe }}"
             };
@@ -111,6 +111,7 @@
         </div>
     </div>
 
+    {# 
     <div class="row g-4">
         {% for prop in properties %}
         <div class="col-md-4">
@@ -142,6 +143,7 @@
             <p class="text-muted">Aucune annonce disponible en ce moment.</p>
         </div>
         {% endfor %}
-    </div>
+    </div> 
+    #}
 </div>
 {% endblock %}
