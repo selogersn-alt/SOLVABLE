@@ -273,81 +273,95 @@
             </div>
 
             <!-- Menu Offcanvas (De gauche à droite) -->
-            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color: var(--bg-body); width: 280px;">
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color: var(--bg-body); width: 280px; visibility: visible !important;">
                 <div class="offcanvas-header border-bottom">
                     <h5 class="offcanvas-title fw-bold" id="offcanvasNavbarLabel">LOGERSENEGAL</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
-                <div class="offcanvas-body">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link py-2 px-3" href="{% url 'home' %}">Accueil</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link py-2 px-3" href="{% url 'properties_list' %}">Annonces immo.</a>
-                        </li>
-                        {% if not user.is_authenticated or user.role != 'TENANT' %}
-                        <li class="nav-item">
-                            <a class="nav-link py-2 px-3" href="{% url 'nils_search' %}">Vérifier candidat</a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle py-2 px-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Annuaires
-                            </a>
-                            <ul class="dropdown-menu shadow border-0 p-2">
-                                <li><a class="dropdown-item" href="{% url 'professionals_list' %}">Tous les pros</a></li>
-                                <li><a class="dropdown-item" href="{% url 'professionals_list' %}?role=AGENCY">Agences</a></li>
-                                <li><a class="dropdown-item" href="{% url 'professionals_list' %}?role=BROKER">Courtiers</a></li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle py-2 px-3 fw-bold text-danger" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Sécurité
-                            </a>
-                            <ul class="dropdown-menu shadow border-0 p-2">
-                                <li><a class="dropdown-item" href="{% url 'fraud_list' %}"><i class="fa-solid fa-mask me-2 text-danger"></i>Liste Noire</a></li>
-                                <li><a class="dropdown-item" href="{% url 'report_pro_fraud' %}"><i class="fa-solid fa-bullhorn me-2"></i>Signaler un Pro</a></li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link py-2 px-3" href="{% url 'about' %}">A propos</a>
-                        </li>
-
-                        <li class="nav-item d-none d-lg-block ms-lg-2">
-                             <a href="{% url 'create_property' %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                <i class="fa-solid fa-plus me-1"></i> Publier
-                            </a>
-                        </li>
-
-                        {% if user.is_authenticated %}
-                            <li class="nav-item dropdown ms-lg-3 mt-2 mt-lg-0">
-                                <a class="btn btn-secondary-custom btn-sm dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fa-solid fa-user me-2"></i> Mon Compte
+                <div class="offcanvas-body p-0">
+                    <!-- Liens spécifiques Mobile -->
+                    <div class="mobile-nav-wrapper p-3">
+                        <ul class="nav flex-column gap-2">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark fw-bold py-3 border-bottom d-flex align-items-center" href="{% url 'home' %}">
+                                    <i class="fa-solid fa-house me-3 text-success"></i> Accueil
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2">
-                                    <li><a class="dropdown-item" href="{% url 'dashboard' %}">Tableau de Bord</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Déconnexion</a></li>
-                                </ul>
                             </li>
-                        {% else %}
-                            <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                                <a href="{% url 'login' %}" class="btn btn-primary-custom btn-sm w-100">Se connecter</a>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark fw-bold py-3 border-bottom d-flex align-items-center" href="{% url 'properties_list' %}">
+                                    <i class="fa-solid fa-building me-3 text-success"></i> Annonces immo.
+                                </a>
                             </li>
-                        {% endif %}
-                        
-                        <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                            <button class="theme-toggle-btn p-3 p-lg-0 border-0 bg-transparent w-100 text-start" id="themeToggle" title="Changer de thème">
-                                <i class="fa-solid fa-moon d-none d-lg-block"></i>
-                                <span class="d-lg-none"><i class="fa-solid fa-circle-half-stroke me-2"></i>Changer Thème (Clair/Sombre)</span>
-                            </button>
-                        </li>
-                    </ul>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark fw-bold py-3 border-bottom d-flex align-items-center" href="{% url 'nils_search' %}">
+                                    <i class="fa-solid fa-magnifying-glass me-3 text-success"></i> Vérifier candidat
+                                </a>
+                            </li>
+                            
+                            <li class="nav-item mt-4">
+                                <span class="text-muted small fw-bold px-3">GUIDES & AIDE</span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark py-2 d-flex align-items-center" href="{% url 'guide_locataires' %}">
+                                    <i class="fa-solid fa-circle-chevron-right me-3 small"></i> Guide Locataires
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark py-2 d-flex align-items-center" href="{% url 'guide_bailleurs' %}">
+                                    <i class="fa-solid fa-circle-chevron-right me-3 small"></i> Guide Bailleurs
+                                </a>
+                            </li>
+
+                            <li class="nav-item mt-4">
+                                <span class="text-muted small fw-bold px-3">COMPTE</span>
+                            </li>
+                            {% if user.is_authenticated %}
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark py-2" href="{% url 'dashboard' %}"><i class="fa-solid fa-gauge me-3"></i> Tableau de bord</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-danger py-2" href="{% url 'logout' %}"><i class="fa-solid fa-power-off me-3"></i> Déconnexion</a>
+                                </li>
+                            {% else %}
+                                <li class="nav-item p-3">
+                                    <a href="{% url 'login' %}" class="btn btn-primary-custom w-100">Se connecter</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="nav-item mt-auto p-3">
+                                <button class="btn btn-light w-100 text-start border" id="themeToggleMobile">
+                                    <i class="fa-solid fa-circle-half-stroke me-2"></i> Changer le thème
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- Menu PC (Toujours en ligne) -->
+            <div class="collapse navbar-collapse d-none d-lg-block" id="navbarDesktop">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'properties_list' %}">Annonces</a></li>
+                    <li class="nav-item"><a class="nav-link fw-bold text-success" href="{% url 'nils_search' %}">Vérifier</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <a href="{% url 'create_property' %}" class="btn btn-outline-success btn-sm rounded-pill px-3">Publier</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item ms-lg-3 dropdown">
+                             <a class="btn btn-secondary-custom btn-sm dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Mon Compte</a>
+                             <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Déconnexion</a></li>
+                             </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-3">
+                            <a href="{% url 'login' %}" class="btn btn-primary-custom btn-sm">Connexion</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </nav>
@@ -535,24 +549,32 @@
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
         const themeToggleBtn = document.getElementById('themeToggle');
-        const themeIcon = themeToggleBtn.querySelector('i');
+        const themeToggleMobileBtn = document.getElementById('themeToggleMobile');
+        const themeIcon = themeToggleBtn ? themeToggleBtn.querySelector('i') : null;
         const htmlElement = document.documentElement;
 
-        // Fonction pour appliquer le thème
         function applyTheme(theme) {
             htmlElement.setAttribute('data-theme', theme);
-            if(theme === 'dark') {
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-                themeIcon.style.color = '#f5c42f'; // Jaune pour le soleil
-            } else {
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
-                themeIcon.style.color = 'var(--text-main)';
+            if (themeIcon) {
+                if(theme === 'dark') {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    themeIcon.style.color = '#f5c42f';
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    themeIcon.style.color = 'var(--text-main)';
+                }
             }
         }
 
-        // Vérifier les préférences stockées ou celles du système
+        function toggleTheme() {
+            const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
             applyTheme(savedTheme);
@@ -560,13 +582,8 @@
             applyTheme('dark');
         }
 
-        // Changer de thème au clic
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            applyTheme(newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+        if (themeToggleMobileBtn) themeToggleMobileBtn.addEventListener('click', toggleTheme);
     </script>
     
     {% if seo_settings and seo_settings.footer_scripts %}
