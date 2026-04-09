@@ -32,6 +32,20 @@
                     
                     <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger" style="border-radius: 10px;">
+                            <strong>⚠️ Erreur dans le formulaire :</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="form-label fw-bold" style="color: var(--text-main);">{{ form.title.label }}</label>
