@@ -14,11 +14,14 @@ from django.utils.encoding import force_bytes, force_str
 
 from logersn.models import Property, Favorite
 from logersn.forms import PropertyForm
+from logersn.constants import COUNTRY_CHOICES
+from users.models import User, NILS_Profile, SearchLog
+from chat.models import Conversation, Message
+from solvable.models import PropertyApplication, RentalFiliation, PaymentHistory, IncidentReport
 from django_countries import countries as COUNTRY_CHOICES
 
 def home_view(request):
-    from logersn.models import Property
-    from solvable.models import IncidentReport, NILS_Profile
+    # Les modèles sont déjà importés au-dessus
     
     # Stats de base
     stats = {'total_unpaid': 0, 'profiles_flagged': 0, 'resolved_cases': 0, 'active_mediation': 0}
