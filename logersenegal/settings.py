@@ -27,13 +27,12 @@ SECRET_KEY = 'django-insecure-^gda*3#uhe6a6$lb#l23y*=_m-9%c&54(!pp*(rp_v%pn@^%gx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['logersenegal.com', 'www.logersenegal.com', 'solvable-sn.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['logersenegal.com', 'www.logersenegal.com', 'localhost', '127.0.0.1']
 SITE_URL = 'https://logersenegal.com'
 
 CSRF_TRUSTED_ORIGINS = [
     'https://logersenegal.com',
     'https://www.logersenegal.com',
-    'https://solvable-sn.onrender.com',
 ]
 
 

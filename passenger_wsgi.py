@@ -1,17 +1,26 @@
 import os
 import sys
 
-# Ajouter le chemin de l'application
-sys.path.insert(0, os.path.dirname(__file__))
+# Ajouter le chemin de l'application au sys.path
+path = os.path.dirname(__file__)
+if path not in sys.path:
+    sys.path.insert(0, path)
+
+# Définir les réglages Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
 
-# Initialisation Django UNIQUE au demarrage (Performance)
-import django
-django.setup()
-
-from django.core.wsgi import get_wsgi_application
-django_app = get_wsgi_application()
-
-# Point d'entree Passenger
-def application(environ, start_response):
-    return django_app(environ, start_response)
+# Importer l'application WSGI de Django
+# Cela gère automatiquement le django.setup() et le chargement des réglages
+try:
+    from logersenegal.wsgi import application as django_app
+except Exception as e:
+    # Fallback pour le débogage si le démarrage échoue
+    def application(environ, start_response):
+        status = '500 Internal Server Error'
+        output = f"Erreur de démarrage Django : {str(e)}".encode('utf-8')
+        response_headers = [('Content-type', 'text/plain'), ('Content-Length', str(len(output)))]
+        start_response(status, response_headers)
+        return [output]
+else:
+    # Point d'entrée Passenger standard
+    application = django_app

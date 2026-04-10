@@ -644,11 +644,12 @@ def nils_search_view(request):
         messages.error(request, "Accès réservé aux bailleurs et agences professionnels.")
         return redirect('dashboard')
 
-    # Multi-critères
+    # Multi-critères ou Recherche Unique (Mobile/Home)
     name_q = request.GET.get('name_query', '').strip()
     phone_q = request.GET.get('phone_query', '').strip()
     doc_q = request.GET.get('doc_query', '').strip()
     country_q = request.GET.get('country_query', '').strip()
+    magic_q = request.GET.get('query', '').strip()
     
     profiles = None
     error = None
@@ -663,23 +664,31 @@ def nils_search_view(request):
     
     recent_incidents = IncidentReport.objects.filter(is_validated=True).order_by('-created_at')[:10]
     
-    if name_q or phone_q or doc_q:
+    if name_q or phone_q or doc_q or magic_q:
         filters = Q()
-        if name_q:
-            filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
-        if phone_q:
-            filters &= Q(user__phone_number__icontains=phone_q)
-        if doc_q:
-            filters &= Q(user__cni_number__icontains=doc_q)
-        if country_q:
-            filters &= Q(user__document_country=country_q)
+        if magic_q:
+            # Recherche "Magique" pour Mobile : Nom, Tel ou Document
+            filters |= Q(user__first_name__icontains=magic_q)
+            filters |= Q(user__last_name__icontains=magic_q)
+            filters |= Q(user__phone_number__icontains=magic_q)
+            filters |= Q(user__cni_number__icontains=magic_q)
+            filters |= Q(nils_number__icontains=magic_q)
+        else:
+            if name_q:
+                filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
+            if phone_q:
+                filters &= Q(user__phone_number__icontains=phone_q)
+            if doc_q:
+                filters &= Q(user__cni_number__icontains=doc_q)
+            if country_q:
+                filters &= Q(user__document_country=country_q)
             
         profiles = NILS_Profile.objects.filter(filters).distinct()
         
         # --- SECURITY LOGGING ---
         SearchLog.objects.create(
             searcher=request.user,
-            query=f"N:{name_q}|T:{phone_q}|D:{doc_q}|C:{country_q}",
+            query=f"M:{magic_q}|N:{name_q}|T:{phone_q}|D:{doc_q}|C:{country_q}",
             results_found=profiles.count() if profiles else 0,
             ip_address=request.META.get('REMOTE_ADDR')
         )

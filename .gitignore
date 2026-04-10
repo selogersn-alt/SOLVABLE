@@ -1,13 +1,15 @@
-# Django
-*.log
-*.pot
-*.pyc
-__pycache__/
-local_settings.py
-db.sqlite3
-media/
-staticfiles/
-
-# O2switch Server Config (IMPORTANT: NE PAS TOUCHER VIA GIT)
+# --- PROTECTION O2SWITCH ---
+logersenegal/local_settings.py
 .htaccess
 passenger_wsgi.py
+tmp/restart.txt
+
+# --- PROTECTION DONNÉES CLIENTS ---
+media/
+staticfiles/
+db.sqlite3
+
+# --- CACHE ---
+__pycache__/
+*.pyc
+.env

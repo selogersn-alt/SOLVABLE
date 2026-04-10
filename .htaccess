@@ -1,16 +1,30 @@
-# Configuration O2switch / Passenger
-PassengerEnabled on
-PassengerAppRoot /home/gaak4328/logersenegal.com
-PassengerAppType wsgi
-PassengerStartupFile passenger_wsgi.py
-PassengerPython /home/gaak4328/virtualenv/logersenegal.com/3.11/bin/python
+# Configuration O2switch / LiteSpeed Passenger
+# Ce fichier a été optimisé par l'audit technique pour résoudre l'Erreur 500
 
-# Forcer l'application sur toute la racine
-PassengerBaseURI /
+<IfModule mod_passenger.c>
+    PassengerEnabled on
+    PassengerAppRoot /home/gaak4328/logersenegal.com
+    PassengerAppType wsgi
+    PassengerStartupFile passenger_wsgi.py
+    PassengerPython /home/gaak4328/virtualenv/logersenegal.com/3.11/bin/python
+    PassengerBaseURI /
+</IfModule>
 
-# Empêcher l'affichage du code source
+# Forcer le bon handler pour passenger_wsgi.py (Evite la fuite de code source)
+<Files "passenger_wsgi.py">
+    SetHandler application/x-httpd-wsgi
+</IfModule>
+
+# Routage des requêtes vers le moteur Django
 RewriteEngine On
 RewriteBase /
-RewriteRule ^passenger_wsgi\.py$ - [QSA,L]
 RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !^/static/
+RewriteCond %{REQUEST_URI} !^/media/
 RewriteRule ^(.*)$ passenger_wsgi.py [QSA,L]
+
+# Sécurisation : Empêcher l'accès direct aux fichiers sensibles
+<FilesMatch "\.(py|pyc|sql|sqlite3|env|log)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
