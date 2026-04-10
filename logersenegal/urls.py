@@ -48,13 +48,14 @@ from .views import (
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ads.views import ads_txt_view  # Certification Google
-from .admin_views import admin_statistics_view
+from .admin_views import admin_statistics_view, admin_marketing_email_view
 
 urlpatterns = [
     path('', home_view, name='home'),
     path('a-propos/', about_view, name='about'),
     path('professionnels/', verified_professionals_view, name='professionals_list'),
     path('admin/statistiques/', admin_statistics_view, name='admin_statistics'), # Custom Admin Route
+    path('admin/campagne-email/', admin_marketing_email_view, name='admin_marketing_email'),
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/logersn/', include('logersn.urls')),

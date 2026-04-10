@@ -141,3 +141,55 @@ def admin_statistics_view(request):
     }
     
     return render(request, 'admin/statistics.html', context)
+
+@staff_member_required
+def admin_marketing_email_view(request):
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from django.core.mail import EmailMultiAlternatives
+    from django.conf import settings
+    from users.models import User
+
+    user_ids = request.session.get('marketing_user_ids', [])
+    if not user_ids:
+        messages.error(request, "Aucun utilisateur sélectionné pour la campagne.")
+        return redirect('admin:users_user_changelist')
+    
+    users = User.objects.filter(id__in=user_ids)
+    
+    if request.method == 'POST':
+        subject = request.POST.get('subject')
+        message_content = request.POST.get('message')
+        is_html = request.POST.get('is_html') == 'on'
+        
+        count = 0
+        for user in users:
+            if user.email:
+                # On remplace les tags [NOM], [PRENOM] si présents
+                personalized_message = message_content.replace('[PRENOM]', user.first_name).replace('[NOM]', user.last_name)
+                
+                msg = EmailMultiAlternatives(
+                    subject,
+                    personalized_message if not is_html else "Contenu HTML : veuillez utiliser un client mail moderne.",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    bcc=['solvable@logersenegal.com']
+                )
+                if is_html:
+                    msg.attach_alternative(personalized_message, "text/html")
+                
+                try:
+                    msg.send()
+                    count += 1
+                except:
+                    pass
+        
+        messages.success(request, f"🚀 Campagne terminée : {count} e-mails envoyés avec succès.")
+        if 'marketing_user_ids' in request.session:
+            del request.session['marketing_user_ids']
+        return redirect('admin:users_user_changelist')
+        
+    return render(request, 'admin/marketing_email.html', {
+        'users': users,
+        'count': users.count()
+    })

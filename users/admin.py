@@ -12,7 +12,11 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('phone_number', 'first_name', 'last_name', 'role', 'phone_otp', 'is_phone_verified', 'is_verified_pro', 'is_active')
     search_fields = ('email', 'phone_number', 'company_name', 'first_name', 'last_name', 'phone_otp')
     list_filter = ('role', 'is_verified_pro', 'is_active', 'is_staff', 'is_phone_verified')
-    actions = ['verify_professionals', 'revoke_professionals', 'generate_recovery_code', 'send_otp_whatsapp', 'send_otp_email', 'generate_frontend_reset_link', 'send_reset_link_email']
+    actions = [
+        'verify_professionals', 'revoke_professionals', 'generate_recovery_code', 
+        'send_otp_whatsapp', 'send_otp_email', 'generate_frontend_reset_link', 
+        'send_reset_link_email', 'export_marketing_data', 'send_mass_marketing_email'
+    ]
     ordering = ('-date_joined',)
     
     fieldsets = (
@@ -151,6 +155,41 @@ class UserAdmin(BaseUserAdmin):
     def revoke_professionals(self, request, queryset):
         updated = queryset.update(is_verified_pro=False)
         self.message_user(request, f"{updated} badges ont été révoqués.")
+
+    @admin.action(description="📊 Exporter Données Marketing (CSV)")
+    def export_marketing_data(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        from django.utils import timezone
+        
+        response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+        response['Content-Disposition'] = f'attachment; filename="marketing_solvable_{timezone.now().strftime("%Y%m%d")}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Email', 'Telephone', 'Prenom', 'Nom', 'Role', 'Entreprise', 'Date Inscription'])
+        
+        for user in queryset:
+            writer.writerow([
+                user.email or '',
+                user.phone_number,
+                user.first_name,
+                user.last_name,
+                user.role,
+                user.company_name or '',
+                user.date_joined.strftime("%Y-%m-%d")
+            ])
+        
+        return response
+
+    @admin.action(description="🚀 Envoyer Campagne E-mail (Marketing)")
+    def send_mass_marketing_email(self, request, queryset):
+        from django.shortcuts import redirect
+        from django.urls import reverse
+        
+        selected_ids = [str(user.pk) for user in queryset]
+        request.session['marketing_user_ids'] = selected_ids
+        
+        return redirect(reverse('admin_marketing_email'))
 
 from django.utils import timezone
 

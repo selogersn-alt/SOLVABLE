@@ -1,0 +1,106 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+    .marketing-container { max-width: 900px; margin: 20px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 25px; margin-bottom: 20px; border: 1px solid #ddd; }
+    .card-header { border-bottom: 2px solid #7fd47d; margin-bottom: 20px; padding-bottom: 10px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
+    .form-control { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+    textarea.form-control { min-height: 250px; font-family: monospace; }
+    .btn-send { background-color: #0b4629; color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.3s; }
+    .btn-send:hover { background-color: #083820; }
+    .user-pill { display: inline-block; background: #e9f7ef; color: #27ae60; padding: 5px 12px; border-radius: 20px; margin: 3px; font-size: 12px; border: 1px solid #27ae60; }
+    .preset-btns { margin-bottom: 15px; }
+    .btn-preset { background: #f8f9fa; border: 1px solid #ddd; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-right: 10px; transition: all 0.2s; }
+    .btn-preset:hover { background: #e9ecef; border-color: #bbb; }
+    .help-text { font-size: 12px; color: #666; margin-top: 5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="marketing-container">
+    <div class="card">
+        <div class="card-header">
+            <h2 style="margin:0; color: #0b4629;"><i class="fa-solid fa-paper-plane me-2"></i> Campagne E-mail Marketing</h2>
+        </div>
+        
+        <p>Vous vous apprêtez à envoyer un e-mail à <strong>{{ count }} utilisateurs</strong> sélectionnés.</p>
+        
+        <div style="margin-bottom: 20px; max-height: 100px; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 4px;">
+            {% for user in users %}
+                <span class="user-pill">{{ user.email|default:user.phone_number }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="preset-btns">
+            <strong>Modèles rapides :</strong>
+            <button type="button" class="btn-preset" onclick="applyPreset('publication')">📢 Invitation à Publier</button>
+            <button type="button" class="btn-preset" onclick="applyPreset('promotion')">🎁 Offre Promotionnelle</button>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="subject">Sujet de l'E-mail</label>
+                <input type="text" name="subject" id="subject" class="form-control" placeholder="Entrez le sujet ici..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Contenu du Message</label>
+                <textarea name="message" id="message" class="form-control" required></textarea>
+                <div class="help-text">
+                    Astuce : Utilisez <strong>[PRENOM]</strong> ou <strong>[NOM]</strong> pour personnaliser le message.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                    <input type="checkbox" name="is_html" style="width: auto; margin-right: 10px;"> 
+                    Envoyer en tant que contenu HTML (Permet d'utiliser des balises &lt;b&gt;, &lt;h2&gt;, &lt;a&gt;, etc.)
+                </label>
+            </div>
+
+            <div style="text-align: right;">
+                <a href="{% url 'admin:users_user_changelist' %}" class="button cancel-link" style="margin-right: 15px; padding: 10px 20px; display: inline-block; vertical-align: middle;">Annuler</a>
+                <button type="submit" class="btn-send" onclick="return confirm('Êtes-vous sûr de vouloir envoyer cet e-mail à {{ count }} personnes ?')">
+                    Lancer l'Envoi <i class="fa-solid fa-rocket ms-2"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function applyPreset(type) {
+        const subject = document.getElementById('subject');
+        const message = document.getElementById('message');
+        const isHtml = document.querySelector('input[name="is_html"]');
+
+        if (type === 'publication') {
+            subject.value = "🚀 Boostez la visibilité de votre bien sur Loger Sénégal !";
+            message.value = `<h2>Bonjour [PRENOM],</h2>
+<p>Nous avons remarqué que vous n'avez pas encore publié d'annonce cette semaine sur <b>Loger Sénégal</b>.</p>
+<p>Dakar est en pleine effervescence et des dizaines de locataires vérifiés (Profils NILS) recherchent activement un bien comme le vôtre.</p>
+<p>Prenez 2 minutes pour publier votre bien et profitez de notre visibilité exceptionnelle :</p>
+<p><a href="https://logersenegal.com/propriete/creer/" style="background: #0b4629; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Publier mon annonce maintenant</a></p>
+<p>À très bientôt,<br>L'équipe Solvable - Loger Sénégal</p>`;
+            isHtml.checked = true;
+        } else if (type === 'promotion') {
+            subject.value = "🎁 Offre Spéciale : 1 mois de visibilité Premium offert !";
+            message.value = `<h2>Félicitations [PRENOM] !</h2>
+<p>En tant qu'utilisateur fidèle de <b>Loger Sénégal</b>, nous avons le plaisir de vous offrir un code promotionnel pour booster votre prochaine annonce.</p>
+<p>Utilisez le code <b>SOLVABLE2024</b> lors de votre prochain paiement pour obtenir une mise en avant "Top Liste" gratuite pendant 30 jours.</p>
+<p>C'est le moment idéal pour conclure vos transactions immobilières en toute sécurité.</p>
+<p><a href="https://logersenegal.com/dashboard/" style="background: #f5c42f; color: #0b4629; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Accéder à mon tableau de bord</a></p>
+<p>L'équipe DigitalH pour Loger Sénégal</p>`;
+            isHtml.checked = true;
+        }
+    }
+</script>
+{% endblock %}
