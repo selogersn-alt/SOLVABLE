@@ -1,12 +1,11 @@
-import os
-import sys
-from django.core.wsgi import get_wsgi_application
+import sys, os
 
-# Ajouter le chemin du projet
-sys.path.insert(0, os.path.dirname(__file__))
+# Setup paths
+PROJECT_ROOT = os.path.dirname(__file__)
+sys.path.insert(0, PROJECT_ROOT)
 
-# Définir les réglages Django
+# Setup DJANGO
 os.environ['DJANGO_SETTINGS_MODULE'] = 'logersenegal.settings'
 
-# Initialiser l'application (Une seule fois au démarrage)
+from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
