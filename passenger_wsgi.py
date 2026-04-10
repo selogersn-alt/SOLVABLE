@@ -1,11 +1,17 @@
-import sys, os
+import os
+import sys
 
-# Setup paths
-PROJECT_ROOT = os.path.dirname(__file__)
-sys.path.insert(0, PROJECT_ROOT)
+# Ajouter le chemin de l'application
+sys.path.insert(0, os.path.dirname(__file__))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
 
-# Setup DJANGO
-os.environ['DJANGO_SETTINGS_MODULE'] = 'logersenegal.settings'
+# Initialisation Django UNIQUE au démarrage (Performance)
+import django
+django.setup()
 
 from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+django_app = get_wsgi_application()
+
+# Point d'entrée Passenger
+def application(environ, start_response):
+    return django_app(environ, start_response)
