@@ -71,7 +71,6 @@ INSTALLED_APPS = [
     'chat',
     'ads',
     'drf_spectacular',
-    'pwa',
 ]
 
 SITE_ID = 1
@@ -86,7 +85,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+#    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'logersenegal.urls'
@@ -172,7 +171,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Email Configuration (O2switch SMTP gratuit)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -275,24 +274,24 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = False # True
 
 # --- PWA CONFIGURATION ---
-PWA_APP_NAME = 'Solvable Sénégal'
-PWA_APP_SHORT_NAME = 'Solvable'
-PWA_APP_DESCRIPTION = "Plateforme d'Immobilier de Confiance au Sénégal"
-PWA_APP_THEME_COLOR = '#0b4629'
-PWA_APP_BACKGROUND_COLOR = '#ffffff'
-PWA_APP_DISPLAY = 'standalone'
-PWA_APP_SCOPE = '/'
-PWA_APP_ORIENTATION = 'any'
-PWA_APP_START_URL = '/'
-PWA_APP_STATUS_BAR_COLOR = 'default'
-PWA_APP_ICONS = [
-    {
-        'src': '/static/img/icon-192x192.png',
-        'sizes': '192x192'
-    },
-    {
-        'src': '/static/img/icon-512x512.png',
-        'sizes': '512x512'
-    }
-]
-PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static', 'serviceworker.js')
+# PWA_APP_NAME = 'Solvable Sénégal'
+# PWA_APP_SHORT_NAME = 'Solvable'
+# PWA_APP_DESCRIPTION = "Plateforme d'Immobilier de Confiance au Sénégal"
+# PWA_APP_THEME_COLOR = '#0b4629'
+# PWA_APP_BACKGROUND_COLOR = '#ffffff'
+# PWA_APP_DISPLAY = 'standalone'
+# PWA_APP_SCOPE = '/'
+# PWA_APP_ORIENTATION = 'any'
+# PWA_APP_START_URL = '/'
+# PWA_APP_STATUS_BAR_COLOR = 'default'
+# PWA_APP_ICONS = [
+#     {
+#         'src': '/static/img/icon-192x192.png',
+#         'sizes': '192x192'
+#     },
+#     {
+#         'src': '/static/img/icon-512x512.png',
+#         'sizes': '512x512'
+#     }
+# ]
+# PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static', 'serviceworker.js')
