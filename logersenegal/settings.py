@@ -161,6 +161,16 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Email Configuration (O2switch SMTP gratuit)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.logersenegal.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'solvable@logersenegal.com'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', 'PLACEHOLDER_PASSWORD')
+DEFAULT_FROM_EMAIL = 'Solvable Loger Sénégal <solvable@logersenegal.com>'
+SERVER_EMAIL = 'solvable@logersenegal.com'
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
