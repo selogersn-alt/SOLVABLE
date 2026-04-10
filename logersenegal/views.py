@@ -51,11 +51,11 @@ def home_view(request):
     # Annonces Optimisées (Correction N+1)
     boosted_properties = Property.objects.filter(
         is_published=True, is_boosted=True
-    ).select_related('owner', 'owner__nils_profile').prefetch_related('images').order_by('-id')[:6]
+    ).select_related('owner').prefetch_related('images', 'owner__nils_profiles').order_by('-id')[:6]
     
     page_obj = Property.objects.filter(
         is_published=True
-    ).exclude(is_boosted=True).select_related('owner', 'owner__nils_profile').prefetch_related('images').order_by('-id')[:12]
+    ).exclude(is_boosted=True).select_related('owner').prefetch_related('images', 'owner__nils_profiles').order_by('-id')[:12]
 
     return render(request, 'home.html', {
         'page_obj': page_obj,
