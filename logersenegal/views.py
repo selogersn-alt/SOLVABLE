@@ -48,14 +48,14 @@ def home_view(request):
     doc_q = request.GET.get('doc_query', '')
     query_str = name_q or phone_q or doc_q
     
-    # Annonces Optimisées (Correction N+1)
+    # Annonces Optimisées (Correction N+1) - Version souple
     boosted_properties = Property.objects.filter(
-        is_published=True, is_boosted=True
+        is_boosted=True
     ).select_related('owner').prefetch_related('images', 'owner__nils_profiles').order_by('-id')[:6]
     
-    page_obj = Property.objects.filter(
-        is_published=True
-    ).exclude(is_boosted=True).select_related('owner').prefetch_related('images', 'owner__nils_profiles').order_by('-id')[:12]
+    page_obj = Property.objects.all().exclude(
+        is_boosted=True
+    ).select_related('owner').prefetch_related('images', 'owner__nils_profiles').order_by('-id')[:12]
 
     return render(request, 'home.html', {
         'page_obj': page_obj,
