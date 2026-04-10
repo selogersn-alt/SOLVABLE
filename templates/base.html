@@ -32,9 +32,13 @@
     
     <!-- Spécificités Apple / Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Solvable">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LogerSN">
     <link rel="apple-touch-icon" href="{% static 'img/icon-192x192.png' %}">
+    <meta name="theme-color" content="#0d3d1e">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Favicon Dynamique (Maison SOLVABLE) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%237fd47d' d='M543.8 287.6c17 0 32-14 32-32.1c1-9-3-17-11-24L512 185V64c0-17.7-14.3-32-32-32H448c-17.7 0-32 14.3-32 32v36.7L305.8 3.4C297.1-4.8 279-4.8 270.2 3.4L8.4 246.4c-9.1 8-11.7 21.6-6 32.5s18.8 14.3 32 12.3L48 288.7v175.4c0 26.5 21.5 48 48 48h48v-112c0-26.5 21.5-48 48-48h64c26.5 0 48 21.5 48 48v112h80c26.5 0 48-21.5 48-48V289.8l10.8 1.4c2.6 .3 5.2-.6 7.6-1.5zM224 432c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24zm48-24a48 48 0 1 1-96 0 48 48 0 1 1 96 0zM352 144a64 64 0 1 1-128 0 64 64 0 1 1 128 0zm-64-16a16 16 0 1 0 0-32 16 16 0 1 0 0 32zm80 80c0-44.2-35.8-80-80-80s-80 35.8-80 80v32h160v-32z'/></svg>">
@@ -310,6 +314,20 @@
                             <li><a class="dropdown-item rounded" href="{% url 'fraud_list' %}"><i class="fa-solid fa-mask me-2 text-danger"></i>Liste Noire</a></li>
                             <li><a class="dropdown-item rounded" href="{% url 'report_pro_fraud' %}"><i class="fa-solid fa-bullhorn me-2"></i>Signaler un Pro</a></li>
                         </ul>
+                    </li>
+
+                    <!-- Bouton d'installation PWA (visible seulement si Chrome propose l'installation) -->
+                    <li class="nav-item ms-lg-2">
+                        <button id="pwa-install-btn"
+                                class="btn btn-sm mt-2 mt-lg-0"
+                                style="display:none; align-items:center; gap:6px;
+                                       background: linear-gradient(135deg, #0b4629, #7fd47d);
+                                       color: white; border:none; border-radius:50px;
+                                       padding: 6px 14px; font-weight:600; font-size:0.8rem;"
+                                title="Installer l'application">
+                            <i class="fa-solid fa-download"></i>
+                            <span class="d-none d-lg-inline">Installer l'app</span>
+                        </button>
                     </li>
 
                     <li class="nav-item ms-lg-3">
@@ -595,5 +613,61 @@
     {% endif %}
 
     {% block extra_js %}{% endblock %}
+
+    <!-- ============================================ -->
+    <!-- PWA : Service Worker + Bouton d'Installation -->
+    <!-- ============================================ -->
+    <script>
+    (function() {
+        // 1. Enregistrement du Service Worker (silencieux, sans impact)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then(function(reg) {
+                        console.log('[LogerSN PWA] Service Worker actif, scope:', reg.scope);
+                    })
+                    .catch(function(err) {
+                        // Erreur silencieuse : le site fonctionne normalement sans SW
+                        console.warn('[LogerSN PWA] SW non enregistré:', err);
+                    });
+            });
+        }
+
+        // 2. Capture de l'événement d'installation Chrome
+        let deferredPrompt = null;
+        const installBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault(); // Empêche la popup automatique
+            deferredPrompt = e;
+            // Affiche notre bouton personnalisé
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.classList.add('animate__animated', 'animate__fadeIn');
+            }
+        });
+
+        // 3. Clic sur le bouton d'installation
+        if (installBtn) {
+            installBtn.addEventListener('click', function() {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(choice) {
+                    if (choice.outcome === 'accepted') {
+                        console.log('[LogerSN PWA] App installée !');
+                    }
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
+            });
+        }
+
+        // 4. Masquer le bouton si déjà installé
+        window.addEventListener('appinstalled', function() {
+            if (installBtn) installBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+    })();
+    </script>
 </body>
 </html>
