@@ -1,17 +1,26 @@
 import os
 import sys
+import traceback
 
-# Ajouter le chemin de l'application
-sys.path.insert(0, os.path.dirname(__file__))
+# Chemin absolu du projet
+PROJECT_ROOT = os.path.dirname(__file__)
+sys.path.insert(0, PROJECT_ROOT)
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
 
-# Initialisation Django UNIQUE au démarrage (Performance)
-import django
-django.setup()
-
-from django.core.wsgi import get_wsgi_application
-django_app = get_wsgi_application()
-
-# Point d'entrée Passenger
 def application(environ, start_response):
-    return django_app(environ, start_response)
+    try:
+        import django
+        django.setup()
+        from django.core.wsgi import get_wsgi_application
+        _application = get_wsgi_application()
+        return _application(environ, start_response)
+    except Exception:
+        # Log de l'erreur dans un fichier pour nous
+        with open(os.path.join(PROJECT_ROOT, "debug_wsgi.log"), "a") as f:
+            f.write("\n--- ERREUR DJANGO ---\n")
+            f.write(traceback.format_exc())
+        
+        # Affichage propre pour le navigateur
+        start_response('500 Internal Server Error', [('Content-Type', 'text/plain')])
+        return [b"Erreur critique lors du chargement de Django. Consultez debug_wsgi.log."]
