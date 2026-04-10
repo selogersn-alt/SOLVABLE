@@ -20,7 +20,8 @@ def application(environ, start_response):
         with open('debug_passenger.log', 'a') as f: f.write("Iterating response...\n")
         result = list(response)
         
-        with open('debug_passenger.log', 'a') as f: f.write(f"Done. Result size: {len(result)}\n")
+        preview = result[0][:100] if result else "EMPTY"
+        with open('debug_passenger.log', 'a') as f: f.write(f"Done. Result size: {len(result)}. Preview: {preview}\n")
         return result
     except Exception as e:
         import traceback
