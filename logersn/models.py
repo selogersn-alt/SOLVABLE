@@ -121,12 +121,12 @@ class PropertyImage(models.Model):
                 img.thumbnail(max_size, Image.Resampling.LANCZOS)
                 
                 output = io.BytesIO()
-                img.save(output, format='JPEG', quality=85, optimize=True)
+                img.save(output, format='WEBP', quality=80, method=6)
                 output.seek(0)
                 
-                # Remplacer le nom par un .jpg propre
+                # Remplacer le nom par un .webp propre
                 base_name = self.image_url.name.rsplit('.', 1)[0].split('/')[-1]
-                self.image_url.save(f"{base_name}.jpg", ContentFile(output.read()), save=False)
+                self.image_url.save(f"{base_name}.webp", ContentFile(output.read()), save=False)
             except Exception:
                 pass
         super().save(*args, **kwargs)

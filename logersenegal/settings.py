@@ -14,6 +14,16 @@ from pathlib import Path
 import os
 import dj_database_url
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn="https://placeholder@sentry.io/12345", # À remplacer par le vrai DSN Sentry
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=0.2,
+    send_default_pii=True
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -252,3 +262,31 @@ except ImportError:
     pass
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- SECURITY & HSTS (SEO & Trust) ---
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000 # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# --- PWA CONFIGURATION ---
+INSTALLED_APPS += ['pwa']
+PWA_APP_NAME = 'Solvable Sénégal'
+PWA_APP_DESCRIPTION = "Plateforme d'Immobilier de Confiance au Sénégal"
+PWA_APP_THEME_COLOR = '#0b4629'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/img/logo_nils.png',
+        'sizes': '160x160'
+    }
+]
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static', 'serviceworker.js')
