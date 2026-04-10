@@ -50,14 +50,13 @@ def home_view(request):
     
     from django.core.paginator import Paginator
 
-    # Slider : Toutes les annonces boostées actives (défilement infini)
+    # Slider : Toutes les annonces boostées (sans filtre is_published)
     boosted_properties = Property.objects.filter(
-        is_published=True, is_boosted=True
+        is_boosted=True
     ).select_related('owner').prefetch_related('images').order_by('-created_at')
 
-    # Liste paginée : TOUTES les annonces (boostées incluses) du plus récent au plus ancien
-    all_properties = Property.objects.filter(
-        is_published=True
+    # Liste paginée : TOUTES les annonces du plus récent au plus ancien
+    all_properties = Property.objects.all(
     ).select_related('owner').prefetch_related('images').order_by('-created_at')
 
     paginator = Paginator(all_properties, 12)
