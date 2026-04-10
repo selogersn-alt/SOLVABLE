@@ -1,3 +1,4 @@
+PassengerBaseURI /
 <IfModule mod_passenger.c>
   PassengerAppRoot /home/gaak4328/logersenegal.com
   PassengerAppType wsgi
