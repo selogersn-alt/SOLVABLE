@@ -275,6 +275,7 @@ if not DEBUG:
 # --- PWA CONFIGURATION ---
 INSTALLED_APPS += ['pwa']
 PWA_APP_NAME = 'Solvable Sénégal'
+PWA_APP_SHORT_NAME = 'Solvable'
 PWA_APP_DESCRIPTION = "Plateforme d'Immobilier de Confiance au Sénégal"
 PWA_APP_THEME_COLOR = '#0b4629'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'
@@ -285,8 +286,12 @@ PWA_APP_START_URL = '/'
 PWA_APP_STATUS_BAR_COLOR = 'default'
 PWA_APP_ICONS = [
     {
-        'src': '/static/img/logo_nils.png',
-        'sizes': '160x160'
+        'src': '/static/img/icon-192x192.png',
+        'sizes': '192x192'
+    },
+    {
+        'src': '/static/img/icon-512x512.png',
+        'sizes': '512x512'
     }
 ]
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static', 'serviceworker.js')
