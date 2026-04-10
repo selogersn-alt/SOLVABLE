@@ -48,9 +48,24 @@ def home_view(request):
     doc_q = request.GET.get('doc_query', '')
     query_str = name_q or phone_q or doc_q
     
-    # Retour à une recherche simplifiée pour diagnostiquer la perte de données
-    boosted_properties = Property.objects.filter(is_boosted=True).order_by('-id')[:6]
-    page_obj = Property.objects.all().exclude(is_boosted=True).order_by('-id')[:12]
+    from django.core.paginator import Paginator
+
+    # Slider : Toutes les annonces boostées actives (défilement infini)
+    boosted_properties = Property.objects.filter(
+        is_published=True, is_boosted=True
+    ).select_related('owner').prefetch_related('images').order_by('-created_at')
+
+    # Liste paginée : TOUTES les annonces (boostées incluses) du plus récent au plus ancien
+    all_properties = Property.objects.filter(
+        is_published=True
+    ).select_related('owner').prefetch_related('images').order_by('-created_at')
+
+    paginator = Paginator(all_properties, 12)
+    page_number = request.GET.get('page', 1)
+    try:
+        page_obj = paginator.page(page_number)
+    except Exception:
+        page_obj = paginator.page(1)
 
     return render(request, 'home.html', {
         'page_obj': page_obj,

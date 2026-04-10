@@ -178,32 +178,58 @@
         }
     }
 
-    /* Boosted Slider CSS (Point 2) */
-    .boosted-slider {
+    /* Marquee Infini - Défilement automatique droite → gauche */
+    .marquee-track {
         display: flex;
-        overflow-x: auto;
         gap: 20px;
-        padding: 10px 5px 25px 5px;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: var(--color-light-green) transparent;
+        animation: marquee-scroll 40s linear infinite;
+        width: max-content;
     }
-    .boosted-slider::-webkit-scrollbar {
-        height: 6px;
+    .marquee-track:hover {
+        animation-play-state: paused;
     }
-    .boosted-slider::-webkit-scrollbar-thumb {
-        background: var(--color-light-green);
-        border-radius: 10px;
+    .marquee-wrapper {
+        overflow: hidden;
+        position: relative;
+        padding: 10px 0 20px 0;
+    }
+    /* Dégradés latéraux pour un effet premium */
+    .marquee-wrapper::before,
+    .marquee-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 80px;
+        z-index: 2;
+        pointer-events: none;
+    }
+    .marquee-wrapper::before {
+        left: 0;
+        background: linear-gradient(to right, var(--bg-body), transparent);
+    }
+    .marquee-wrapper::after {
+        right: 0;
+        background: linear-gradient(to left, var(--bg-body), transparent);
+    }
+    @keyframes marquee-scroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
     }
     .boosted-card {
-        flex: 0 0 320px; /* Slightly larger than standard */
-        border-radius: 20px;
-        transition: transform 0.3s;
-        border: 2px solid var(--color-yellow) !important; /* Visual distinction */
+        flex: 0 0 300px;
+        border-radius: 16px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid var(--color-yellow) !important;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        overflow: hidden;
+        background: var(--bg-card);
     }
     .boosted-card:hover {
-        transform: scale(1.02);
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important;
+        color: inherit;
     }
 </style>
 {% endblock %}
@@ -376,62 +402,111 @@
 
 <!-- BOOSTED PROPERTIES SLIDER (Point 2) -->
 {% if boosted_properties %}
-<section class="py-4 bg-light-subtle" style="border-bottom: 1px solid var(--border-color);">
+<section class="py-4" style="background: var(--bg-body); border-bottom: 2px solid var(--color-yellow);">
     <div class="container">
-        <div class="d-flex align-items-center mb-3">
-            <h5 class="fw-bold m-0" style="color: var(--text-main);"><i class="fa-solid fa-bolt text-warning me-2"></i>Offres à la Une (Boostées)</h5>
-            <div class="ms-auto small text-muted d-none d-md-block">Faites défiler <i class="fa-solid fa-arrow-right ms-1"></i></div>
+        <div class="d-flex align-items-center mb-3 px-1">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold me-3">
+                <i class="fa-solid fa-bolt me-1"></i> BOOSTÉES
+            </span>
+            <h5 class="fw-bold m-0" style="color: var(--text-main);">Offres à la Une — Défilement automatique</h5>
+            <span class="ms-auto small text-muted d-none d-md-inline">
+                <i class="fa-solid fa-angles-left me-1"></i> Passez la souris pour stopper
+            </span>
         </div>
-        <div class="boosted-slider">
-            {% for prop in boosted_properties %}
-            <div class="boosted-card card border-0 shadow-sm overflow-hidden">
-                <div class="position-relative">
-                    {% if prop.images.first %}
-                        <img src="{{ prop.images.first.image_url.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                    {% else %}
-                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="fa-solid fa-house text-muted opacity-25" style="font-size: 4rem;"></i>
+        <div class="marquee-wrapper">
+            <div class="marquee-track">
+                {# Premier passage #}
+                {% for prop in boosted_properties %}
+                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-sm" title="{{ prop.title }}">
+                    <div class="position-relative" style="height:190px; overflow:hidden;">
+                        {% with img=prop.images.first %}
+                        {% if img %}
+                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
+                                 style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
+                            </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
                         </div>
-                    {% endif %}
-                    <div class="position-absolute top-0 start-0 m-2">
-                        <span class="badge bg-warning text-dark px-2 py-1 rounded-pill small fw-bold">BOOSTÉ</span>
-                    </div>
-                    <div class="position-absolute bottom-0 end-0 m-2">
-                        <div class="bg-white px-2 py-1 rounded shadow-sm fw-bold text-success small">
-                            {% if prop.listing_category == 'SALE' %}
-                                {{ prop.price|floatformat:0 }} F
-                            {% elif prop.listing_category == 'FURNISHED' %}
-                                {{ prop.price_per_night|floatformat:0 }} F/Nuit
-                            {% else %}
-                                {{ prop.price|floatformat:0 }} F
-                            {% endif %}
+                        <div class="position-absolute bottom-0 end-0 m-2">
+                            <span class="badge bg-dark text-white rounded-pill">
+                                {% if prop.listing_category == 'SALE' %}
+                                    {{ prop.price|floatformat:0 }} F
+                                {% elif prop.listing_category == 'FURNISHED' %}
+                                    {{ prop.price_per_night|floatformat:0 }} F/Nuit
+                                {% else %}
+                                    {{ prop.price|floatformat:0 }} F/Mois
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
-                </div>
-                <div class="card-body p-3">
-                    <h6 class="fw-bold text-truncate mb-1">{{ prop.title }}</h6>
-                    <p class="small text-muted mb-1"><i class="fa-solid fa-location-dot me-1"></i> {{ prop.neighborhood }}</p>
-                    <div class="small text-success fw-bold"><i class="fa-solid fa-clock me-1"></i> Il y a {{ prop.created_at|timesince }}</div>
-                    <a href="{% url 'property_detail' prop.id %}" class="stretched-link"></a>
-                </div>
+                    <div class="p-3">
+                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
+                        <p class="small text-muted mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
+                {# Duplication pour boucle infinie fluide #}
+                {% for prop in boosted_properties %}
+                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-sm" title="{{ prop.title }}">
+                    <div class="position-relative" style="height:190px; overflow:hidden;">
+                        {% with img=prop.images.first %}
+                        {% if img %}
+                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
+                                 style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
+                            </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
+                        </div>
+                        <div class="position-absolute bottom-0 end-0 m-2">
+                            <span class="badge bg-dark text-white rounded-pill">
+                                {% if prop.listing_category == 'SALE' %}
+                                    {{ prop.price|floatformat:0 }} F
+                                {% elif prop.listing_category == 'FURNISHED' %}
+                                    {{ prop.price_per_night|floatformat:0 }} F/Nuit
+                                {% else %}
+                                    {{ prop.price|floatformat:0 }} F/Mois
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
+                        <p class="small text-muted mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- REGULAR ADS SECTION (Paginated) -->
 <section id="annonces" class="py-5" style="background-color: var(--bg-body);">
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="fw-bold m-0" style="color: var(--text-main);">Dernières Annonces Certifiées</h2>
-                <p class="text-muted">Des biens exclusifs vérifiés par nos experts.</p>
+                <h2 class="fw-bold m-0" style="color: var(--text-main);">Dernières Annonces</h2>
+                <p class="text-muted">Du plus récent au plus ancien — Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</p>
             </div>
-            <div class="small text-muted">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</div>
+            <a href="{% url 'properties_list' %}" class="btn btn-sm btn-outline-success rounded-pill">
+                Voir tout <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
         </div>
-        
+
         <div class="row g-4">
             {% for property in page_obj %}
             <div class="col-md-4 col-sm-6">
@@ -439,37 +514,40 @@
             </div>
             {% empty %}
             <div class="col-12 text-center py-5">
-                <p class="text-muted">Bientôt de nouvelles annonces certifiées...</p>
+                <i class="fa-solid fa-house-circle-xmark text-muted mb-4" style="font-size:4rem;"></i>
+                <p class="text-muted fs-5">Bientôt de nouvelles annonces certifiées...</p>
             </div>
             {% endfor %}
         </div>
 
+        {# PAGINATION #}
         {% if page_obj.has_other_pages %}
-        <nav class="mt-5">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}#annonces" style="border-radius: 10px 0 0 10px;">Précédent</a>
-                    </li>
-                {% endif %}
-
+        <nav class="mt-5" aria-label="Navigation des annonces">
+            <ul class="pagination justify-content-center gap-1">
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                    <a class="page-link rounded-pill px-3"
+                       href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}#annonces{% else %}#{% endif %}">
+                        <i class="fa-solid fa-chevron-left"></i> Préc.
+                    </a>
+                </li>
                 {% for num in page_obj.paginator.page_range %}
                     {% if page_obj.number == num %}
                         <li class="page-item active">
-                            <span class="page-link" style="background-color: var(--color-dark-green); border-color: var(--color-dark-green);">{{ num }}</span>
+                            <span class="page-link rounded-pill px-3"
+                                  style="background:var(--color-dark-green); border-color:var(--color-dark-green);">{{ num }}</span>
                         </li>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}#annonces">{{ num }}</a>
+                            <a class="page-link rounded-pill px-3" href="?page={{ num }}#annonces">{{ num }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}#annonces" style="border-radius: 0 10px 10px 0;">Suivant</a>
-                    </li>
-                {% endif %}
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                    <a class="page-link rounded-pill px-3"
+                       href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}#annonces{% else %}#{% endif %}">
+                        Suiv. <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </li>
             </ul>
         </nav>
         {% endif %}
