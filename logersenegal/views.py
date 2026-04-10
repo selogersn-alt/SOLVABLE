@@ -20,30 +20,18 @@ from chat.models import Conversation, Message
 from solvable.models import PropertyApplication, RentalFiliation, PaymentHistory, IncidentReport
 
 def home_view(request):
-    # Stats groupées pour minimiser les requêtes
     try:
         stats = {
-            'total_unpaid': IncidentReport.objects.filter(
-                status=IncidentReport.StatusEnum.IMPACTED, is_validated=True
-            ).aggregate(Sum('amount_due'))['amount_due__sum'] or 0,
-            'profiles_flagged': IncidentReport.objects.filter(
-                status=IncidentReport.StatusEnum.IMPACTED, is_validated=True
-            ).values('reported_tenant').distinct().count(),
-            'resolved_cases': IncidentReport.objects.filter(
-                status=IncidentReport.StatusEnum.RESOLVED
-            ).count(),
-            'active_mediation': IncidentReport.objects.filter(
-                status=IncidentReport.StatusEnum.IN_MEDIATION
-            ).count(),
+            'total_unpaid': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).aggregate(Sum('amount_due'))['amount_due__sum'] or 0,
+            'profiles_flagged': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).values('reported_tenant').distinct().count(),
+            'resolved_cases': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.RESOLVED).count(),
+            'active_mediation': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IN_MEDIATION).count(),
         }
-        recent_incidents = IncidentReport.objects.filter(
-            is_validated=True
-        ).only('id', 'amount_due', 'status', 'created_at').order_by('-created_at')[:5]
+        recent_incidents = IncidentReport.objects.filter(is_validated=True).order_by('-id')[:5]
     except Exception:
         stats = {'total_unpaid': 0, 'profiles_flagged': 0, 'resolved_cases': 0, 'active_mediation': 0}
         recent_incidents = []
 
-    # Recherche NILS (uniquement si paramètres présents)
     name_q = request.GET.get('name_query', '').strip()
     phone_q = request.GET.get('phone_query', '').strip()
     doc_q = request.GET.get('doc_query', '').strip()
@@ -75,18 +63,9 @@ def home_view(request):
         except Exception:
             pass
 
-    # Annonces — limites strictes pour O2switch
     try:
-        boosted_properties = Property.objects.filter(
-            is_published=True, is_boosted=True
-        ).only('id', 'title', 'price', 'city', 'slug', 'property_type', 'transaction_type'
-        ).order_by('-id')[:6]
-
-        properties = Property.objects.filter(
-            is_published=True
-        ).exclude(is_boosted=True).only(
-            'id', 'title', 'price', 'city', 'slug', 'property_type', 'transaction_type'
-        ).order_by('-id')[:12]
+        boosted_properties = Property.objects.filter(is_published=True, is_boosted=True).order_by('-id')[:6]
+        properties = Property.objects.filter(is_published=True).exclude(is_boosted=True).order_by('-id')[:12]
     except Exception:
         boosted_properties = []
         properties = []
