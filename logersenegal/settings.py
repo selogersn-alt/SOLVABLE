@@ -14,16 +14,6 @@ from pathlib import Path
 import os
 import dj_database_url
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
-# sentry_sdk.init(
-#     dsn="https://placeholder@sentry.io/12345", # À remplacer par le vrai DSN Sentry
-#     integrations=[DjangoIntegration()],
-#     traces_sample_rate=0.2,
-#     send_default_pii=True
-# )
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
