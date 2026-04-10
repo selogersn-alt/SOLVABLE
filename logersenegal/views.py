@@ -40,9 +40,16 @@ def home_view(request):
     results = None
 
     if name_q or phone_q or doc_q:
-        if not request.user.is_authenticated or (request.user.role == 'TENANT' and not request.user.is_staff):
+        if not request.user.is_authenticated:
             messages.warning(request, "L'accès aux données de solvabilité NILS est réservé aux bailleurs et agences identifiés.")
             return redirect('login')
+        
+        # Sécurité supplémentaire pour le rôle
+        user_role = getattr(request.user, 'role', 'TENANT')
+        if user_role == 'TENANT' and not request.user.is_staff:
+            messages.warning(request, "L'accès aux données de solvabilité NILS est réservé aux bailleurs et agences identifiés.")
+            return redirect('login')
+
         filters = Q()
         if name_q:
             filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
@@ -53,15 +60,6 @@ def home_view(request):
         if country_q:
             filters &= Q(user__document_country=country_q)
         results = NILS_Profile.objects.filter(filters).distinct()[:20]
-        try:
-            SearchLog.objects.create(
-                searcher=request.user,
-                query=f"HOME|N:{name_q}|T:{phone_q}|D:{doc_q}|C:{country_q}",
-                results_found=results.count() if results else 0,
-                ip_address=request.META.get('REMOTE_ADDR')
-            )
-        except Exception:
-            pass
 
     try:
         boosted_properties = Property.objects.filter(is_published=True, is_boosted=True).order_by('-id')[:6]
