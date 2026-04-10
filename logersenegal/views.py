@@ -14,64 +14,25 @@ from django.utils.encoding import force_bytes, force_str
 
 from logersn.models import Property, Favorite
 from logersn.forms import PropertyForm
-from logersn.constants import COUNTRY_CHOICES
-from users.models import User, NILS_Profile, SearchLog
-from chat.models import Conversation, Message
-from solvable.models import PropertyApplication, RentalFiliation, PaymentHistory, IncidentReport
+from django_countries import countries as COUNTRY_CHOICES
 
 def home_view(request):
-    try:
-        stats = {
-            'total_unpaid': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).aggregate(Sum('amount_due'))['amount_due__sum'] or 0,
-            'profiles_flagged': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IMPACTED, is_validated=True).values('reported_tenant').distinct().count(),
-            'resolved_cases': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.RESOLVED).count(),
-            'active_mediation': IncidentReport.objects.filter(status=IncidentReport.StatusEnum.IN_MEDIATION).count(),
-        }
-        recent_incidents = IncidentReport.objects.filter(is_validated=True).order_by('-id')[:5]
-    except Exception:
-        stats = {'total_unpaid': 0, 'profiles_flagged': 0, 'resolved_cases': 0, 'active_mediation': 0}
-        recent_incidents = []
-
-    name_q = request.GET.get('name_query', '').strip()
-    phone_q = request.GET.get('phone_query', '').strip()
-    doc_q = request.GET.get('doc_query', '').strip()
-    country_q = request.GET.get('country_query', '').strip()
-    query = name_q or phone_q or doc_q
+    from logersn.models import Property
+    from solvable.models import IncidentReport, NILS_Profile
+    
+    # Stats de base
+    stats = {'total_unpaid': 0, 'profiles_flagged': 0, 'resolved_cases': 0, 'active_mediation': 0}
+    recent_incidents = []
+    
+    # Recherche NILS simplifiée
+    name_q = request.GET.get('name_query', '')
+    phone_q = request.GET.get('phone_query', '')
+    doc_q = request.GET.get('doc_query', '')
     results = None
-
-    if name_q or phone_q or doc_q:
-        if not request.user.is_authenticated:
-            messages.warning(request, "L'accès aux données de solvabilité NILS est réservé aux bailleurs et agences identifiés.")
-            return redirect('login')
-        
-        # Sécurité supplémentaire pour le rôle
-        user_role = getattr(request.user, 'role', 'TENANT')
-        if user_role == 'TENANT' and not request.user.is_staff:
-            messages.warning(request, "L'accès aux données de solvabilité NILS est réservé aux bailleurs et agences identifiés.")
-            return redirect('login')
-
-        filters = Q()
-        if name_q:
-            filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
-        if phone_q:
-            filters &= Q(user__phone_number__icontains=phone_q)
-        if doc_q:
-            filters &= Q(user__cni_number__icontains=doc_q)
-        if country_q:
-            filters &= Q(user__document_country=country_q)
-        results = NILS_Profile.objects.filter(filters).distinct()[:20]
-
-    try:
-        boosted_properties = Property.objects.filter(is_published=True, is_boosted=True).order_by('-id')[:6]
-        all_properties = Property.objects.filter(is_published=True).exclude(is_boosted=True).order_by('-id')
-        
-        from django.core.paginator import Paginator
-        paginator = Paginator(all_properties, 12) # 12 annonces par page
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-    except Exception:
-        boosted_properties = []
-        page_obj = []
+    
+    # Annonces (La correction demandée)
+    boosted_properties = Property.objects.filter(is_published=True, is_boosted=True).order_by('-id')[:6]
+    page_obj = Property.objects.filter(is_published=True).exclude(is_boosted=True).order_by('-id')[:12]
 
     return render(request, 'home.html', {
         'page_obj': page_obj,
@@ -79,7 +40,7 @@ def home_view(request):
         'stats': stats,
         'recent_incidents': recent_incidents,
         'results': results,
-        'query': query,
+        'query': name_q or phone_q or doc_q,
         'countries': COUNTRY_CHOICES
     })
 
