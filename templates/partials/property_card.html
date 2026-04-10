@@ -1,7 +1,9 @@
 {% load static %}
 <div class="property-card shadow-sm border-0 h-100 animate__animated animate__fadeInUp position-relative" style="transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;">
     <!-- Lien global invisible pour rendre toute la carte cliquable -->
-    <a href="{% url 'property_detail' property.id %}" class="stretched-link"></a>
+    {% if property.id %}
+        <a href="{% url 'property_detail' property.id %}" class="stretched-link"></a>
+    {% endif %}
     
     <div class="property-image-wrapper position-relative" style="height: 240px; overflow: hidden; border-top-left-radius: 12px; border-top-right-radius: 12px;">
         {% if property.images.all %}
