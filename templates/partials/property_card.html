@@ -84,9 +84,11 @@
         <!-- Contact et Bouton (Z-index élevé pour rester interactifs) -->
         <div class="d-flex justify-content-between align-items-center" style="position: relative; z-index: 10;">
             <div class="d-flex gap-1">
+                {% if property.id %}
                 <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour, je suis intéressé par votre annonce sur Solvable LogerSN : {{ property.title }} ({{ request.scheme }}://{{ request.get_host }}{% url 'property_detail' property.id %})" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2" style="background: rgba(25, 135, 84, 0.05);" title="WhatsApp">
                     <i class="fa-brands fa-whatsapp fs-5"></i>
                 </a>
+                {% endif %}
                 <a href="tel:{{ property.owner.phone_number }}" class="btn btn-sm btn-outline-primary border-0 px-2" style="background: rgba(13, 110, 253, 0.05);" title="Appeler">
                     <i class="fa-solid fa-phone fs-6"></i>
                 </a>
