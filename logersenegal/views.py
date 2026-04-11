@@ -910,7 +910,6 @@ def update_profile_view(request):
         form = UserProfileForm(instance=request.user)
     return render(request, 'profile_update.html', {'form': form})
 
-@login_required
 def public_profile_view(request, user_id=None, slug=None):
     from users.models import User
     from logersn.models import Property
@@ -919,34 +918,14 @@ def public_profile_view(request, user_id=None, slug=None):
         viewed_user = get_object_or_404(User, slug=slug)
     else:
         viewed_user = get_object_or_404(User, id=user_id)
-
-    properties = Property.objects.filter(owner=viewed_user, is_published=True)
-    
-    # Statistiques basiques d'activité
-    stats = {'total_properties': 0, 'experience_years': 0}
-    try:
-        stats['total_properties'] = properties.count()
-        if viewed_user.date_joined:
-            days_joined = (timezone.now() - viewed_user.date_joined).days
-            stats['experience_years'] = max(0, days_joined // 365)
-    except Exception:
-        pass
-    
-    # Lien de partage personnalisé
-    share_url = request.build_absolute_uri()
-    try:
-        if viewed_user.slug:
-            share_url = request.build_absolute_uri(reverse('public_profile_slug', kwargs={'slug': viewed_user.slug}))
-        else:
-            share_url = request.build_absolute_uri(reverse('public_profile', kwargs={'user_id': str(viewed_user.id)}))
-    except Exception:
-        pass
+        
+    properties = Property.objects.filter(owner=viewed_user, is_published=True)[:20]
     
     return render(request, 'public_profile.html', {
         'viewed_user': viewed_user,
         'properties': properties,
-        'stats': stats,
-        'share_url': share_url
+        'stats': {'total_properties': properties.count(), 'experience_years': 0},
+        'share_url': request.build_absolute_uri()
     })
 
 def cgu_view(request):
