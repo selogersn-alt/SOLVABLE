@@ -68,7 +68,6 @@ AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -169,19 +168,15 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
-# Optimisation WhiteNoise (Version Sécurisée pour O2switch)
+# Configuration Statique Standard (Apache servira ces fichiers)
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.StaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-
-# Paramètres WhiteNoise
-WHITENOISE_INDEX_FILE = False
-WHITENOISE_MAX_AGE = 31536000 # 1 an
 
 # WhiteNoise sert les fichiers statiques (JS, CSS). 
 # Pour un déploiement souple sur O2switch avec LiteSpeed, 
