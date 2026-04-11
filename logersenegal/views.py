@@ -923,21 +923,24 @@ def public_profile_view(request, user_id=None, slug=None):
     properties = Property.objects.filter(owner=viewed_user, is_published=True)
     
     # Statistiques basiques d'activité
-    days_joined = (timezone.now() - viewed_user.date_joined).days if viewed_user.date_joined else 0
-    stats = {
-        'total_properties': properties.count(),
-        'experience_years': max(0, days_joined // 365),
-    }
+    stats = {'total_properties': 0, 'experience_years': 0}
+    try:
+        stats['total_properties'] = properties.count()
+        if viewed_user.date_joined:
+            days_joined = (timezone.now() - viewed_user.date_joined).days
+            stats['experience_years'] = max(0, days_joined // 365)
+    except Exception:
+        pass
     
     # Lien de partage personnalisé
+    share_url = request.build_absolute_uri()
     try:
         if viewed_user.slug:
             share_url = request.build_absolute_uri(reverse('public_profile_slug', kwargs={'slug': viewed_user.slug}))
         else:
             share_url = request.build_absolute_uri(reverse('public_profile', kwargs={'user_id': str(viewed_user.id)}))
     except Exception:
-        from logersenegal.settings import SITE_URL
-        share_url = f"{SITE_URL}/profil-public/{viewed_user.id}/"
+        pass
     
     return render(request, 'public_profile.html', {
         'viewed_user': viewed_user,
