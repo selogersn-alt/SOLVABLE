@@ -279,10 +279,11 @@ except ImportError:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- CACHE CONFIGURATION (Désactiver pour stabilité production) ---
+# --- CACHE CONFIGURATION (Optimisation Safe pour O2switch) ---
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'logersenegal-cache',
     }
 }
 

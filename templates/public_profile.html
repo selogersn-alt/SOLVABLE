@@ -128,7 +128,7 @@
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius: 20px; border: 1px solid var(--border-color) !important;">
                 <div class="position-relative">
-                    {% if prop.images.first %}
+                    {% if prop.images.first and prop.images.first.image_url %}
                         <img src="{{ prop.images.first.image_url.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                     {% else %}
                         <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">

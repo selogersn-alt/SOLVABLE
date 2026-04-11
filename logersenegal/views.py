@@ -934,9 +934,10 @@ def public_profile_view(request, user_id=None, slug=None):
         if viewed_user.slug:
             share_url = request.build_absolute_uri(reverse('public_profile_slug', kwargs={'slug': viewed_user.slug}))
         else:
-            share_url = request.build_absolute_uri(reverse('public_profile', kwargs={'user_id': viewed_user.id}))
-    except:
-        share_url = request.build_absolute_uri()
+            share_url = request.build_absolute_uri(reverse('public_profile', kwargs={'user_id': str(viewed_user.id)}))
+    except Exception:
+        from logersenegal.settings import SITE_URL
+        share_url = f"{SITE_URL}/profil-public/{viewed_user.id}/"
     
     return render(request, 'public_profile.html', {
         'viewed_user': viewed_user,
