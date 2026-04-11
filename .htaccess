@@ -13,7 +13,7 @@
 # Forcer le bon handler pour passenger_wsgi.py (Evite la fuite de code source)
 <Files "passenger_wsgi.py">
     SetHandler application/x-httpd-wsgi
-</IfModule>
+</Files>
 
 # Routage des requêtes vers le moteur Django
 RewriteEngine On

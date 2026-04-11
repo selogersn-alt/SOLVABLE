@@ -178,8 +178,9 @@ STORAGES = {
     },
 }
 
-# Forcer WhiteNoise à servir aussi les photos (MEDIA)
-WHITENOISE_ROOT = str(MEDIA_ROOT)
+# WhiteNoise sert les fichiers statiques (JS, CSS). 
+# Pour un déploiement souple sur O2switch avec LiteSpeed, 
+# on laisse Apache servir le dossier media physique directement.
 WHITENOISE_INDEX_FILE = False
 
 # STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
@@ -194,8 +195,8 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', '-P7GvVHJ2RmjnTG')
 DEFAULT_FROM_EMAIL = 'Solvable Loger Sénégal <solvable@logersenegal.com>'
 SERVER_EMAIL = 'solvable@logersenegal.com'
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Configuration FedaPay / DigitalH
+# (Les paramètres MEDIA_URL et MEDIA_ROOT sont définis plus haut)
 
 # Auth Settings
 LOGIN_URL = 'login'
