@@ -919,12 +919,14 @@ def public_profile_view(request, user_id=None, slug=None):
     else:
         viewed_user = get_object_or_404(User, id=user_id)
         
-    properties = Property.objects.filter(owner=viewed_user, is_published=True)[:20]
+    all_properties = Property.objects.filter(owner=viewed_user, is_published=True)
+    properties_count = all_properties.count()
+    properties = all_properties[:20]
     
     return render(request, 'public_profile.html', {
         'viewed_user': viewed_user,
         'properties': properties,
-        'stats': {'total_properties': properties.count(), 'experience_years': 0},
+        'stats': {'total_properties': properties_count, 'experience_years': 0},
         'share_url': request.build_absolute_uri()
     })
 
