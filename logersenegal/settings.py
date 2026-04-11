@@ -279,23 +279,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- CACHE CONFIGURATION (Optimisation shared hosting O2switch) ---
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'tmp', 'django_cache'),
-        'TIMEOUT': 3600, # 1 heure par défaut
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
 }
 
 # --- SECURITY & HSTS (SEO & Trust) ---
 if not DEBUG:
-    # Rappel : SSL est actif sur le serveur (Cadenas OK)
-    SECURE_SSL_REDIRECT = True
+    # Rappel : SSL est géré par O2switch Apache en amont.
+    # Pour éviter les erreurs 500/Boucles, on désactive la redirection Django.
+    SECURE_SSL_REDIRECT = False 
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     
     # Sécurité supplémentaire
-    SECURE_HSTS_SECONDS = 15768000 # 6 mois
+    SECURE_HSTS_SECONDS = 0 # Désactivé temporairement pour test
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    SECURE_HSTS_PRELOAD = False
     
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
