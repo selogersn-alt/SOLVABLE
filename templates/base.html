@@ -6,9 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Balises SEO Stratégiques (Market-Driven) -->
     <title>{% block title %}Loger Sénégal | Location & Vente Immobilière de Confiance à Dakar{% endblock %}</title>
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description }}{% endblock %}">
+
+    <!-- SEO & Canoniques -->
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="description" content="{% block meta_description %}{% if seo_settings and seo_settings.meta_description %}{{ seo_settings.meta_description }}{% else %}Trouvez votre appartement, villa ou terrain au Sénégal sur Loger Sénégal. Location sécurisée, vérification de profil NILS et annonces immobilières vérifiées à Dakar et en province.{% endif %}{% endblock %}">
     <meta name="keywords" content="{% block meta_keywords %}{% if seo_settings and seo_settings.meta_keywords %}{{ seo_settings.meta_keywords }}{% else %}Immobilier Sénégal, Location appartement Dakar, Louer maison Sénégal, Vendre terrain Sénégal, Agence immobilière Dakar, F3 location Dakar, Haut standing Almadies, Titre foncier Sénégal, Loger Sénégal, Solvable NILS{% endif %}{% endblock %}">
-    <link rel="canonical" href="{{ request.build_absolute_uri }}">
     <meta name="author" content="Loger Sénégal - DigitalH Group">
 
     {% if seo_settings and seo_settings.header_scripts %}

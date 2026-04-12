@@ -20,6 +20,44 @@
             <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og_banner.png' %}">
         {% endif %}
     {% endwith %}
+
+    <!-- Données Structurées Schema.org pour les Robots -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "RealEstateListing",
+      "name": "{{ property.title|escapejs }}",
+      "description": "{{ property.description|striptags|truncatewords:50|escapejs }}",
+      "datePosted": "{{ property.created_at|date:'Y-m-d' }}",
+      "url": "{{ request.build_absolute_uri }}",
+      "image": [
+        {% for image in property.images.all %}"{{ request.scheme }}://{{ request.get_host }}{{ image.image_url.url }}"{% if not forloop.last %},{% endif %}{% endfor %}
+      ],
+      "contents": {
+        "@type": "SingleFamilyResidence",
+        "name": "{{ property.title|escapejs }}",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "{{ property.city|escapejs }}",
+          "addressRegion": "{{ property.neighborhood|escapejs }}",
+          "addressCountry": "SN"
+        },
+        "numberOfRooms": "{{ property.rooms|default:'1' }}",
+        "floorSize": {
+          "@type": "QuantitativeValue",
+          "value": "{{ property.surface_area|default:'0' }}",
+          "unitCode": "MTK"
+        }
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "{% if property.listing_category == 'SALE' %}{{ property.price }}{% elif property.listing_category == 'FURNISHED' %}{{ property.price_per_night }}{% else %}{{ property.price }}{% endif %}",
+        "priceCurrency": "XOF",
+        "availability": "https://schema.org/InStock",
+        "validFrom": "{{ property.created_at|date:'Y-m-d' }}"
+      }
+    }
+    </script>
 {% endblock %}
 
 {% block extra_css %}
