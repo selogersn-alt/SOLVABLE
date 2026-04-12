@@ -25,7 +25,7 @@ try:
 except ImportError:
     COUNTRY_CHOICES = []
 
-@cache_page(60 * 15)
+# @cache_page(60 * 15)
 def home_view(request):
     # Stats de base réelles
     try:
