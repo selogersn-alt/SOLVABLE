@@ -150,15 +150,22 @@ def properties_list_view(request):
     # Extraire les annonces pour le bandeau défilant du haut (Boostées uniquement)
     boosted_slider = Property.objects.filter(is_published=True, is_boosted=True).order_by('-created_at', '-id')[:10]
     
-    from logersn.constants import CITY_CHOICES, PROPERTY_TYPE_CHOICES, NEIGHBORHOOD_CHOICES
-    
+    # Génération dynamique de la description SEO (Phase 4)
+    seo_market_description = ""
+    if city and city != 'ALL':
+        city_name = dict(CITY_CHOICES).get(city, city)
+        seo_market_description = f"Le marché immobilier à {city_name} offre de nombreuses opportunités. Que vous cherchiez un appartement moderne au Plateau, une villa de standing aux Almadies ou une maison familiale à Hann, Loger Sénégal vous accompagne pour sécuriser votre transaction immobilière au Sénégal."
+    else:
+        seo_market_description = "Loger Sénégal est la plateforme de référence pour l'immobilier au Sénégal. Nous connectons bailleurs, agences et locataires dans un environnement sécurisé grâce au réseau de solvabilité NILS. Retrouvez nos annonces d'appartements, de villas et de terrains à Dakar, Thiès, Saly et partout au Sénégal."
+
     context = {
         'properties': properties,
         'boosted_slider': boosted_slider,
         'cities': CITY_CHOICES,
         'neighborhoods': NEIGHBORHOOD_CHOICES,
         'property_types': PROPERTY_TYPE_CHOICES,
-        'current_filters': request.GET
+        'current_filters': request.GET,
+        'seo_market_description': seo_market_description
     }
     
     return render(request, 'properties_list.html', context)
