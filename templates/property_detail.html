@@ -425,7 +425,7 @@
                     {% if property.listing_category == 'SALE' %}
                         {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">(Vente)</span>
                     {% elif property.listing_category == 'FURNISHED' %}
-                        {{ property.price_per_night|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/nuitée</span>
+                        {{ property.price_per_night|default:property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/nuitée</span>
                     {% else %}
                         {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/mois</span>
                     {% endif %}
