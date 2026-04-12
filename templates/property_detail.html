@@ -250,10 +250,14 @@
                 </div>
                 
                 <!-- Thumbnails -->
-                {% if property.images.count > 1 %}
+                {% if property.images.all.count > 1 %}
                 <div class="thumbnails-list">
                     {% for image in property.images.all %}
-                    <img src="{{ image.image_url.url }}" class="thumbnail-img {% if forloop.first %}active{% endif %}" onclick="changeImage(this)" onerror="this.style.display='none';">
+                    <img src="{{ image.image_url.url }}" 
+                         alt="{{ property.title }} - Photo {{ forloop.counter }}" 
+                         class="thumbnail-img {% if forloop.first %}active{% endif %}" 
+                         loading="lazy"
+                         onclick="changeImage(this)">
                     {% endfor %}
                 </div>
                 {% endif %}
