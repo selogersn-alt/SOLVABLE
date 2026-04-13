@@ -30,7 +30,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'email', 'password', 'password_confirm', 'role', 'company_name', 'coverage_area'),
+            'fields': ('phone_number', 'email', 'password1', 'password2', 'role', 'company_name', 'coverage_area'),
         }),
     )
     filter_horizontal = ('groups', 'user_permissions')
