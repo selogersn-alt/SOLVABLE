@@ -185,15 +185,15 @@ WHITENOISE_INDEX_FILE = False
 
 # STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# Email Configuration (Optimisée O2switch Localhost)
+# Email Configuration (Sécurisée SSL pour délivrabilité maximale)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 25
+EMAIL_HOST = 'mail.logersenegal.com'
+EMAIL_PORT = 465
 EMAIL_USE_TLS = False
-EMAIL_USE_SSL = False
+EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'solvable@logersenegal.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', '-P7GvVHJ2RmjnTG')
-EMAIL_TIMEOUT = 10 # Sécurité : évite le chargement infini
+EMAIL_TIMEOUT = 15 # Augmentation légère pour laisser le temps au handshake SSL
 DEFAULT_FROM_EMAIL = 'Solvable Loger Sénégal <solvable@logersenegal.com>'
 SERVER_EMAIL = 'solvable@logersenegal.com'
 
