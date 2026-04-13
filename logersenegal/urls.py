@@ -42,7 +42,6 @@ from .views import (
     edit_property_view, delete_property_view,  # Gestion pro
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
-    debug_email_view,
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view
