@@ -185,12 +185,12 @@ WHITENOISE_INDEX_FILE = False
 
 # STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# Email Configuration (Bypass DNS Cloudflare via IP directe)
+# Email Configuration (Dernière Chance : Port 587 TLS)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = '109.234.166.117' # IP du serveur O2switch
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
+EMAIL_HOST = '109.234.166.117'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'solvable@logersenegal.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD', '-P7GvVHJ2RmjnTG')
 EMAIL_TIMEOUT = 15
