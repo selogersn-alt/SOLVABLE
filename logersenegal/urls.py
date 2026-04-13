@@ -42,6 +42,7 @@ from .views import (
     edit_property_view, delete_property_view,  # Gestion pro
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
+    debug_email_view,
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view
@@ -136,6 +137,7 @@ urlpatterns = [
     
     # Sitemap & SEO
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('debug-email-smtp/', debug_email_view, name='debug_email_smtp'),
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 
     # ---- PWA (Progressive Web App) ----
