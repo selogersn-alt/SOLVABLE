@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from .models import Property, PropertyImage, Transaction, PricingConfig, Favorite, PropertyEquipment
+from logersenegal.emails import send_property_published_email
 
 class PropertyImageInline(admin.TabularInline):
     model = PropertyImage
@@ -35,8 +36,15 @@ class PropertyAdmin(admin.ModelAdmin):
 
     @admin.action(description="✅ Publier les annonces sélectionnées")
     def publish_properties(self, request, queryset):
-        queryset.update(is_published=True)
-        self.message_user(request, f"{queryset.count()} annonce(s) ont été publiées.")
+        count = 0
+        for prop in queryset:
+            if not prop.is_published:
+                prop.is_published = True
+                prop.save()
+                if prop.owner and prop.owner.email:
+                    send_property_published_email(prop.owner, prop)
+                count += 1
+        self.message_user(request, f"{count} annonce(s) ont été publiées et les propriétaires notifiés.")
 
     @admin.action(description="❌ Retirer les annonces sélectionnées")
     def unpublish_properties(self, request, queryset):
@@ -52,7 +60,6 @@ class PropertyAdmin(admin.ModelAdmin):
     def boost_selected(self, request, queryset):
         from django.utils import timezone
         import datetime
-        queryset.update(is_boosted=True, boost_until=timezone.now() + datetime.timedelta(days=7))
         queryset.update(is_boosted=True, boost_until=timezone.now() + datetime.timedelta(days=7))
         self.message_user(request, f"{queryset.count()} annonce(s) boostées pour 7 jours.")
 
