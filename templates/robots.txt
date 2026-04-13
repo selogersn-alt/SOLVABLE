@@ -1,9 +1,9 @@
 User-agent: *
 Allow: /
+Allow: /media/
 Disallow: /admin/
 Disallow: /api/auth/
 Disallow: /search/
-Disallow: /media/
 
 # Sitemaps
 Sitemap: https://logersenegal.com/sitemap.xml

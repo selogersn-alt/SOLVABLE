@@ -55,9 +55,34 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Favicon Officiel (Utilise vos fichiers locaux) -->
-    <link rel="icon" type="image/png" href="{% static 'img/icon-192x192.png' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'img/icon-192x192.png' %}">
+    <!-- Favicon Officiel (Multi-formats pour Google & Appareils) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/icon-192x192.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/icon-512x512.png' %}">
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
+
+    <!-- Données Structurées JSON-LD pour Google (Logo & Site Name) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Loger Sénégal",
+      "alternateName": "Logersenegal",
+      "url": "https://logersenegal.com",
+      "logo": "https://logersenegal.com{% static 'img/icon-512x512.png' %}",
+      "sameAs": [
+        "https://web.facebook.com/logersenegal",
+        "https://www.instagram.com/logersenegal"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+221770000000",
+        "contactType": "customer service",
+        "areaServed": "SN",
+        "availableLanguage": "French"
+      }
+    }
+    </script>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
