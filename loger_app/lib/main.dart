@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter/services.dart';
 
@@ -220,6 +221,19 @@ class _LogerHomePageState extends State<LogerHomePage> {
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint('WebResourceError: ${error.description}');
+          },
+          onNavigationRequest: (NavigationRequest request) async {
+            final url = request.url;
+            if (url.startsWith('https://wa.me/') || 
+                url.startsWith('whatsapp://') || 
+                url.startsWith('tel:') || 
+                url.startsWith('mailto:')) {
+              if (await canLaunchUrl(Uri.parse(url))) {
+                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                return NavigationDecision.prevent;
+              }
+            }
+            return NavigationDecision.navigate;
           },
         ),
       )
