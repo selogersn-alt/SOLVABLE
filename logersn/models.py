@@ -24,10 +24,10 @@ class Property(models.Model):
     property_type = models.CharField(max_length=50, choices=PROPERTY_TYPE_CHOICES)
     city = models.CharField(max_length=100, choices=CITY_CHOICES, default='DAKAR')
     neighborhood = models.CharField(max_length=100, choices=NEIGHBORHOOD_CHOICES)
-    price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Prix (CFA)")
+    price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name="Prix (CFA)")
     
     # Pour les meublés uniquement
-    price_per_night = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Prix par nuitée (Meublé)")
+    price_per_night = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True, verbose_name="Prix par nuitée (Meublé)")
     surface = models.IntegerField(default=0, blank=True, verbose_name="Surface (m2)")
     bedrooms = models.IntegerField(default=0, blank=True, verbose_name="Nombre de chambres")
     toilets = models.IntegerField(default=0, blank=True, verbose_name="Nombre de toilettes")
@@ -155,7 +155,7 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
     property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     transaction_type = models.CharField(max_length=20, choices=TypeEnum.choices)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=20, decimal_places=2)
     reference = models.CharField(max_length=100, unique=True, verbose_name="Référence FedaPay / Interne")
     status = models.CharField(max_length=20, choices=[('PENDING', 'En attente'), ('SUCCESS', 'Réussite'), ('FAILED', 'Échec')], default='PENDING')
     days = models.IntegerField(default=1, verbose_name="Nombre de jours")
@@ -169,12 +169,12 @@ class Transaction(models.Model):
         return f"{self.user} - {self.transaction_type} - {self.amount}F"
 
 class PricingConfig(models.Model):
-    publication_fee_rent = models.DecimalField(max_digits=10, decimal_places=2, default=100.00, verbose_name="Prix Publication (Location)")
-    publication_fee_sale = models.DecimalField(max_digits=10, decimal_places=2, default=500.00, verbose_name="Prix Publication (Vente)")
-    publication_fee_furnished = models.DecimalField(max_digits=10, decimal_places=2, default=300.00, verbose_name="Prix Publication (Meublé)")
+    publication_fee_rent = models.DecimalField(max_digits=20, decimal_places=2, default=100.00, verbose_name="Prix Publication (Location)")
+    publication_fee_sale = models.DecimalField(max_digits=20, decimal_places=2, default=500.00, verbose_name="Prix Publication (Vente)")
+    publication_fee_furnished = models.DecimalField(max_digits=20, decimal_places=2, default=300.00, verbose_name="Prix Publication (Meublé)")
     
-    boost_daily_fee = models.DecimalField(max_digits=10, decimal_places=2, default=100.00, verbose_name="Prix Boost par jour")
-    popup_daily_fee = models.DecimalField(max_digits=10, decimal_places=2, default=500.00, verbose_name="Prix Pop-up par jour")
+    boost_daily_fee = models.DecimalField(max_digits=20, decimal_places=2, default=100.00, verbose_name="Prix Boost par jour")
+    popup_daily_fee = models.DecimalField(max_digits=20, decimal_places=2, default=500.00, verbose_name="Prix Pop-up par jour")
 
     class Meta:
         verbose_name = "Paramètres des Tarifs"

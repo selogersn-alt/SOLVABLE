@@ -9,7 +9,24 @@ media/
 staticfiles/
 db.sqlite3
 
-# --- CACHE ---
+# --- CACHE & IDE ---
 __pycache__/
 *.pyc
 .env
+.idea/
+.vscode/
+.DS_Store
+
+# --- FLUTTER ---
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/pubspec.lock
+loger_app/ios/Flutter/Generated.xcconfig
+loger_app/ios/Flutter/flutter_export_environment.sh
+loger_app/android/app/debug/
+loger_app/android/app/profile/
+loger_app/android/app/release/

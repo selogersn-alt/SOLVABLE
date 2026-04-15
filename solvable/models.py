@@ -18,7 +18,7 @@ class RentalFiliation(models.Model):
     property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, blank=True, related_name='filiations')
     landlord = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenant_filiations')
     tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='landlord_filiations')
-    monthly_rent = models.DecimalField(max_digits=12, decimal_places=2)
+    monthly_rent = models.DecimalField(max_digits=20, decimal_places=2)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=StatusEnum.choices, default=StatusEnum.PENDING_APPROVAL)
@@ -64,7 +64,7 @@ class IncidentReport(models.Model):
     
     property_address = models.CharField(max_length=255, null=True, blank=True, verbose_name="Adresse du bien concerné (si pas via contrat app)")
     incident_type = models.CharField(max_length=50, choices=IncidentTypeEnum.choices, default=IncidentTypeEnum.UNPAID_RENT)
-    amount_due = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, help_text="Seulement pour les loyers impayés ou dégradations")
+    amount_due = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True, help_text="Seulement pour les loyers impayés ou dégradations")
     description = models.TextField()
     status = models.CharField(max_length=20, choices=StatusEnum.choices, default=StatusEnum.IN_MEDIATION)
     
@@ -163,7 +163,7 @@ class ProfessionalFraudReport(models.Model):
 
 class PlatformPricing(models.Model):
     service_name = models.CharField(max_length=100, unique=True, verbose_name="Nom du service")
-    price = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Prix (FCFA)")
+    price = models.DecimalField(max_digits=20, decimal_places=2, default=0, verbose_name="Prix (FCFA)")
     description = models.TextField(blank=True, verbose_name="Description pour l'utilisateur")
     is_active = models.BooleanField(default=True, verbose_name="Actif")
 
