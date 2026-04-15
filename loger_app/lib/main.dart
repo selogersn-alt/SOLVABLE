@@ -9,6 +9,8 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'screens/property_list_screen.dart';
+import 'screens/property_detail_screen.dart';
+
 
 
 void main() {
@@ -429,11 +431,12 @@ class _LogerHomePageState extends State<LogerHomePage> {
           children: [
             PropertyListScreen(
               onPropertyTap: (property) {
-                // On bascule sur l'onglet Web et on charge l'annonce
-                setState(() {
-                  _selectedIndex = 1;
-                });
-                controller.loadRequest(Uri.parse(property.absoluteUrl));
+                // OUVERTURE NATIVE !
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PropertyDetailScreen(property: property),
+                  ),
+                );
               },
             ),
             Column(
