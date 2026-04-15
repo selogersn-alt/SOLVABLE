@@ -10,6 +10,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'screens/property_list_screen.dart';
 import 'screens/property_detail_screen.dart';
+import 'screens/login_screen.dart';
+import 'services/auth_service.dart';
+import 'models/user_model.dart';
 
 
 
@@ -259,6 +262,27 @@ class _LogerHomePageState extends State<LogerHomePage> {
     }
   }
 
+  void _onTabTapped(int index) async {
+    if (index == 2) {
+      // Onglet Profil
+      final loggedIn = await AuthService().isLoggedIn();
+      if (!loggedIn && mounted) {
+        final success = await Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+        if (success == true) {
+          setState(() {
+            _selectedIndex = 2;
+          });
+        }
+        return;
+      }
+    }
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   final ImagePicker _picker = ImagePicker();
 
   Future<List<String>> _showFileSelectionDialog(FileSelectorParams params) async {
@@ -421,7 +445,6 @@ class _LogerHomePageState extends State<LogerHomePage> {
     return true;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -453,18 +476,16 @@ class _LogerHomePageState extends State<LogerHomePage> {
                 ),
               ],
             ),
+            const ProfileScreen(),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onTap: _onTabTapped,
         selectedItemColor: const Color(0xFF0B4629),
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -476,8 +497,130 @@ class _LogerHomePageState extends State<LogerHomePage> {
             activeIcon: Icon(Icons.language),
             label: 'Site Web',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profil',
+          ),
         ],
       ),
     );
   }
+}
+
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = AuthService().currentUser;
+
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7F9),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF0B4629),
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(user.displayName, style: const TextStyle(color: Colors.white, fontSize: 16)),
+              background: Container(color: const Color(0xFF0B4629)),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                // En-tête du profil
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                  ),
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: const Color(0xFF0B4629).withOpacity(0.1),
+                        child: const Icon(Icons.person, size: 50, color: Color(0xFF0B4629)),
+                      ),
+                      const SizedBox(height: 15),
+                      Text(
+                        '${user.firstName} ${user.lastName}',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(user.email, style: const TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 15),
+                      if (user.isVerified)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0B4629).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified, color: Color(0xFF0B4629), size: 16),
+                              SizedBox(width: 5),
+                              Text('Profil Vérifié', style: TextStyle(color: Color(0xFF0B4629), fontWeight: FontWeight.bold, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 25),
+                
+                // Menu d'options
+                _buildMenuItem(Icons.home_work_outlined, 'Mes Annonces', () {}),
+                _buildMenuItem(Icons.favorite_outline, 'Mes Favoris', () {}),
+                _buildMenuItem(Icons.security, 'Vérification NILS', () {}),
+                _buildMenuItem(Icons.settings_outlined, 'Paramètres', () {}),
+                
+                const SizedBox(height: 30),
+                
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      await AuthService().logout();
+                    },
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text('Se déconnecter', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 50),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Icon(icon, color: const Color(0xFF0B4629)),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+        trailing: const Icon(Icons.chevron_right, size: 18),
+        onTap: onTap,
+      ),
+    );
+  }
+}
 
