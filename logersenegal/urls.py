@@ -27,11 +27,12 @@ from solvable.views import (
     terminate_filiation_view, update_application_status_view
 )
 from rest_framework.routers import DefaultRouter
-from logersn.api import PropertyViewSet
+from logersn.api import PropertyViewSet, PropertyImageViewSet
 
 # API Router configuration
 router = DefaultRouter()
 router.register(r'properties', PropertyViewSet, basename='api-property')
+router.register(r'property-images', PropertyImageViewSet, basename='api-property-image')
 
 
 sitemaps = {

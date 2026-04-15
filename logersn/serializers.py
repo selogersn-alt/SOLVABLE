@@ -5,7 +5,7 @@ from users.models import User
 class PropertyImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyImage
-        fields = ['id', 'image_url']
+        fields = ['id', 'property', 'image_url', 'is_primary']
 
 class UserMiniSerializer(serializers.ModelSerializer):
     class Meta:
