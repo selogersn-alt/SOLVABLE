@@ -26,6 +26,13 @@ from solvable.views import (
     apply_to_property_view, start_filiation_view, approve_filiation_view,
     terminate_filiation_view, update_application_status_view
 )
+from rest_framework.routers import DefaultRouter
+from logersn.api import PropertyViewSet
+
+# API Router configuration
+router = DefaultRouter()
+router.register(r'properties', PropertyViewSet, basename='api-property')
+
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -63,6 +70,10 @@ urlpatterns = [
 
     path('admin/statistiques/', admin_statistics_view, name='admin_statistics'), # Custom Admin Route
     path('admin/campagne-email/', admin_marketing_email_view, name='admin_marketing_email'),
+    
+    # API Routes
+    path('api/', include(router.urls)),
+    
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/logersn/', include('logersn.urls')),
