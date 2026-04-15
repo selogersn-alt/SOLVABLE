@@ -189,6 +189,20 @@
 {% block content %}
 <div class="page-header mt-4 text-center text-md-start">
     <div class="container py-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" itemscope itemtype="https://schema.org/BreadcrumbList">
+                <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/" class="text-white text-decoration-none opacity-75" itemprop="item">
+                        <span itemprop="name">Accueil</span>
+                    </a>
+                    <meta itemprop="position" content="1" />
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <span itemprop="name">Annonces</span>
+                    <meta itemprop="position" content="2" />
+                </li>
+            </ol>
+        </nav>
         <h1 class="fw-800 display-5 text-white">
             {{ seo_title }}
         </h1>

@@ -207,9 +207,15 @@
                     </a>
                     <meta itemprop="position" content="2" />
                 </li>
-                <li class="breadcrumb-item active text-white" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                    <span itemprop="name">{{ property.city }}</span>
+                <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="{% url 'properties_list' %}?city={{ property.city }}" class="text-white text-decoration-none opacity-75" itemprop="item">
+                        <span itemprop="name">{{ property.city }}</span>
+                    </a>
                     <meta itemprop="position" content="3" />
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <span itemprop="name">{{ property.neighborhood }}</span>
+                    <meta itemprop="position" content="4" />
                 </li>
             </ol>
         </nav>
