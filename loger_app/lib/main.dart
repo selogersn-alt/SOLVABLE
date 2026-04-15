@@ -8,6 +8,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'screens/property_list_screen.dart';
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -199,8 +201,8 @@ class LogerHomePage extends StatefulWidget {
 
 class _LogerHomePageState extends State<LogerHomePage> {
   late final WebViewController controller;
+  int _selectedIndex = 0;
   double progress = 0;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -224,9 +226,6 @@ class _LogerHomePageState extends State<LogerHomePage> {
             setState(() {
               progress = 1;
             });
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('WebResourceError: ${error.description}');
           },
           onNavigationRequest: (NavigationRequest request) async {
             final url = request.url;
@@ -257,6 +256,8 @@ class _LogerHomePageState extends State<LogerHomePage> {
       );
     }
   }
+
+  final ImagePicker _picker = ImagePicker();
 
   Future<List<String>> _showFileSelectionDialog(FileSelectorParams params) async {
     return await showModalBottomSheet<List<String>>(
@@ -407,81 +408,73 @@ class _LogerHomePageState extends State<LogerHomePage> {
 
   Future<bool> _requestStoragePermissions() async {
     if (Platform.isAndroid) {
-      // Permission.photos is for Android 13+ (API 33)
-      // Permission.storage is for older versions
       if (await Permission.photos.request().isGranted || 
           await Permission.storage.request().isGranted) {
         return true;
       }
-      
-      // Secondary check for media video if photos is denied but they want to upload video
       if (await Permission.videos.request().isGranted) {
         return true;
       }
     }
-    return true; // iOS and other platforms usually handled by system
+    return true;
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: IndexedStack(
+          index: _selectedIndex,
           children: [
-            if (progress < 1)
-              LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.white,
-                color: const Color(0xFF7FD47D),
-                minHeight: 2,
-              ),
-            Expanded(
-              child: PopScope(
-                canPop: false,
-                onPopInvokedWithResult: (didPop, result) async {
-                  if (await controller.canGoBack()) {
-                    controller.goBack();
-                  }
-                },
-                child: WebViewWidget(controller: controller),
-              ),
+            PropertyListScreen(
+              onPropertyTap: (property) {
+                // On bascule sur l'onglet Web et on charge l'annonce
+                setState(() {
+                  _selectedIndex = 1;
+                });
+                controller.loadRequest(Uri.parse(property.absoluteUrl));
+              },
+            ),
+            Column(
+              children: [
+                if (progress < 1)
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.white,
+                    color: const Color(0xFF7FD47D),
+                    minHeight: 2,
+                  ),
+                Expanded(
+                  child: WebViewWidget(controller: controller),
+                ),
+              ],
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        height: 60,
-        color: const Color(0xFF0B4629),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-              onPressed: () async {
-                if (await controller.canGoBack()) {
-                  controller.goBack();
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.home, color: Color(0xFF7FD47D), size: 28),
-              onPressed: () => controller.loadRequest(Uri.parse('https://logersenegal.com/')),
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.white, size: 24),
-              onPressed: () => controller.reload(),
-            ),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
-              onPressed: () async {
-                if (await controller.canGoForward()) {
-                  controller.goForward();
-                }
-              },
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        selectedItemColor: const Color(0xFF0B4629),
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Accueil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.language_outlined),
+            activeIcon: Icon(Icons.language),
+            label: 'Site Web',
+          ),
+        ],
       ),
     );
   }
-}
+
