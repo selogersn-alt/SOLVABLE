@@ -233,7 +233,21 @@
 <div class="container mb-5">
     <div class="row">
         <!-- Main Content (Images & Description) -->
-        <div class="col-lg-8 order-2 order-lg-1">
+        <!-- Main Content (Images & Description) -->
+        <div class="col-lg-8">
+            <!-- Priority Price for Mobile -->
+            <div class="details-card d-lg-none mb-3">
+                <div class="price-tag mb-0">
+                    {% if property.listing_category == 'SALE' %}
+                        {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">(Vente)</span>
+                    {% elif property.listing_category == 'FURNISHED' %}
+                        {{ property.price_per_night|default:property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/nuitée</span>
+                    {% else %}
+                        {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/mois</span>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Photo Gallery -->
             <div class="gallery-container">
                 <!-- Main Image -->
@@ -381,7 +395,8 @@
         </div>
 
         <!-- Sidebar (Pricing & Action) -->
-        <div class="col-lg-4 order-1 order-lg-2">
+        <!-- Sidebar (Pricing & Action) -->
+        <div class="col-lg-4">
             <!-- Action Card -->
             <div class="details-card sticky-lg-top" style="top: 100px; z-index: 10;">
                 <span class="badge mb-3" style="background-color: var(--color-light-green); color: var(--color-dark-green);">
