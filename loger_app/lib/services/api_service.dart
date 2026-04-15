@@ -5,10 +5,11 @@ import '../models/property_model.dart';
 class ApiService {
   static const String baseUrl = 'https://logersenegal.com/api';
 
-  Future<List<Property>> fetchProperties({String? city, String? propertyType}) async {
+  Future<List<Property>> fetchProperties({String? city, String? propertyType, String? search}) async {
     final queryParameters = <String, String>{};
     if (city != null && city != 'ALL') queryParameters['city'] = city;
     if (propertyType != null && propertyType != 'ALL') queryParameters['property_type'] = propertyType;
+    if (search != null && search.isNotEmpty) queryParameters['search'] = search;
 
     final uri = Uri.parse('$baseUrl/properties/').replace(queryParameters: queryParameters);
 

@@ -14,6 +14,9 @@ class PropertyListScreen extends StatefulWidget {
 class _PropertyListScreenState extends State<PropertyListScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Property>> _propertiesFuture;
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedCity = 'ALL';
+  final List<String> _cities = ['ALL', 'DAKAR', 'THIES', 'MBOUR', 'SAINT-LOUIS'];
 
   @override
   void initState() {
@@ -23,7 +26,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
 
   void _refresh() {
     setState(() {
-      _propertiesFuture = _apiService.fetchProperties();
+      _propertiesFuture = _apiService.fetchProperties(
+        city: _selectedCity == 'ALL' ? null : _selectedCity,
+        search: _searchController.text.isNotEmpty ? _searchController.text : null,
+      );
     });
   }
 
@@ -38,10 +44,75 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         ),
         backgroundColor: const Color(0xFF0B4629),
         elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(110),
+          child: Column(
+            children: [
+              // Barre de Recherche
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: TextField(
+                  controller: _searchController,
+                  onSubmitted: (_) => _refresh(),
+                  decoration: InputDecoration(
+                    hintText: 'Chercher par quartier...',
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF0B4629)),
+                    suffixIcon: _searchController.text.isNotEmpty 
+                      ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _refresh(); })
+                      : null,
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
+                ),
+              ),
+              // Filtres Villes
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(left: 15, bottom: 10),
+                child: Row(
+                  children: _cities.map((city) {
+                    bool isSelected = _selectedCity == city;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(city == 'ALL' ? 'Toutes les villes' : city),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _selectedCity = city;
+                              _refresh();
+                            });
+                          }
+                        },
+                        selectedColor: const Color(0xFF7FD47D),
+                        backgroundColor: Colors.white,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black87,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _refresh,
+            onPressed: () {
+              _searchController.clear();
+              _selectedCity = 'ALL';
+              _refresh();
+            },
           ),
         ],
       ),
