@@ -16,6 +16,13 @@ class Property(models.Model):
         SALE = 'SALE', 'A vendre'
         FURNISHED = 'FURNISHED', 'Meublé'
 
+    class DocumentTypeEnum(models.TextChoices):
+        BAIL = 'BAIL', 'BAIL'
+        TITRE_FONCIER_INDIVIDUEL = 'TITRE_FONCIER_INDIVIDUEL', 'TITRE FONCIER INDIVIDUEL'
+        TITRE_FONCIER_GLOBAL = 'TITRE_FONCIER_GLOBAL', 'TITRE FONCIER GLOBAL'
+        ACTE_DE_VENTE = 'ACTE_DE_VENTE', 'ACTE DE VENTE'
+        DELIBERATION = 'DELIBERATION', 'DELIBERATION'
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
     title = models.CharField(max_length=255)
@@ -24,6 +31,7 @@ class Property(models.Model):
     property_type = models.CharField(max_length=50, choices=PROPERTY_TYPE_CHOICES)
     city = models.CharField(max_length=100, choices=CITY_CHOICES, default='DAKAR')
     neighborhood = models.CharField(max_length=100, choices=NEIGHBORHOOD_CHOICES)
+    document_type = models.CharField(max_length=50, choices=DocumentTypeEnum.choices, null=True, blank=True, verbose_name="Type de document")
     price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name="Prix (CFA)")
     
     # Pour les meublés uniquement

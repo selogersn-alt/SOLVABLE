@@ -77,6 +77,11 @@
                                 <label class="form-label fw-bold" style="color: var(--text-main);">{{ form.property_type.label }}</label>
                                 {{ form.property_type }}
                             </div>
+
+                            <div class="col-md-6" id="document_type_container" style="display: none;">
+                                <label class="form-label fw-bold" style="color: var(--text-main);">{{ form.document_type.label }}</label>
+                                {{ form.document_type }}
+                            </div>
                             
                             <div class="col-md-6">
                                 <label class="form-label fw-bold" style="color: var(--text-main);">{{ form.city.label }}</label>
@@ -179,6 +184,7 @@
         const categorySelect = document.getElementById('id_listing_category');
         const priceLabel = document.getElementById('price_label');
         const pricePerNightContainer = document.getElementById('price_per_night_container');
+        const documentTypeContainer = document.getElementById('document_type_container');
 
         function updateFields() {
             const category = categorySelect.value;
@@ -192,9 +198,17 @@
                 
                 if (category === 'SALE') {
                     priceLabel.innerText = "Prix de vente total";
+                    documentTypeContainer.style.display = 'block';
                 } else {
                     priceLabel.innerText = "Loyer mensuel";
+                    documentTypeContainer.style.display = 'none';
                 }
+            }
+
+            // Sync document type visibility even for furnished if sale? No, usually sale and furnished are exclusive.
+            // But let's be safe:
+            if (category !== 'SALE') {
+                documentTypeContainer.style.display = 'none';
             }
         }
 

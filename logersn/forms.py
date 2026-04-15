@@ -62,7 +62,7 @@ class PropertyForm(forms.ModelForm):
     class Meta:
         model = Property
         fields = [
-            'title', 'listing_category', 'property_type', 'city', 'neighborhood', 'price', 
+            'title', 'listing_category', 'property_type', 'document_type', 'city', 'neighborhood', 'price', 
             'price_per_night', 'surface', 'bedrooms', 'toilets', 'total_rooms', 'salons', 'kitchens',
             'has_garage', 'has_balcony', 'has_terrace', 'has_courtyard', 'has_garden',
             'description', 'wifi', 'swimming_pool', 'gym', 'air_conditioning',
@@ -73,6 +73,7 @@ class PropertyForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Superbe appartement F4 vue mer...'}),
             'listing_category': forms.Select(attrs={'class': 'form-select'}),
             'property_type': forms.Select(attrs={'class': 'form-select'}),
+            'document_type': forms.Select(attrs={'class': 'form-select'}),
             'city': forms.Select(attrs={'class': 'form-select'}),
             'neighborhood': forms.Select(attrs={'class': 'form-select'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 350000'}),
@@ -100,6 +101,7 @@ class PropertyForm(forms.ModelForm):
             'property_type': 'Type de bien',
             'city': 'Ville',
             'neighborhood': 'Quartier',
+            'document_type': 'Type de document (Vente uniquement)',
             'price': 'Prix / Loyer mensuel (FCFA)',
             'price_per_night': 'Prix par nuitée (Meublé)',
             'description': 'Description détaillée',
