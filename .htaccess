@@ -15,9 +15,14 @@
     SetHandler application/x-httpd-wsgi
 </Files>
 
-# Forcer HTTPS (Sécurité SSL)
+# Redirection SEO : logersn.com -> logersenegal.com
 RewriteEngine On
 RewriteBase /
+RewriteCond %{HTTP_HOST} ^logersn\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^www\.logersn\.com$ [NC]
+RewriteRule ^(.*)$ https://logersenegal.com/$1 [R=301,L]
+
+# Forcer HTTPS (Sécurité SSL)
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
