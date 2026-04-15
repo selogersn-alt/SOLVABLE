@@ -27,10 +27,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-for-local-de
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['logersenegal.com', 'www.logersenegal.com', 'localhost', '127.0.0.1']
-SITE_URL = 'https://logersenegal.com'
+ALLOWED_HOSTS = ['logersn.com', 'www.logersn.com', 'logersenegal.com', 'www.logersenegal.com', 'localhost', '127.0.0.1']
+SITE_URL = 'https://logersn.com'
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://logersn.com',
+    'https://www.logersn.com',
     'https://logersenegal.com',
     'https://www.logersenegal.com',
 ]
