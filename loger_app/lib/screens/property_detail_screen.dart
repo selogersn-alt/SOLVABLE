@@ -15,6 +15,19 @@ class PropertyDetailScreen extends StatefulWidget {
 
 class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   int _currentImageIndex = 0;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   void _launchWhatsApp() async {
     final String message = "Bonjour, je suis intéressé par votre annonce : ${widget.property.title}. L'offre est-elle toujours disponible ?";
@@ -80,16 +93,59 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       const Icon(Icons.home_work, size: 100, color: Colors.white24)
                     else
                       PageView.builder(
+                        controller: _pageController,
+                        physics: const BouncingScrollPhysics(),
                         itemCount: widget.property.images.length,
                         onPageChanged: (index) {
                           setState(() => _currentImageIndex = index);
                         },
                         itemBuilder: (context, index) {
-                          return CachedNetworkImage(
-                            imageUrl: widget.property.images[index].imageUrl,
-                            fit: BoxFit.cover,
+                          return GestureDetector(
+                            onTap: () {
+                              // Fullscreen preview logic
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FullScreenImage(
+                                    images: widget.property.images,
+                                    initialIndex: index,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: CachedNetworkImage(
+                              imageUrl: widget.property.images[index].imageUrl,
+                              fit: BoxFit.cover,
+                            ),
                           );
                         },
+                      ),
+                    // Navigation Arrows
+                    if (widget.property.images.length > 1)
+                      Positioned.fill(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (_currentImageIndex > 0)
+                              IconButton(
+                                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 40),
+                                onPressed: () {
+                                  _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                                },
+                              )
+                            else
+                              const SizedBox(width: 48),
+                            if (_currentImageIndex < widget.property.images.length - 1)
+                              IconButton(
+                                icon: const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 40),
+                                onPressed: () {
+                                  _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                                },
+                              )
+                            else
+                              const SizedBox(width: 48),
+                          ],
+                        ),
                       ),
                     IgnorePointer(
                       child: DecoratedBox(
@@ -310,11 +366,16 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                // Logic for application / Solvable integration
+                              onPressed: () async {
+                                final Uri url = Uri.parse('https://logersenegal.com/annonces/${widget.property.id}/postuler/');
+                                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Impossible d\'ouvrir le lien de candidature')),
+                                  );
+                                }
                               },
-                              icon: const Icon(Icons.description_rounded, color: Colors.white),
-                              label: const Text('POSTULER À CETTE ANNONCE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.1)),
+                              icon: const Icon(Icons.verified_user_rounded, color: Colors.white),
+                              label: const Text('POSTULER (CONTRAT NILS)', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF2C3E50),
                                 foregroundColor: Colors.white,
@@ -357,6 +418,35 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           ),
           Text(unit, style: const TextStyle(color: Colors.grey, fontSize: 10)),
         ],
+      ),
+    );
+  }
+}
+
+class FullScreenImage extends StatelessWidget {
+  final List<PropertyImage> images;
+  final int initialIndex;
+
+  const FullScreenImage({super.key, required this.images, required this.initialIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, foregroundColor: Colors.white),
+      body: PageView.builder(
+        itemCount: images.length,
+        controller: PageController(initialIndex: initialIndex),
+        itemBuilder: (context, index) {
+          return InteractiveViewer(
+            child: Center(
+              child: CachedNetworkImage(
+                imageUrl: images[index].imageUrl,
+                placeholder: (context, url) => const CircularProgressIndicator(),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
