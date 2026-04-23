@@ -136,11 +136,30 @@ def admin_statistics_view(request):
     # 8. User Explorer (Filtré)
     from users.models import User
     role_filter = request.GET.get('role')
+    smart_filter = request.GET.get('smart_filter')
+    
     users_qs = User.objects.all().order_by('-date_joined')
+    
     if role_filter:
         users_qs = users_qs.filter(role=role_filter)
+        
+    if smart_filter == 'incomplete':
+        users_qs = users_qs.filter(Q(email__isnull=True) | Q(email='') | Q(profile_picture__isnull=True) | Q(profile_picture=''))
+    elif smart_filter == 'unverified_email':
+        users_qs = users_qs.filter(is_phone_verified=False) # On utilise ça comme proxy ou on ajoute is_email_verified si présent
+    elif smart_filter == 'no_ads':
+        users_qs = users_qs.exclude(role='TENANT').annotate(prop_count=Count('properties')).filter(prop_count=0)
     
-    users_list = users_qs[:50] # Top 50 recent
+    # 9. Smart Property Filters
+    expired_ads = Property.objects.filter(is_active=False, is_published=True) # Annonces qui étaient en ligne mais désactivées
+    
+    users_list = users_qs[:100] # Increased limit for marketing
+    
+    # Stocker les IDs pour la campagne marketing si demandé
+    if request.GET.get('action') == 'prepare_campaign':
+        request.session['marketing_user_ids'] = list(users_qs.values_list('id', flat=True))
+        from django.contrib import messages
+        messages.info(request, f"🚀 {users_qs.count()} utilisateurs ajoutés à la file d'attente marketing.")
     
     context = {
         'total_users': total_users,
@@ -169,7 +188,9 @@ def admin_statistics_view(request):
         'current_type': type_filter,
         'users_list': users_list,
         'current_role': role_filter,
+        'current_smart_filter': smart_filter,
         'role_choices': User.Role.choices,
+        'expired_ads_count': expired_ads.count(),
     }
     
     return render(request, 'admin/statistics.html', context)

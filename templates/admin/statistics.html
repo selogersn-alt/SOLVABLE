@@ -70,6 +70,29 @@
                 </form>
             </div>
         </div>
+        <!-- SHORTCUTS -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <a href="/admin/users/kycprofile/?vision_api_status__exact=PENDING" class="btn btn-warning w-100 shadow-sm fw-bold">
+                    <i class="fas fa-id-card mr-2"></i>KYC à Valider ({{ kyc_pending }})
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="/admin/solvable/incidentreport/?is_validated__exact=0" class="btn btn-danger w-100 shadow-sm fw-bold">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Incidents en attente
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="/admin/logersn/property/?is_published__exact=0&is_paid__exact=1" class="btn btn-primary w-100 shadow-sm fw-bold">
+                    <i class="fas fa-house-chimney mr-2"></i>Annonces à publier
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'admin_marketing_email' %}" class="btn btn-dark w-100 shadow-sm fw-bold">
+                    <i class="fas fa-bullhorn mr-2"></i>Campagne Email
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -159,17 +182,31 @@
             </div>
         </div>
 
-        <!-- USER EXPLORER -->
         <div class="card border-0 shadow-sm mt-4" style="border-radius: 15px;">
             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0" style="color: var(--color-dark-green);"><i class="fa-solid fa-users-gear me-2"></i>Explorateur d'Utilisateurs</h5>
-                <form class="d-flex gap-2">
+                <h5 class="fw-bold mb-0" style="color: var(--color-dark-green);"><i class="fa-solid fa-users-gear me-2"></i>Explorateur & Marketing</h5>
+                
+                <form class="d-flex gap-2 align-items-center">
+                    <span class="text-muted small">Filtres intelligents :</span>
+                    <select name="smart_filter" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Tous les utilisateurs</option>
+                        <option value="incomplete" {% if current_smart_filter == 'incomplete' %}selected{% endif %}>Profils Incomplets</option>
+                        <option value="unverified_email" {% if current_smart_filter == 'unverified_email' %}selected{% endif %}>Emails non vérifiés</option>
+                        <option value="no_ads" {% if current_smart_filter == 'no_ads' %}selected{% endif %}>Pros sans annonces</option>
+                    </select>
+                    
                     <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="">Tous les rôles</option>
                         {% for val, label in role_choices %}
                             <option value="{{ val }}" {% if current_role == val %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+
+                    {% if users_list %}
+                    <a href="?smart_filter={{ current_smart_filter }}&role={{ current_role }}&action=prepare_campaign" class="btn btn-sm btn-primary fw-bold">
+                        <i class="fa-solid fa-bullhorn me-1"></i> Créer Campagne
+                    </a>
+                    {% endif %}
                 </form>
             </div>
             <div class="card-body p-0">
@@ -208,7 +245,12 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="/admin/users/user/{{ u.id }}/change/" class="btn btn-sm btn-outline-primary" target="_blank"><i class="fa-solid fa-pen"></i></a>
+                                    <div class="d-flex gap-2">
+                                        <a href="/admin/users/user/{{ u.id }}/change/" class="btn btn-sm btn-outline-primary" target="_blank" title="Éditer"><i class="fa-solid fa-user-pen"></i></a>
+                                        {% if u.email %}
+                                            <a href="mailto:{{ u.email }}" class="btn btn-sm btn-outline-info" title="Email Direct"><i class="fa-solid fa-envelope"></i></a>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}

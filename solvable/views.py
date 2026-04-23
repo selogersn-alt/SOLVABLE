@@ -382,6 +382,7 @@ def terminate_filiation_view(request, filiation_id):
 @login_required
 def update_application_status_view(request, application_id):
     from solvable.models import PropertyApplication
+    from logersenegal.emails import send_application_status_email
     # Check that current user is the owner of the property
     application = get_object_or_404(PropertyApplication, id=application_id, property__owner=request.user)
     
@@ -393,7 +394,36 @@ def update_application_status_view(request, application_id):
         elif action == 'reject':
             application.status = PropertyApplication.StatusEnum.REJECTED
             messages.warning(request, "Candidature refusée.")
+        
         application.save()
         
+        # Envoi de la notification automatique au locataire
+        if application.applicant.email:
+            try:
+                send_application_status_email(application)
+            except Exception as e:
+                print(f"Erreur notification candidature: {e}")
+        
+    return redirect('dashboard')
+
+@login_required
+def delete_application_view(request, application_id):
+    from solvable.models import PropertyApplication
+    # Autoriser la suppression par le bailleur (nettoyage) ou par le locataire (retrait)
+    application = get_object_or_404(PropertyApplication, id=application_id)
+    
+    if request.user == application.property.owner or request.user == application.applicant:
+        if request.method == 'POST':
+            application.delete()
+            messages.success(request, "La candidature a été supprimée définitivement.")
+            return redirect('dashboard')
+        
+        return render(request, 'confirm_delete.html', {
+            'object': application, 
+            'type': 'candidature',
+            'title': f"Candidature pour {application.property.title}"
+        })
+    
+    messages.error(request, "Action non autorisée.")
     return redirect('dashboard')
 

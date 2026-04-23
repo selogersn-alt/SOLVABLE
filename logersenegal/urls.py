@@ -24,7 +24,7 @@ from solvable.views import (
     filiation_details_view, report_incident_view, update_incident_status_view,
     record_payment_view, mediation_room_view, download_receipt_view,
     apply_to_property_view, start_filiation_view, approve_filiation_view,
-    terminate_filiation_view, update_application_status_view
+    terminate_filiation_view, update_application_status_view, delete_application_view
 )
 from rest_framework.routers import DefaultRouter
 from logersn.api import PropertyViewSet, PropertyImageViewSet, ProfessionalsViewSet
@@ -118,6 +118,7 @@ urlpatterns = [
     path('inscription/', register_view, name='register'),
     path('deconnexion/', logout_view, name='logout'),
     path('application/<uuid:application_id>/update/', update_application_status_view, name='update_application_status'),
+    path('application/<uuid:application_id>/supprimer/', delete_application_view, name='delete_application'),
     path('verifier-telephone/', verify_phone_view, name='verify_phone'),
     path('profil-public/<uuid:user_id>/', public_profile_view, name='public_profile'),
     path('p/<slug:slug>/', public_profile_view, name='public_profile_slug'),

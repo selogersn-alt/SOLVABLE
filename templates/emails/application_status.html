@@ -1,0 +1,31 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+    <h2 style="color: #0b4629; margin-bottom: 20px;">Mise à jour de votre candidature</h2>
+    <p>Bonjour {{ user.phone_number }},</p>
+    
+    <p>Le statut de votre candidature pour le bien <strong>"{{ application.property.title }}"</strong> a été mis à jour.</p>
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #e9ecef; text-align: center;">
+        <p style="margin: 0; font-size: 1.1rem;">Nouveau statut :</p>
+        <p style="margin: 10px 0; font-weight: bold; font-size: 1.3rem; color: {% if application.status == 'ACCEPTED' %}#28a745{% elif application.status == 'REJECTED' %}#dc3545{% else %}#6c757d{% endif %};">
+            {{ status_label }}
+        </p>
+    </div>
+    
+    {% if application.status == 'ACCEPTED' %}
+    <p>Félicitations ! Votre dossier a retenu l'attention du bailleur. Vous pouvez maintenant poursuivre les démarches directement depuis votre tableau de bord.</p>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ site_url }}{% url 'dashboard' %}" class="button">Accéder à mon tableau de bord</a>
+    </div>
+    {% elif application.status == 'REJECTED' %}
+    <p>Nous regrettons de vous informer que votre candidature n'a pas été retenue pour ce bien. N'hésitez pas à consulter nos autres annonces disponibles sur la plateforme.</p>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ site_url }}{% url 'properties_list' %}" class="button">Voir d'autres annonces</a>
+    </div>
+    {% endif %}
+    
+    <p style="margin-top: 30px;">L'ID NILS (Numéro d'Identification Locative) est votre sésame pour l'immobilier de confiance. Veillez à ce que votre profil soit toujours complet pour maximiser vos chances.</p>
+    
+    <p>Merci de votre confiance,<br>L'équipe Loger Sénégal.</p>
+{% endblock %}

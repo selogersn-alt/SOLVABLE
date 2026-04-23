@@ -65,3 +65,17 @@ def send_password_reset_email(user, reset_url):
         user.email,
         bcc_admin=False # Secret
     )
+    
+def send_application_status_email(application):
+    """Notification au locataire du changement de statut de sa candidature."""
+    user = application.applicant
+    status_label = application.get_status_display()
+    subject = f"Mise à jour de votre candidature - {application.property.title}"
+    
+    return send_html_email(
+        subject,
+        "emails/application_status.html",
+        {'user': user, 'application': application, 'status_label': status_label},
+        user.email
+    )
+

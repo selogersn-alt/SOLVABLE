@@ -345,18 +345,54 @@ def dashboard_view(request):
     
     from solvable.models import PropertyApplication, RentalFiliation
     
-    properties = request.user.properties.all()
+    # --- FILTRES ANNONCES ---
+    properties = request.user.properties.all().order_by('-created_at')
+    
+    prop_type = request.GET.get('prop_type')
+    prop_status = request.GET.get('prop_status')
+    prop_date = request.GET.get('prop_date')
+    
+    if prop_type and prop_type != 'ALL':
+        properties = properties.filter(property_type=prop_type)
+    if prop_status == 'PAID':
+        properties = properties.filter(is_paid=True)
+    elif prop_status == 'UNPAID':
+        properties = properties.filter(is_paid=False)
+    elif prop_status == 'PUBLISHED':
+        properties = properties.filter(is_published=True)
+        
+    if prop_date:
+        try:
+            properties = properties.filter(created_at__date=prop_date)
+        except: pass
+
     approved_properties = properties.filter(is_published=True)
     pending_properties = properties.filter(is_published=False)
     
-    # Applications sent by user (Tenant role)
+    # --- FILTRES CANDIDATURES ---
     my_applications = request.user.my_applications.all().order_by('-created_at')
     
-    # Applications received for user's properties (Pro roles)
-    received_applications = PropertyApplication.objects.filter(property__owner=request.user).order_by('-created_at')
+    received_applications = PropertyApplication.objects.filter(property__owner=request.user).select_related('applicant', 'property').order_by('-created_at')
     
-    # Pendings filiations to approve (DigitalH Fix: now using logical relation)
+    app_date = request.GET.get('app_date')
+    app_score = request.GET.get('app_score')
+    
+    if app_date:
+        try:
+            received_applications = received_applications.filter(created_at__date=app_date)
+        except: pass
+        
+    if app_score:
+        try:
+            score_min = int(app_score)
+            # Filter by applicant's NILS score
+            received_applications = received_applications.filter(applicant__nils_profiles__score__gte=score_min).distinct()
+        except: pass
+    
+    # Pendings filiations to approve
     pending_approvals = request.user.landlord_filiations.filter(status=RentalFiliation.StatusEnum.PENDING_APPROVAL)
+    
+    from logersn.constants import PROPERTY_TYPE_CHOICES
     
     context = {
         'conversations': conversations,
@@ -367,6 +403,8 @@ def dashboard_view(request):
         'my_applications': my_applications,
         'received_applications': received_applications,
         'pending_approvals': pending_approvals,
+        'property_types': PROPERTY_TYPE_CHOICES,
+        'filters': request.GET,
     }
     return render(request, 'dashboard.html', context)
 
