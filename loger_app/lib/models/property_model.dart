@@ -26,6 +26,8 @@ class Property {
   final Owner owner;
   final String absoluteUrl;
   final double surface;
+  final double latitude;
+  final double longitude;
 
   Property({
     required this.id,
@@ -55,6 +57,8 @@ class Property {
     required this.images,
     required this.owner,
     required this.absoluteUrl,
+    this.latitude = 0.0,
+    this.longitude = 0.0,
   });
 
   factory Property.fromJson(Map<String, dynamic> json) {
@@ -86,6 +90,8 @@ class Property {
       images: (json['images'] as List?)?.map((i) => PropertyImage.fromJson(i)).toList() ?? [],
       owner: Owner.fromJson(json['owner'] ?? {}),
       absoluteUrl: json['absolute_url'] ?? '',
+      latitude: double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
+      longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
     );
   }
 }

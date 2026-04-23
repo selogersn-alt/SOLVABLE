@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.db.models import Avg, Sum, Count, Q
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 
@@ -113,14 +114,27 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Génération du slug pour les liens personnalisés
         if not self.slug:
             from django.utils.text import slugify
-            base_name = self.company_name or f"{self.first_name}-{self.last_name}"
-            if not base_name or base_name == "None-None":
-                base_name = str(self.id).split('-')[0]
+            import uuid
+            
+            # Correction DigitalH : Gérer les chaînes vides et les tirets simples
+            first = (self.first_name or "").strip()
+            last = (self.last_name or "").strip()
+            company = (self.company_name or "").strip()
+            
+            base_name = company or f"{first} {last}".strip()
+            
+            # Si le nom est vide ou juste un tiret, on utilise l'ID
+            if not base_name or base_name == "None-None" or len(base_name) < 2:
+                base_name = str(self.id or uuid.uuid4()).split('-')[0]
             
             new_slug = slugify(base_name)
-            # Vérifier l'unicité
-            if User.objects.filter(slug=new_slug).exists():
-                new_slug = f"{new_slug}-{str(self.id).split('-')[0]}"
+            if not new_slug:
+                new_slug = str(self.id or uuid.uuid4()).split('-')[0]
+                
+            # Vérifier l'unicité et ajouter un suffixe si besoin
+            if User.objects.filter(slug=new_slug).exclude(pk=self.pk).exists():
+                new_slug = f"{new_slug}-{str(self.id or uuid.uuid4())[:8]}"
+            
             self.slug = new_slug
 
         # Automatisation DigitalH : Les admins et conseillers ont un accès staff automatique

@@ -56,7 +56,7 @@ from .views import (
     edit_property_view, delete_property_view,  # Gestion pro
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
-    cgu_view, privacy_view, toggle_favorite_view, chat_poll_view,
+    cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view
 )
@@ -138,6 +138,7 @@ urlpatterns = [
     path('confidentialite/', privacy_view, name='privacy'),
     path('favori/basculer/<uuid:property_id>/', toggle_favorite_view, name='toggle_favorite'),
     path('chat/poll/<uuid:conversation_id>/', chat_poll_view, name='chat-poll'),
+    path('chat/direct/<uuid:user_id>/', initiate_direct_chat_view, name='initiate-direct-chat'),
     
     # Nouvelles Routes Signalement & Solvabilité
     path('signalement/professionnel/nouveau/', report_pro_fraud_view, name='report_pro_fraud'),

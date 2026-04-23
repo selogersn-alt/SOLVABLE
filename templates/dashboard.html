@@ -398,7 +398,7 @@
                             <p class="text-muted">Gérez vos contrats de location sécurisés par Solvable (Filiations).</p>
                             
                             <h5 class="fw-bold mt-4" style="color: var(--color-dark-green);">Je suis Bailleur (Mes Locataires)</h5>
-                            {% if user.tenant_filiations.all %}
+                            {% if user.landlord_filiations.all %}
                             <div class="table-responsive">
                                 <table class="table table-hover mt-3" style="color: var(--text-main);">
                                     <thead style="background-color: rgba(127, 212, 125, 0.1);">
@@ -412,7 +412,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for filiation in user.tenant_filiations.all %}
+                                        {% for filiation in user.landlord_filiations.all %}
                                         <tr>
                                             <td>{{ filiation.property.title|default:"Non spécifié" }}</td>
                                             <td>{{ filiation.tenant.phone_number }}<br><small class="text-muted">{{ filiation.tenant.nils_profile.nils_number|default:"-" }}</small></td>
@@ -450,7 +450,7 @@
                             {% endif %}
                             
                             <h5 class="fw-bold mt-5" style="color: var(--color-yellow);">Je suis Locataire (Mes Baux)</h5>
-                            {% if user.landlord_filiations.all %}
+                            {% if user.tenant_filiations.all %}
                             <div class="table-responsive">
                                 <table class="table table-hover mt-3" style="color: var(--text-main);">
                                     <thead style="background-color: rgba(245, 196, 47, 0.1);">
@@ -464,7 +464,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for filiation in user.landlord_filiations.all %}
+                                        {% for filiation in user.tenant_filiations.all %}
                                         <tr>
                                             <td>{{ filiation.property.title|default:"Non spécifié" }}</td>
                                             <td>{{ filiation.landlord.phone_number }}</td>
@@ -528,6 +528,12 @@
                                                     <div class="d-flex flex-column">
                                                         <span class="fw-bold text-truncate" style="max-width: 150px;">{{ prop.title }}</span>
                                                         <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i>{{ prop.city }}</small>
+                                                        {% if prop.internal_ref %}
+                                                            <small class="text-primary fw-bold" title="Référence Interne"><i class="fa-solid fa-hashtag me-1"></i>REF: {{ prop.internal_ref }}</small>
+                                                        {% endif %}
+                                                        {% if prop.private_contact_info %}
+                                                            <small class="text-dark bg-warning-subtle px-1 rounded" title="Contact Privé" style="font-size: 0.75rem;"><i class="fa-solid fa-user-lock me-1"></i>{{ prop.private_contact_info|truncatechars:30 }}</small>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </td>

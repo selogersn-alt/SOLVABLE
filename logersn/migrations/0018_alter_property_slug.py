@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='property',
             name='slug',
             field=models.SlugField(blank=True, max_length=255, null=True, unique=True),

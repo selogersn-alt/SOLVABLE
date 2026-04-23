@@ -16,8 +16,8 @@ class RentalFiliation(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, blank=True, related_name='filiations')
-    landlord = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenant_filiations')
-    tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='landlord_filiations')
+    landlord = models.ForeignKey(User, on_delete=models.CASCADE, related_name='landlord_filiations')
+    tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tenant_filiations')
     monthly_rent = models.DecimalField(max_digits=20, decimal_places=2)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)

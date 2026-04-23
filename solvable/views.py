@@ -195,9 +195,10 @@ def mediation_room_view(request, item_type, item_id):
                 msg.incident = item
             msg.save()
             
-            # Re-calculate score in case the status was changed in the mean time
-            if request.user.nils_profile:
-                request.user.nils_profile.update_score()
+            # DigitalH Fix: nils_profile peut retourner None — guard obligatoire avant update_score()
+            user_nils = getattr(request.user, 'nils_profile', None)
+            if user_nils:
+                user_nils.update_score()
                 
             messages.success(request, "Message envoyé.")
             return redirect('mediation_room', item_type=item_type, item_id=item_id)

@@ -249,7 +249,7 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"Bienvenue, {user.phone_number} !")
-            return redirect('dashboard') # Redirect to dashboard instead of home
+            return redirect('dashboard')
         else:
             messages.error(request, "Numéro de téléphone ou mot de passe incorrect.")
             
@@ -331,8 +331,8 @@ def dashboard_view(request):
     # Applications received for user's properties (Pro roles)
     received_applications = PropertyApplication.objects.filter(property__owner=request.user).order_by('-created_at')
     
-    # Pendings filiations to approve
-    pending_approvals = request.user.tenant_filiations.filter(status=RentalFiliation.StatusEnum.PENDING_APPROVAL)
+    # Pendings filiations to approve (DigitalH Fix: now using logical relation)
+    pending_approvals = request.user.landlord_filiations.filter(status=RentalFiliation.StatusEnum.PENDING_APPROVAL)
     
     context = {
         'conversations': conversations,
@@ -421,39 +421,55 @@ def checkout_payment_view(request, property_id, payment_type):
     }
     return render(request, 'checkout.html', context)
 
+@login_required
 def payment_callback_view(request):
     ref = request.GET.get('ref')
     status = request.GET.get('status')
+
+    # DigitalH Security Fix: La transaction doit appartenir à l'utilisateur connecté
+    # Empêche le spoofing via une référence appartenant à quelqu'un d'autre
+    transaction = get_object_or_404(Transaction, reference=ref, user=request.user)
     
-    transaction = get_object_or_404(Transaction, reference=ref)
-    
+    # DigitalH Security Fix: Vérification server-side (Production Ready)
+    if not FedaPayBridge.verify_transaction(ref):
+        messages.error(request, "Échec de la vérification du paiement auprès de FedaPay.")
+        return redirect('dashboard')
+
+    # DigitalH Security Fix: Anti-rejeu — on n'active rien si c'est déjà SUCCESS
+    if transaction.status == 'SUCCESS':
+        messages.info(request, "Ce paiement a déjà été traité.")
+        return redirect('payment_success', transaction_id=transaction.id)
+
     if status == 'success':
         transaction.status = 'SUCCESS'
         transaction.save()
-        
+
         # Activation selon le type
         if transaction.transaction_type == 'PUBLICATION' and transaction.property:
             transaction.property.is_paid = True
             transaction.property.save()
             messages.success(request, "Paiement réussi ! Votre annonce est maintenant prête à être validée par l'admin.")
-            
+
         elif transaction.transaction_type == 'BOOST' and transaction.property:
             transaction.property.is_boosted = True
             # Activation pour la durée payée
             transaction.property.boost_until = timezone.now() + datetime.timedelta(days=transaction.days)
             transaction.property.save()
             messages.success(request, f"Félicitations ! Votre annonce est maintenant boostée pour {transaction.days} jour(s).")
-            
+
         elif transaction.transaction_type == 'POPUP' and transaction.property:
             transaction.property.is_featured_popup = True
             # Activation pour la durée payée
             transaction.property.popup_until = timezone.now() + datetime.timedelta(days=transaction.days)
             transaction.property.save()
             messages.success(request, f"Félicitations ! Votre annonce apparaîtra désormais dans les pop-ups pour {transaction.days} jour(s).")
-            
+
         return redirect('payment_success', transaction_id=transaction.id)
-    
-    messages.error(request, "Le paiement n'a pas pu aboutir.")
+
+    # FedaPay a renvoyé un status != success (annulé, refusé)
+    transaction.status = 'FAILED'
+    transaction.save()
+    messages.error(request, "Le paiement n'a pas pu aboutir ou a été annulé. Veuillez réessayer.")
     return redirect('dashboard')
 
 @login_required
@@ -642,6 +658,30 @@ def initiate_chat_view(request, property_id):
             related_property=target_property
         )
         conversation.participants.add(request.user, owner)
+        
+    return redirect(f"{reverse('dashboard')}?conv={conversation.id}")
+
+@login_required
+def initiate_direct_chat_view(request, user_id):
+    """Start or resume a direct conversation with another user."""
+    from chat.models import Conversation
+    from users.models import User
+    
+    target_user = get_object_or_404(User, id=user_id)
+    
+    if target_user == request.user:
+        messages.info(request, "C'est votre propre profil.")
+        return redirect('dashboard')
+        
+    # Check for existing GENERAL conversation between these two users
+    conversation = Conversation.objects.filter(
+        topic=Conversation.TopicEnum.GENERAL,
+        participants=request.user
+    ).filter(participants=target_user).first()
+    
+    if not conversation:
+        conversation = Conversation.objects.create(topic=Conversation.TopicEnum.GENERAL)
+        conversation.participants.add(request.user, target_user)
         
     return redirect(f"{reverse('dashboard')}?conv={conversation.id}")
 

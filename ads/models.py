@@ -7,10 +7,11 @@ class Advertisement(models.Model):
     ]
     
     LOCATION_CHOICES = [
-        ('TOP', 'Haut de page'),
-        ('BOTTOM', 'Bas de page'),
+        ('TOP', 'Haut de page (Banner)'),
+        ('BOTTOM', 'Bas de page (Banner)'),
         ('BETWEEN_LISTINGS', 'Entre les annonces (In-Feed)'),
-        ('POPUP', 'Pop-up promotionnel'),
+        ('POPUP', 'Pop-up (Surcouche)'),
+        ('POPUNDER', 'Pop-under (Arrière-plan)'),
         ('SIDEBAR', 'Barre latérale (Sidebar)'),
     ]
 

@@ -55,6 +55,11 @@ class Property(models.Model):
     has_garden = models.BooleanField(default=False, blank=True, verbose_name="Jardin")
     
     is_published = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True, verbose_name="En ligne") # Pour gérer les annonces retirées
+    
+    # DigitalH Pro Features (Confidentiel)
+    internal_ref = models.CharField(max_length=100, blank=True, null=True, verbose_name="Référence Interne (Pro)")
+    private_contact_info = models.TextField(blank=True, null=True, verbose_name="Infos Contact Privé (Pro)")
     
     # Équipements et caractéristiques (Amenities)
     wifi = models.BooleanField(default=False, verbose_name="WiFi")

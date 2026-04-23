@@ -4,13 +4,20 @@ from django.db import migrations
 
 def convert_tables_to_utf8mb4(apps, schema_editor):
     with schema_editor.connection.cursor() as cursor:
+        if schema_editor.connection.vendor != 'mysql':
+            return
+
         db_name = 'gaak4328_loger_app'
         try:
             cursor.execute(f"ALTER DATABASE `{db_name}` CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;")
         except Exception:
             pass # Ignore if no permissions to alter database
             
-        cursor.execute("SHOW TABLES;")
+        try:
+            cursor.execute("SHOW TABLES;")
+        except Exception:
+            return # SQLite or others
+
         tables = cursor.fetchall()
         for table_row in tables:
             table = table_row[0]

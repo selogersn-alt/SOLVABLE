@@ -82,8 +82,13 @@
                 
                 <div class="mt-5">
                     <a href="tel:{{ viewed_user.phone_number }}" class="btn btn-primary-custom px-5 py-3 fs-5 me-2">
-                        <i class="fa-solid fa-phone me-2"></i> Contacter
+                        <i class="fa-solid fa-phone me-2"></i> Appeler
                     </a>
+                    {% if user.is_authenticated and user != viewed_user %}
+                    <a href="{% url 'initiate-direct-chat' viewed_user.id %}" class="btn btn-outline-success px-4 py-3 rounded-pill fw-bold me-2">
+                        <i class="fa-solid fa-comments me-2"></i> Message
+                    </a>
+                    {% endif %}
                     <button class="btn btn-outline-dark px-4 py-3 rounded-pill fw-bold" onclick="shareProfile()">
                         <i class="fa-solid fa-share-nodes me-2"></i> Partager
                     </button>

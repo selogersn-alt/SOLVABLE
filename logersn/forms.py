@@ -67,7 +67,8 @@ class PropertyForm(forms.ModelForm):
             'has_garage', 'has_balcony', 'has_terrace', 'has_courtyard', 'has_garden',
             'description', 'wifi', 'swimming_pool', 'gym', 'air_conditioning',
             'refrigerator', 'washing_machine', 'microwave', 'tv_cable',
-            'generator', 'water_tank'
+            'generator', 'water_tank',
+            'internal_ref', 'private_contact_info'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Superbe appartement F4 vue mer...'}),
@@ -94,6 +95,8 @@ class PropertyForm(forms.ModelForm):
             'tv_cable': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'generator': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'water_tank': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'internal_ref': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Référence interne pour votre agence'}),
+            'private_contact_info': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Contact propriétaire, notes privées (Confidentiel)'}),
         }
         labels = {
             'title': 'Titre de l\'annonce',
@@ -115,4 +118,6 @@ class PropertyForm(forms.ModelForm):
             'tv_cable': 'TV par câble',
             'generator': 'Groupe électrogène',
             'water_tank': 'Réservoir d\'eau',
+            'internal_ref': 'REF (Référence interne - Invisible au public)',
+            'private_contact_info': 'CONTACT PRIVÉ (Invisible au public & admin)',
         }

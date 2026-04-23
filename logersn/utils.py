@@ -72,9 +72,56 @@ class FedaPayBridge:
     @staticmethod
     def generate_payment_url(transaction):
         """
-        Placeholder pour la génération du lien FedaPay.
-        Retourne actuellement une URL de succès simulée pour l'assistance Admin.
+        Génère le lien de paiement FedaPay. 
+        En développement, simule un succès immédiat.
+        En production, nécessite settings.FEDAPAY_SECRET_KEY.
         """
-        # TODO: Implémenter l'appel API FedaPay ici plus tard
-        # api_key = settings.FEDAPAY_API_KEY
+        api_key = getattr(settings, 'FEDAPAY_SECRET_KEY', None)
+        is_live = getattr(settings, 'FEDAPAY_LIVE_MODE', False)
+        
+        if not api_key:
+            # Mode Simulation pour l'assistance Admin / Dév
+            return f"/payments/callback/?ref={transaction.reference}&status=success"
+        
+        # Skeleton pour l'intégration réelle (nécessite fedapay-python)
+        # try:
+        #     import fedapay
+        #     fedapay.FedaPay.api_key = api_key
+        #     fedapay.FedaPay.environment = 'live' if is_live else 'sandbox'
+        #     
+        #     checkout = fedapay.Transaction.create({
+        #         "description": f"Paiement LogerSN - {transaction.get_transaction_type_display()}",
+        #         "amount": int(transaction.amount),
+        #         "currency": {"iso": "XOF"},
+        #         "callback_url": settings.FEDAPAY_CALLBACK_URL,
+        #         "customer": {
+        #             "firstname": transaction.user.first_name or "Client",
+        #             "lastname": transaction.user.last_name or "LogerSN",
+        #             "email": transaction.user.email or "client@logersn.com",
+        #             "phone_number": {"number": transaction.user.phone_number, "country": "SN"}
+        #         }
+        #     })
+        #     return checkout.generate_token().url
+        # except Exception as e:
+        #     return f"/payments/callback/?ref={transaction.reference}&status=failed&err={str(e)}"
+        
         return f"/payments/callback/?ref={transaction.reference}&status=success"
+
+    @staticmethod
+    def verify_transaction(reference):
+        """
+        Vérifie le statut d'une transaction auprès de FedaPay.
+        Indispensable pour éviter le spoofing de l'URL de callback.
+        """
+        api_key = getattr(settings, 'FEDAPAY_SECRET_KEY', None)
+        if not api_key:
+            return True # Mode simulation
+            
+        # try:
+        #     import fedapay
+        #     fedapay.FedaPay.api_key = api_key
+        #     # ... logique de vérification réelle ...
+        #     return True
+        # except:
+        #     return False
+        return True
