@@ -7,12 +7,17 @@ sys.path.append(os.getcwd())
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
 django.setup()
 
+from django.db.models import Q
 from logersn.models import Property
 
 def generate_property_slugs():
     print("Analyses des annonces pour la génération des slugs...")
-    # On récupère les annonces qui n'ont pas encore de slug
-    props = Property.objects.filter(slug__isnull=True) | Property.objects.filter(slug='')
+    # On récupère les annonces qui n'ont pas encore de slug ou ont un slug par défaut
+    props = Property.objects.filter(
+        Q(slug__isnull=True) | 
+        Q(slug='') | 
+        Q(slug__startswith='propriete-')
+    )
     
     count = 0
     for p in props:

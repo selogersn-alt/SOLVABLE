@@ -101,7 +101,8 @@ class Property(models.Model):
         return reverse('property_detail', kwargs={'property_id': self.id})
 
     def save(self, *args, **kwargs):
-        if not self.slug:
+        if not self.slug or self.slug.startswith('propriete-'):
+            from django.utils.text import slugify
             base_slug = slugify(self.title)
             if not base_slug:
                 base_slug = "propriete"
@@ -116,22 +117,20 @@ class Property(models.Model):
         return self.images.first()
         
     def get_icon_class(self):
-        t = self.property_type
+        t = self.property_type or ''
         if 'APARTMENT' in t:
             return 'fa-building'
-        elif t in ['STUDIO', 'MINI_STUDIO', 'STUDIO_ENTREE_SALON', 'STUDIO_SEPARE', 'CHAMBRE_SDB_INTERNE', 'CHAMBRE_SIMPLE', 'COLOCATION', 'STUDIO_AMERICAIN', 'MINI_STUDIO_AMERICAIN']:
+        if 'STUDIO' in t:
             return 'fa-door-open'
-        elif t == 'IMMEUBLE':
-            return 'fa-city'
-        elif t in ['VILLA', 'MAISON', 'DUPLEX', 'TRIPLEX']:
-            return 'fa-house-chimney'
-        elif t == 'TERRAIN':
-            return 'fa-map-location-dot'
-        elif t in ['COMMERCIAL', 'BOUTIQUE', 'MAGASIN', 'SHOWROOM']:
-            return 'fa-store'
-        elif t in ['BUREAU', 'USAGE_PRO']:
+        if 'MAISON' in t or 'VILLA' in t:
+            return 'fa-house'
+        if 'TERRAIN' in t:
+            return 'fa-mountain-sun'
+        if 'COMMERCIAL' in t or 'BOUTIQUE' in t or 'MAGASIN' in t:
+            return 'fa-shop'
+        if 'BUREAU' in t:
             return 'fa-briefcase'
-        return 'fa-house'
+        return 'fa-building'
 
 class PropertyImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

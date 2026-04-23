@@ -255,12 +255,18 @@ def property_detail_view(request, property_id=None, slug=None):
     related_properties = Property.objects.filter(
         is_published=True
     ).filter(
-        models.Q(city=property_obj.city) | models.Q(property_type=property_obj.property_type)
+        Q(city=property_obj.city) | Q(property_type=property_obj.property_type)
     ).exclude(id=property_obj.id)[:4]
+
+    # Vérifie si l'annonce est en favoris pour l'utilisateur connecté
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = Favorite.objects.filter(user=request.user, property=property_obj).exists()
     
     context = {
         'property': property_obj,
-        'related_properties': related_properties
+        'related_properties': related_properties,
+        'is_favorite': is_favorite
     }
     return render(request, 'property_detail.html', context)
 

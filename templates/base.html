@@ -17,7 +17,7 @@
     <!-- LCP Image Preload -->
     <link rel="preload" href="{% static 'img/og_banner.png' %}" as="image" fetchpriority="high">
     
-    <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{% if seo_settings and seo_settings.meta_description %}{{ seo_settings.meta_description }}{% endif %}{% endblock %}">
 
     <!-- SEO & Canoniques -->
     <link rel="canonical" href="{{ request.build_absolute_uri }}">

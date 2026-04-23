@@ -550,7 +550,7 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    {% if prop.images.first %}
+                                                    {% if prop.images.first and prop.images.first.image_url %}
                                                         <img src="{{ prop.images.first.image_url.url }}" class="rounded me-3" style="width: 45px; height: 45px; object-fit: cover;">
                                                     {% else %}
                                                         <div class="rounded me-3 bg-light d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
@@ -738,7 +738,7 @@
                                                         <td class="small">{{ app.created_at|date:"d/m/Y" }}</td>
                                                         <td class="text-end">
                                                             <div class="d-flex justify-content-end gap-1">
-                                                                <a href="{% url 'nils_search' %}?q={{ app.applicant.phone_number }}" class="btn btn-sm btn-outline-primary border-0" title="Vérifier NILS"><i class="fa-solid fa-magnifying-glass"></i></a>
+                                                                <a href="{% url 'nils_search' %}?query={{ app.applicant.phone_number }}" class="btn btn-sm btn-outline-primary border-0" title="Vérifier NILS"><i class="fa-solid fa-magnifying-glass"></i></a>
                                                                 
                                                                 {% if app.status == 'PENDING' %}
                                                                     <form action="{% url 'update_application_status' app.id %}" method="POST" class="d-inline">
