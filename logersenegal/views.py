@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 import datetime
 from django.http import JsonResponse, HttpResponse
+# from django.contrib.gis.db.models.functions import Distance  # Removed to avoid GDAL dependency on O2Switch
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -39,8 +40,14 @@ def home_view(request):
             'active_mediation': IncidentReport.objects.filter(status='IN_MEDIATION').count(),
         }
         recent_incidents = IncidentReport.objects.filter(is_validated=True).order_by('-id')[:5]
-    except Exception:
-        stats = {'total_unpaid': 0, 'profiles_flagged': 0, 'resolved_cases': 0, 'active_mediation': 0}
+    except Exception as e:
+        # DigitalH: Sécurité maximale pour éviter le crash de l'accueil
+        stats = {
+            'total_unpaid': 0,
+            'profiles_flagged': 0,
+            'resolved_cases': 0,
+            'active_mediation': 0
+        }
         recent_incidents = []
 
     results = None
@@ -132,14 +139,24 @@ def properties_list_view(request):
         properties = properties.filter(listing_category=listing_category)
     if city and city != 'ALL':
         properties = properties.filter(city=city)
+    # Filtrage par quartier (Sécurisé avec iexact)
     if neighborhood and neighborhood != 'ALL':
-        properties = properties.filter(neighborhood=neighborhood)
+        try:
+            properties = properties.filter(neighborhood__iexact=neighborhood)
+        except Exception:
+            pass
+            
     if property_type and property_type != 'ALL':
         properties = properties.filter(property_type=property_type)
-    if min_price:
-        properties = properties.filter(price__gte=min_price)
-    if max_price:
-        properties = properties.filter(price__lte=max_price)
+        
+    # Filtrage par prix (Conversion robuste float)
+    try:
+        if min_price:
+            properties = properties.filter(price__gte=float(min_price))
+        if max_price:
+            properties = properties.filter(price__lte=float(max_price))
+    except (ValueError, TypeError, Exception):
+        pass
         
     # Filtrage Amenities
     if request.GET.get('wifi') == 'on':
@@ -161,6 +178,12 @@ def properties_list_view(request):
         properties = properties.order_by('-is_boosted', '-price')
     else:
         properties = properties.order_by('-created_at', '-id')
+
+    # Pagination (Essentiel pour éviter les Erreurs 500 sur de longues listes)
+    from django.core.paginator import Paginator
+    paginator = Paginator(properties, 12)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
         
     # Extraire les annonces pour le bandeau défilant du haut (Boostées uniquement)
     try:
@@ -197,7 +220,8 @@ def properties_list_view(request):
         seo_title = f"{type_label} {cat_label} au Sénégal | Loger Sénégal"
 
     context = {
-        'properties': properties,
+        'properties': page_obj,  # On utilise l'objet paginé pour le template
+        'page_obj': page_obj,
         'boosted_slider': boosted_slider,
         'cities': CITY_CHOICES,
         'neighborhoods': NEIGHBORHOOD_CHOICES,

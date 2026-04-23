@@ -37,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-for-local-dev-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True  # TEMPORARY FOR DIAGNOSTIC (DigitalH)
 
 ALLOWED_HOSTS = ['logersn.com', 'www.logersn.com', 'logersenegal.com', 'www.logersenegal.com', 'localhost', '127.0.0.1']
 SITE_URL = 'https://logersn.com'
@@ -320,10 +320,10 @@ SPECTACULAR_SETTINGS = {
 
 # --- CONFIGURATION LOCALE (ZÉRO CONFLIT) ---
 # Ce bloc permet de surcharger les réglages (comme la BDD) sur le serveur
-try:
-    from .local_settings import *
-except ImportError:
-    pass
+# try:
+#     from .local_settings import *
+# except ImportError:
+#     pass
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

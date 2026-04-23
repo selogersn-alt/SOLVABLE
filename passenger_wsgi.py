@@ -8,6 +8,7 @@ if path not in sys.path:
 
 # Définir les réglages Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
+os.environ['DEBUG'] = 'True'  # FORCE DEBUG (DigitalH)
 
 # Importer l'application WSGI de Django
 # Cela gère automatiquement le django.setup() et le chargement des réglages
