@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import models
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -187,7 +187,7 @@ def properties_list_view(request):
         
     # Extraire les annonces pour le bandeau défilant du haut (Boostées uniquement)
     try:
-        boosted_slider = Property.objects.filter(is_published=True, is_boosted=True).order_by('-created_at', '-id')[:10]
+        boosted_slider = Property.objects.filter(is_published=True, is_boosted=True).select_related('owner').prefetch_related('images').order_by('-created_at', '-id')[:10]
     except Exception:
         boosted_slider = Property.objects.none()
     
@@ -201,23 +201,29 @@ def properties_list_view(request):
     else:
         seo_market_description = "Loger Sénégal est la plateforme de référence pour l'immobilier au Sénégal. Nous connectons bailleurs, agences et locataires dans un environnement sécurisé grâce au réseau de solvabilité NILS. Retrouvez nos annonces d'appartements, de villas et de terrains à Dakar, Thiès, Saly et partout au Sénégal."
 
-    # Génération dynamique des métadonnées SEO (SEO Local Power)
     seo_title = "Annonces Immobilières au Sénégal"
     seo_description = "Retrouvez les meilleures annonces d'appartements, villas et terrains au Sénégal sur Loger Sénégal."
     
-    type_label = dict(PROPERTY_TYPE_CHOICES).get(property_type, "Biens immobiliers") if property_type and property_type != 'ALL' else "Biens immobiliers"
-    cat_label = "à vendre" if listing_category == 'SALE' else "meublés" if listing_category == 'FURNISHED' else "en location"
+    # Optimisation spécifique pour les "Chambres" et "Studios" (Intentions de recherche fortes)
+    if property_type == 'CHAMBRE_SDB_INTERNE':
+        type_label = "Chambre à louer avec salle de bain interne"
+    elif property_type == 'CHAMBRE_SIMPLE':
+        type_label = "Chambre à louer"
+    elif property_type == 'MINI_STUDIO':
+        type_label = "Mini Studio à louer"
+    elif property_type == 'STUDIO_SEPARE':
+        type_label = "Studio séparé à louer"
     
     if neighborhood and neighborhood != 'ALL':
         n_name = dict(NEIGHBORHOOD_CHOICES).get(neighborhood, neighborhood)
-        seo_title = f"{type_label} {cat_label} à {n_name}, {dict(CITY_CHOICES).get(city, city)}"
-        seo_description = f"Découvrez notre sélection de {type_label.lower()} {cat_label} située à {n_name}. Loger Sénégal sécurise votre recherche avec le réseau NILS."
+        seo_title = f"{type_label} à {n_name}, {dict(CITY_CHOICES).get(city, city)}"
+        seo_description = f"Consultez les meilleures offres de {type_label.lower()} à {n_name}. Loger Sénégal : annonces vérifiées et profil NILS pour une location sécurisée."
     elif city and city != 'ALL':
         c_name = dict(CITY_CHOICES).get(city, city)
-        seo_title = f"{type_label} {cat_label} à {c_name} | Meilleures offres immo"
-        seo_description = f"Trouvez votre futur {type_label.lower()} {cat_label} à {c_name}. Loger Sénégal : la plateforme de confiance pour l'immobilier au Sénégal."
+        seo_title = f"{type_label} à {c_name} | Loger Sénégal"
+        seo_description = f"Trouvez votre {type_label.lower()} à {c_name}. Idéal pour étudiants, couples ou professionnels. Sécurisez votre bail avec NILS."
     elif property_type and property_type != 'ALL':
-        seo_title = f"{type_label} {cat_label} au Sénégal | Loger Sénégal"
+        seo_title = f"{type_label} au Sénégal | Meilleures offres immo"
 
     context = {
         'properties': page_obj,  # On utilise l'objet paginé pour le template
@@ -247,16 +253,15 @@ def property_detail_view(request, property_id=None, slug=None):
             from django.http import Http404
             raise Http404("Cette annonce est en attente de validation par l'administrateur.")
     
-    # Incrémentation des statistiques de vue (Analytics)
-    property_obj.views_count += 1
-    property_obj.save()
+    # Incrémentation des statistiques de vue (Analytics) avec F() pour la performance
+    Property.objects.filter(id=property_obj.id).update(views_count=F('views_count') + 1)
     
-    # Biens similaires (même ville ou même type)
+    # Biens similaires (même ville ou même type) - Optimisé avec select_related/prefetch_related
     related_properties = Property.objects.filter(
         is_published=True
     ).filter(
         Q(city=property_obj.city) | Q(property_type=property_obj.property_type)
-    ).exclude(id=property_obj.id)[:4]
+    ).select_related('owner').prefetch_related('images').exclude(id=property_obj.id)[:4]
 
     # Vérifie si l'annonce est en favoris pour l'utilisateur connecté
     is_favorite = False

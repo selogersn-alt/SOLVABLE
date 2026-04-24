@@ -556,13 +556,14 @@
                     </ul>
                 </div>
                 <div class="col-md-3 mb-4">
-                    <h5 class="fw-bold mb-3" style="color: var(--color-yellow);">Secteurs Prisés</h5>
+                    <h5 class="fw-bold mb-3" style="color: var(--color-yellow);">Recherches Populaires</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{% url 'properties_list' %}?neighborhood=ALMADIES" class="footer-link">Immobilier Almadies</a></li>
-                        <li class="mb-2"><a href="{% url 'properties_list' %}?neighborhood=MERMOZ" class="footer-link">Location Mermoz</a></li>
-                        <li class="mb-2"><a href="{% url 'properties_list' %}?neighborhood=PLATEAU" class="footer-link">Appartements Dakar Plateau</a></li>
-                        <li class="mb-2"><a href="{% url 'properties_list' %}?neighborhood=POINT_E" class="footer-link">Villas Point E</a></li>
-                        <li class="mb-2"><a href="{% url 'properties_list' %}?neighborhood=OUAKAM" class="footer-link">Annonces Ouakam</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}?property_type=CHAMBRE_SIMPLE" class="footer-link">Chambre à louer</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}?property_type=CHAMBRE_SDB_INTERNE" class="footer-link">Chambre salle de bain interne</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}?property_type=STUDIO_SEPARE" class="footer-link">Studio séparé</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}?property_type=MINI_STUDIO" class="footer-link">Mini Studio</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}?property_type=CHAMBRE_SIMPLE&neighborhood=OUAKAM" class="footer-link">Chambre à Ouakam</a></li>
+                        <li class="mb-2"><a href="{% url 'properties_list' %}?property_type=CHAMBRE_SIMPLE&city=THIES" class="footer-link">Chambre à Thiès / Autres villes</a></li>
                     </ul>
                 </div>
                 <div class="col-md-2 mb-4">
