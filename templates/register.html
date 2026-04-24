@@ -25,6 +25,12 @@
 
                     <form method="POST" action="{% url 'register' %}">
                         {% csrf_token %}
+                        {% if ref %}
+                            <input type="hidden" name="ref_by" value="{{ ref }}">
+                            <div class="alert alert-info py-2 small mb-3">
+                                <i class="fa-solid fa-gift me-2"></i> Vous avez été parrainé par <b>{{ ref }}</b>. Bienvenue !
+                            </div>
+                        {% endif %}
                         <div class="mb-3">
                             <label for="phone" class="form-label fw-bold" style="color: var(--text-main);">Numéro de Téléphone (Identifiant) <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="phone" name="phone" required placeholder="+221 77 000 00 00" style="background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color); padding: 12px; border-radius: 10px;">

@@ -291,6 +291,7 @@ def login_view(request):
     return render(request, 'login.html')
 
 def register_view(request):
+    ref_username = request.GET.get('ref')
     if request.method == 'POST':
         email = request.POST.get('email')
         phone = request.POST.get('phone')
@@ -300,34 +301,42 @@ def register_view(request):
         role = request.POST.get('role', 'TENANT')
         company_name = request.POST.get('company_name')
         coverage_area = request.POST.get('coverage_area')
+        ref_by = request.POST.get('ref_by')
         
         if password != password_confirm:
             messages.error(request, "Les mots de passe ne correspondent pas.")
-            return render(request, 'register.html')
+            return render(request, 'register.html', {'ref': ref_by})
             
         if not no_email and not email:
             messages.error(request, "Veuillez fournir un email ou cocher la case 'Je n'ai pas d'adresse email'.")
-            return render(request, 'register.html')
+            return render(request, 'register.html', {'ref': ref_by})
             
         if email and User.objects.filter(email=email).exists():
             messages.error(request, "Cet email est déjà utilisé.")
-            return render(request, 'register.html')
+            return render(request, 'register.html', {'ref': ref_by})
             
         if User.objects.filter(phone_number=phone).exists():
             messages.error(request, "Ce numéro de téléphone est déjà utilisé.")
-            return render(request, 'register.html')
+            return render(request, 'register.html', {'ref': ref_by})
             
         # Création de l'utilisateur
         user = User.objects.create_user(phone_number=phone, email=email if email else None, password=password, role=role)
         user.company_name = company_name
         user.coverage_area = coverage_area
+        
+        # Gestion du parrainage
+        if ref_by:
+            referrer = User.objects.filter(username=ref_by).first()
+            if referrer:
+                user.referred_by = referrer
+        
         user.save()
         
         login(request, user)
         messages.success(request, "Votre compte a été créé avec succès !")
         return redirect('dashboard')
         
-    return render(request, 'register.html')
+    return render(request, 'register.html', {'ref': ref_username})
 
 def logout_view(request):
     logout(request)
@@ -1075,7 +1084,29 @@ def verify_phone_view(request):
         if user_code == request.user.phone_otp:
             request.user.is_phone_verified = True
             request.user.save()
-            messages.success(request, "Votre numéro de téléphone a été vérifié avec succès ! Votre profil est désormais pleinement actif.")
+
+            # DigitalH : Système de récompense NILS
+            from logersn.points_utils import award_points, POINTS_VALUES
+            
+            # 1. Récompense pour validation du profil
+            award_points(
+                request.user, 
+                POINTS_VALUES['PROFILE_VALIDATION'], 
+                'PROFILE_VALIDATION', 
+                "Validation du numéro de téléphone"
+            )
+
+            # 2. Récompense pour le parrain (si existant)
+            if request.user.referred_by:
+                award_points(
+                    request.user.referred_by, 
+                    POINTS_VALUES['REFERRAL_SUCCESS'], 
+                    'REFERRAL_SUCCESS', 
+                    f"Parrainage réussi de {request.user.phone_number}",
+                    reference_id=str(request.user.id)
+                )
+
+            messages.success(request, "Votre numéro de téléphone a été vérifié avec succès ! Votre profil est désormais pleinement actif et vous avez gagné vos premiers crédits NILS.")
             return redirect('dashboard')
         else:
             messages.error(request, "Code de vérification incorrect. Veuillez contacter l'administrateur si vous ne l'avez pas reçu.")
