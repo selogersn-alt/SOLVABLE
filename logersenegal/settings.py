@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'chat',
     'ads',
     'drf_spectacular',
+    'articles',
 ]
 
 # REST Framework Configuration

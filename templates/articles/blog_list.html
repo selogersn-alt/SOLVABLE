@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ seo_title }} | Loger Sénégal{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, var(--color-dark-green), #053b21); color: white; padding: 80px 0; text-align: center;">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3 animate__animated animate__fadeInDown">Conseils & Actualités</h1>
+        <p class="lead opacity-75 animate__animated animate__fadeInUp animate__delay-1s">Le guide de référence pour réussir vos projets immobiliers au Sénégal.</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4">
+        {% for post in posts %}
+        <div class="col-md-6 col-lg-4">
+            <article class="card h-100 border-0 shadow-sm overflow-hidden" style="transition: transform 0.3s ease; border-radius: 16px;">
+                <div class="position-relative" style="height: 220px;">
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="{{ post.title }}">
+                    {% else %}
+                    <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-newspaper fs-1 text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="position-absolute top-0 start-0 p-3">
+                        <span class="badge bg-success shadow-sm">{{ post.created_at|date:"d M Y" }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <h2 class="h5 card-title fw-bold mb-3" style="color: var(--color-dark-green);">{{ post.title }}</h2>
+                    <p class="card-text text-muted small">{{ post.content|truncatewords:25 }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                    <a href="{{ post.get_absolute_url }}" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-bold">Lire l'article</a>
+                </div>
+            </article>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fa-solid fa-pen-nib fs-1 text-muted mb-3"></i>
+            <p class="text-muted">Nos experts préparent de nouveaux articles pour vous. Revenez bientôt !</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

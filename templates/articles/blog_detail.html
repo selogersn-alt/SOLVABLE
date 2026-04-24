@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} | Blog Loger Sénégal{% endblock %}
+{% block meta_description %}{{ post.meta_description|default:post.content|truncatechars:160 }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .article-content {
+        line-height: 1.8;
+        font-size: 1.1rem;
+        color: #333;
+    }
+    [data-theme="dark"] .article-content {
+        color: #e0e0e0;
+    }
+    .article-content p {
+        margin-bottom: 1.5rem;
+    }
+    .sticky-sidebar {
+        position: sticky;
+        top: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row g-5">
+        <!-- Article Principal -->
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-success">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'blog_list' %}" class="text-success">Blog</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ post.title|truncatechars:30 }}</li>
+                </ol>
+            </nav>
+
+            <article>
+                <h1 class="display-5 fw-bold mb-4" style="color: var(--color-dark-green);">{{ post.title }}</h1>
+                
+                <div class="d-flex align-items-center gap-3 mb-4 text-muted">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-user-circle me-2"></i>
+                        <span>Par <strong>{{ post.author.first_name }} {{ post.author.last_name }}</strong></span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-calendar-day me-2"></i>
+                        <span>Le {{ post.created_at|date:"d F Y" }}</span>
+                    </div>
+                </div>
+
+                {% if post.image %}
+                <div class="rounded-4 overflow-hidden mb-5 shadow">
+                    <img src="{{ post.image.url }}" class="w-100" alt="{{ post.title }}">
+                </div>
+                {% endif %}
+
+                <div class="article-content">
+                    {{ post.content|linebreaks }}
+                </div>
+
+                <hr class="my-5">
+
+                <!-- Boutons de Partage -->
+                <div class="d-flex align-items-center gap-3">
+                    <span class="fw-bold text-muted">Partager :</span>
+                    <a href="https://wa.me/?text={{ post.title }} - {{ request.build_absolute_uri }}" target="_blank" class="btn btn-outline-success btn-sm rounded-circle"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-circle"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-circle"><i class="fa-brands fa-x-twitter"></i></a>
+                </div>
+            </article>
+        </div>
+
+        <!-- Sidebar / Maillage -->
+        <div class="col-lg-4">
+            <div class="sticky-sidebar">
+                <!-- Widget Annonces liées -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--bg-card);">
+                    <h4 class="h5 fw-bold mb-4" style="color: var(--color-dark-green);">
+                        <i class="fa-solid fa-house-chimney-window me-2"></i> Nos opportunités
+                    </h4>
+                    
+                    {% for ad in related_ads %}
+                    <div class="d-flex gap-3 mb-3 pb-3 border-bottom border-light">
+                        <div style="width: 80px; height: 60px; flex-shrink: 0;">
+                            {% if ad.images.first %}
+                            <img src="{{ ad.images.first.image_url.url }}" class="w-100 h-100 rounded-2" style="object-fit: cover;" alt="{{ ad.title }}">
+                            {% else %}
+                            <div class="w-100 h-100 bg-light rounded-2 d-flex align-items-center justify-content-center">
+                                <i class="fa-solid fa-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="overflow-hidden">
+                            <h5 class="small fw-bold mb-1 text-truncate"><a href="{{ ad.get_absolute_url }}" class="text-dark">{{ ad.title }}</a></h5>
+                            <div class="text-success small fw-bold">{{ ad.price|floatformat:0 }} FCFA</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <a href="{% url 'properties_list' %}" class="btn btn-success btn-sm w-100 rounded-pill fw-bold">Voir toutes les annonces</a>
+                </div>
+
+                <!-- Newsletter / Lead Gen -->
+                <div class="card border-0 shadow-lg rounded-4 p-4 text-white text-center" style="background: linear-gradient(135deg, var(--color-dark-green), #0b4629);">
+                    <i class="fa-solid fa-bell fs-1 mb-3 text-warning"></i>
+                    <h4 class="h5 fw-bold mb-3">Ne manquez rien</h4>
+                    <p class="small opacity-75 mb-4">Recevez nos conseils immobiliers et les meilleures offres en avant-première.</p>
+                    <form action="#" method="POST">
+                        {% csrf_token %}
+                        <input type="email" class="form-control form-control-sm mb-3 rounded-pill text-center" placeholder="Votre email">
+                        <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill fw-bold">S'abonner</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
