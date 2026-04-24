@@ -101,13 +101,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     def send_otp(self):
         """Déclenche l'envoi du code OTP selon les préférences."""
         from logersenegal.emails import send_otp_email
+        from logersn.sms_utils import send_otp_termii
+        
         if self.phone_otp:
-            # Envoi par Email si configuré
+            # Envoi par SMS via Termii (Prioritaire pour la sécurité)
+            sms_sent = send_otp_termii(self)
+            
+            # Envoi par Email en complément si configuré
             if self.notification_preference in ['EMAIL', 'BOTH'] and self.email:
                 send_otp_email(self, self.phone_otp)
             
-            # Ici on pourrait ajouter l'API SMS plus tard
-            return True
+            return sms_sent
         return False
 
     def save(self, *args, **kwargs):

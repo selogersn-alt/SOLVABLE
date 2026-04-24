@@ -68,6 +68,7 @@ class PropertyForm(forms.ModelForm):
             'description', 'wifi', 'swimming_pool', 'gym', 'air_conditioning',
             'refrigerator', 'washing_machine', 'microwave', 'tv_cable',
             'generator', 'water_tank',
+            'latitude', 'longitude',
             'internal_ref', 'private_contact_info'
         ]
         widgets = {
