@@ -77,7 +77,10 @@
         <div class="d-flex justify-content-between align-items-center" style="position: relative; z-index: 10;">
             <div class="d-flex gap-1">
                 {% if property.id %}
-                <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour, je suis intéressé par votre annonce : {{ property.title }}" target="_blank" class="btn btn-sm btn-outline-success border-0 px-2" style="background: rgba(25, 135, 84, 0.05);">
+                <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour,%20je%20suis%20int%C3%A9ress%C3%A9%20par%20votre%20annonce%20:%20{{ property.title|urlencode }}%20(%20{{ property.get_property_type_display|urlencode }}%20)%20%C3%A0%20{{ property.neighborhood|urlencode }}.%20Lien%20:%20{{ request.scheme }}://{{ request.get_host }}{{ property.get_absolute_url|urlencode }}" 
+                   target="_blank" 
+                   class="btn btn-sm btn-outline-success border-0 px-2" 
+                   style="background: rgba(25, 135, 84, 0.05); position: relative; z-index: 20;">
                     <i class="fa-brands fa-whatsapp fs-5"></i>
                 </a>
                 {% endif %}

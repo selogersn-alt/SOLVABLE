@@ -429,7 +429,9 @@
                     <a href="tel:{{ property.owner.phone_number }}" class="btn btn-outline-success">
                         <i class="fa-solid fa-phone me-2"></i> Appeler
                     </a>
-                    <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour, je suis intéressé par votre annonce : {{ property.title }}" target="_blank" class="btn btn-whatsapp">
+                    <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour,%20je%20suis%20int%C3%A9ress%C3%A9%20par%20votre%20annonce%20:%20{{ property.title|urlencode }}%20(%20{{ property.get_property_type_display|urlencode }}%20)%20%C3%A0%20{{ property.neighborhood|urlencode }}.%20Lien%20:%20{{ request.build_absolute_uri|urlencode }}" 
+                       target="_blank" 
+                       class="btn btn-whatsapp">
                         <i class="fa-brands fa-whatsapp me-2"></i> WhatsApp
                     </a>
                 </div>
