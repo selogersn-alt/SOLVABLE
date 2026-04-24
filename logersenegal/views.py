@@ -405,6 +405,9 @@ def dashboard_view(request):
     
     from logersn.constants import PROPERTY_TYPE_CHOICES
     
+    from users.models import UserPoints
+    points_balance, _ = UserPoints.objects.get_or_create(user=request.user)
+    
     context = {
         'conversations': conversations,
         'active_conversation': active_conversation,
@@ -416,6 +419,7 @@ def dashboard_view(request):
         'pending_approvals': pending_approvals,
         'property_types': PROPERTY_TYPE_CHOICES,
         'filters': request.GET,
+        'points_balance': points_balance.balance,
     }
     return render(request, 'dashboard.html', context)
 
@@ -521,6 +525,17 @@ def payment_callback_view(request):
         if transaction.transaction_type == 'PUBLICATION' and transaction.property:
             transaction.property.is_paid = True
             transaction.property.save()
+            
+            # DigitalH : Récompense en Crédits NILS pour la publication
+            from logersn.points_utils import award_points, POINTS_VALUES
+            award_points(
+                request.user, 
+                POINTS_VALUES['PROPERTY_PUBLISHED'], 
+                'PROPERTY_PUBLISHED', 
+                f"Publication de l'annonce : {transaction.property.title}",
+                reference_id=str(transaction.property.id)
+            )
+            
             messages.success(request, "Paiement réussi ! Votre annonce est maintenant prête à être validée par l'admin.")
 
         elif transaction.transaction_type == 'BOOST' and transaction.property:

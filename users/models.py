@@ -47,6 +47,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     company_name = models.CharField(max_length=150, null=True, blank=True, verbose_name="Nom de l'agence ou de l'entreprise")
     slug = models.SlugField(max_length=200, unique=True, null=True, blank=True, verbose_name="Lien personnalisé")
     coverage_area = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zone de couverture")
+    
+    # Système de Parrainage DigitalH
+    referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals', verbose_name="Parrainé par")
     class NotificationMode(models.TextChoices):
         SMS = 'SMS', 'SMS uniquement'
         EMAIL = 'EMAIL', 'E-mail uniquement'
@@ -372,6 +375,65 @@ class SolvencyDocument(models.Model):
         return f"{self.get_doc_type_display()} - {self.user.phone_number}"
 
     def save(self, *args, **kwargs):
-        # Si le document est vérifié, on peut marquer l'utilisateur comme solvable (si admin le décide)
-        # Mais on laisse la gestion du badge is_solvable à l'admin manuellement ou via une vue dédiée
+        # Détection de la validation du document
+        is_new_verification = False
+        if self.pk:
+            old_status = SolvencyDocument.objects.get(pk=self.pk).status
+            if old_status != self.StatusEnum.VERIFIED and self.status == self.StatusEnum.VERIFIED:
+                is_new_verification = True
+                self.verified_at = timezone.now()
+        
         super().save(*args, **kwargs)
+        
+        if is_new_verification:
+            from logersn.points_utils import award_points, POINTS_VALUES
+            # Récompense pour l'utilisateur qui a fourni le doc
+            award_points(
+                self.user, 
+                POINTS_VALUES['PROFILE_VALIDATION'], 
+                'PROFILE_VALIDATION', 
+                f"Validation du document : {self.get_doc_type_display()}"
+            )
+            
+            # Récompense pour le parrain (si existe)
+            if self.user.referred_by:
+                award_points(
+                    self.user.referred_by, 
+                    POINTS_VALUES['REFERRAL_SUCCESS'], 
+                    'REFERRAL_SUCCESS', 
+                    f"Validation du profil de votre filleul : {self.user.phone_number}"
+                )
+
+class UserPoints(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='points_balance')
+    balance = models.PositiveIntegerField(default=0, verbose_name="Solde de Crédits NILS")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.phone_number} - {self.balance} pts"
+
+    class Meta:
+        verbose_name = "Solde de points"
+        verbose_name_plural = "Soldes de points"
+
+class PointTransaction(models.Model):
+    class ActionType(models.TextChoices):
+        PROFILE_VALIDATION = 'PROFILE_VALIDATION', 'Validation du profil NILS'
+        PROPERTY_PUBLISHED = 'PROPERTY_PUBLISHED', 'Annonce publiée'
+        REFERRAL_SUCCESS = 'REFERRAL_SUCCESS', 'Parrainage réussi'
+        DAILY_LOGIN = 'DAILY_LOGIN', 'Connexion quotidienne'
+        ADMIN_ADJUSTMENT = 'ADMIN_ADJUSTMENT', 'Ajustement administrateur'
+        REWARD_REDEEMED = 'REWARD_REDEEMED', 'Utilisation de crédits'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='point_transactions')
+    amount = models.IntegerField()  # Peut être négatif si l'utilisateur dépense
+    action_type = models.CharField(max_length=50, choices=ActionType.choices)
+    description = models.CharField(max_length=255, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    reference_id = models.CharField(max_length=100, blank=True, null=True) # ID de l'annonce ou du filleul
+
+    def __str__(self):
+        return f"{self.user.phone_number} : {self.amount} ({self.action_type})"
+
+    class Meta:
+        ordering = ['-timestamp']
