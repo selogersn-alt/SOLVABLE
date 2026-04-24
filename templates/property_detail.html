@@ -6,47 +6,29 @@
 {% block meta_description %}Découvrez ce {{ property.get_property_type_display }} de {{ property.bedrooms }} ch à {{ property.neighborhood }}, {{ property.city }}. Prix : {{ property.price|intcomma }} FCFA. Annonce vérifiée et sécurisée sur Loger Sénégal, la plateforme n°1 de l'immobilier au Sénégal.{% endblock %}
 
 {% block og_title %}{{ property.title }} - Annonce immo à {{ property.neighborhood }}{% endblock %}
-{% block og_description %}{{ property.get_property_type_display }} à {{ property.neighborhood }} ({{ property.city }}) | {{ property.price|floatformat:0 }} FCFA{% endblock %}
-{% block extra_meta %}
-    {% with main_image=property.images.first %}
-        {% if main_image %}
-            {% if main_image and main_image.image_url %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ main_image.image_url.url }}">{% endif %}
-            <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{{ main_image.image_url.url }}">
-            <meta property="og:image:type" content="image/webp">
-            <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ main_image.image_url.url }}">
-        {% else %}
-            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og_banner.png' %}">
-            <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og_banner.png' %}">
-            <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og_banner.png' %}">
-        {% endif %}
-    {% endwith %}
+{% block og_description %}{{ property.get_property_type_display }} à {{ property.neighborhood }} ({{ property.city }}) | {{ property.price|intcomma }} FCFA{% endblock %}
 
-    <!-- Données Structurées Schema.org pour Google Search -->
+{% block extra_meta %}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "RealEstateListing",
-      "name": "{{ property.title|escapejs }}",
-      "description": "{{ property.description|striptags|truncatewords:60|escapejs }}",
+      "name": "{{ property.title }}",
+      "description": "{{ property.description|truncatewords:30 }}",
       "datePosted": "{{ property.created_at|date:'Y-m-d' }}",
-      "url": "{{ request.scheme }}://{{ request.get_host }}{{ property.get_absolute_url }}",
-      "image": [{% for image in property.images.all %}{% if image.image_url %}"{{ request.scheme }}://{{ request.get_host }}{{ image.image_url.url }}"{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}],
-      "contents": {
-        "@type": "RealEstateListing",
-        "name": "{{ property.title|escapejs }}",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "{{ property.city|escapejs }}",
-          "addressRegion": "{{ property.neighborhood|escapejs }}",
-          "addressCountry": "SN"
-        },
-        "numberOfRooms": "{{ property.bedrooms|default:1 }}",
-        "floorSize": {
-          "@type": "QuantitativeValue",
-          "value": "{{ property.surface|default:0 }}",
-          "unitCode": "MTK"
-        }
+      "priceCurrency": "XOF",
+      "price": "{{ property.price }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{ property.city }}",
+        "addressRegion": "{{ property.neighborhood }}",
+        "addressCountry": "SN"
       },
+      "image": [
+        {% for image in property.images.all %}
+            "{{ request.scheme }}://{{ request.get_host }}{{ image.image_url.url }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ],
       "offers": {
         "@type": "Offer",
         "price": "{{ property.price }}",
@@ -58,6 +40,7 @@
     </script>
 {% endblock %}
 
+{% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
     #propertyMap { height: 400px; border-radius: 15px; margin-bottom: 20px; z-index: 1; border: 1px solid var(--border-color); }
@@ -73,39 +56,38 @@
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 5px 20px var(--shadow-color);
-        margin-bottom: 30px;
-        border: 1px solid var(--border-color);
-    }
-
-    .main-image {
-        width: 100%;
-        height: 500px;
-        object-fit: cover;
         background-color: var(--bg-card);
-    }
-    
-    @media (max-width: 768px) {
-        .main-image {
-            height: 300px; /* Smaller image on mobile */
-        }
+        margin-bottom: 30px;
     }
 
-    .thumbnails-list {
+    .main-img-wrapper {
+        height: 500px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .main-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .thumbnails-row {
         display: flex;
+        gap: 10px;
+        padding: 10px;
         overflow-x: auto;
-        padding: 15px;
-        gap: 15px;
         background-color: var(--bg-card);
     }
 
     .thumbnail-img {
-        width: 120px;
-        height: 80px;
+        width: 100px;
+        height: 70px;
         object-fit: cover;
-        border-radius: 8px;
         cursor: pointer;
-        opacity: 0.7;
-        transition: all 0.3s ease;
+        border-radius: 8px;
+        opacity: 0.6;
+        transition: all 0.3s;
         border: 2px solid transparent;
     }
 
@@ -139,7 +121,6 @@
         border-radius: 15px;
         padding: 25px;
         text-align: center;
-        margin-bottom: 30px;
     }
 
     .owner-avatar {
@@ -153,13 +134,6 @@
         justify-content: center;
         font-size: 2rem;
         margin: 0 auto 15px auto;
-    }
-
-    #propertyMap {
-        height: 300px;
-        border-radius: 15px;
-        border: 1px solid var(--border-color);
-        margin-bottom: 30px;
     }
 
     .btn-favorite {
@@ -181,10 +155,6 @@
         color: #ff4757;
         background-color: white;
     }
-
-</style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
 </style>
 {% endblock %}
 
@@ -212,222 +182,120 @@
                     </a>
                     <meta itemprop="position" content="3" />
                 </li>
-                <li class="breadcrumb-item active text-white" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <li class="breadcrumb-item active text-white fw-bold" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
                     <span itemprop="name">{{ property.neighborhood }}</span>
                     <meta itemprop="position" content="4" />
                 </li>
             </ol>
         </nav>
-        <div class="d-flex justify-content-between align-items-start">
-            <div>
-                <h1 class="fw-bold mb-2">{{ property.title }}</h1>
-                <p class="mb-0 opacity-75"><i class="fa-solid fa-location-dot me-2 text-warning"></i>{{ property.neighborhood }}, {{ property.city }}</p>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <button id="favoriteBtn" class="btn-favorite {% if user.is_authenticated and property in user.favorites.all %}active{% endif %}" onclick="toggleFavorite('{{ property.id }}')">
-                    <i class="fa-solid fa-heart"></i>
-                </button>
-                <div class="text-end text-white opacity-75 small">
-                    Publié il y a {{ property.created_at|timesince }}
-                </div>
-            </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2 fw-bold mb-0">{{ property.title }}</h1>
+            <button class="btn-favorite" title="Ajouter aux favoris">
+                <i class="fa-regular fa-heart fs-4"></i>
+            </button>
         </div>
     </div>
 </div>
 
-<div class="container mb-5">
+<div class="container pb-5">
     <div class="row">
-        <!-- Main Content (Images & Description) -->
-        <!-- Main Content (Images & Description) -->
+        <!-- Main Content (Gallery & Description) -->
         <div class="col-lg-8">
-            <!-- Priority Price for Mobile -->
-            <div class="details-card d-lg-none mb-3">
-                <div class="price-tag mb-0">
-                    {% if property.listing_category == 'SALE' %}
-                        {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">(Vente)</span>
-                    {% elif property.listing_category == 'FURNISHED' %}
-                        {{ property.price_per_night|default:property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/nuitée</span>
-                    {% else %}
-                        {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/mois</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Photo Gallery -->
+            <!-- Gallery -->
             <div class="gallery-container">
-                <!-- Main Image -->
-                <div>
-                    {% with main_image=property.get_main_image %}
-                        {% if main_image and main_image.image_url %}
-                            <img src="{{ main_image.image_url.url }}" alt="{{ property.title }}" class="main-image" id="expandedImg" onerror="this.onerror=null; this.outerHTML='<div class=\'main-image d-flex align-items-center justify-content-center bg-light\' style=\'height:400px;\'><i class=\'fa-solid {{ property.get_icon_class }} text-muted\' style=\'font-size: 8rem; opacity: 0.3;\'></i></div>';">
-                        {% else %}
-                            <div class="main-image d-flex align-items-center justify-content-center bg-light" id="expandedImg" style="height: 400px;">
-                                <i class="fa-solid {{ property.get_icon_class }} text-muted" style="font-size: 8rem; opacity: 0.3;"></i>
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                </div>
-                
-                <!-- Thumbnails -->
-                {% if property.images.all.count > 1 %}
-                <div class="thumbnails-list">
-                    {% for image in property.images.all %}
-                    {% if image.image_url %}
-                    <img src="{{ image.image_url.url }}" 
-                         alt="{{ property.title }} - Photo {{ forloop.counter }}" 
-                         class="thumbnail-img {% if forloop.first %}active{% endif %}" 
-                         onclick="changeImage(this)">
+                <div class="main-img-wrapper">
+                    {% if property.images.all %}
+                        <img src="{{ property.images.all.0.image_url.url }}" id="mainImage" class="main-img" alt="{{ property.title }}">
+                    {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                            <i class="fa-solid fa-image text-muted" style="font-size: 5rem;"></i>
+                        </div>
                     {% endif %}
+                </div>
+                {% if property.images.count > 1 %}
+                <div class="thumbnails-row">
+                    {% for image in property.images.all %}
+                        <img src="{{ image.image_url.url }}" class="thumbnail-img {% if forloop.first %}active{% endif %}" onclick="changeImage(this.src, this)">
                     {% endfor %}
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Main Details -->
+            <!-- Features Quick Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center border rounded-3 bg-white shadow-sm h-100">
+                        <i class="fa-solid fa-maximize text-success mb-2 fs-4"></i>
+                        <div class="small text-muted">Surface</div>
+                        <div class="fw-bold">{{ property.surface }} m²</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center border rounded-3 bg-white shadow-sm h-100">
+                        <i class="fa-solid fa-bed text-success mb-2 fs-4"></i>
+                        <div class="small text-muted">Chambres</div>
+                        <div class="fw-bold">{{ property.bedrooms }}</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center border rounded-3 bg-white shadow-sm h-100">
+                        <i class="fa-solid fa-bath text-success mb-2 fs-4"></i>
+                        <div class="small text-muted">Toilettes</div>
+                        <div class="fw-bold">{{ property.toilets }}</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center border rounded-3 bg-white shadow-sm h-100">
+                        <i class="fa-solid fa-couch text-success mb-2 fs-4"></i>
+                        <div class="small text-muted">Salons</div>
+                        <div class="fw-bold">{{ property.salons }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
             <div class="details-card">
-                {% if property.surface > 0 or property.bedrooms > 0 or property.toilets > 0 or property.total_rooms > 0 %}
-                <div class="row mb-4 bg-light-subtle p-3 rounded-4 g-2">
-                    {% if property.surface > 0 %}
-                    <div class="col-6 col-md-3 text-center border-sm-end">
-                        <div class="text-muted small">Surface</div>
-                        <div class="fw-bold fs-5">{{ property.surface }} m²</div>
-                    </div>
-                    {% endif %}
-                    {% if property.bedrooms > 0 %}
-                    <div class="col-6 col-md-3 text-center border-md-end">
-                        <div class="text-muted small">Chambres</div>
-                        <div class="fw-bold fs-5">{{ property.bedrooms }}</div>
-                    </div>
-                    {% endif %}
-                    {% if property.toilets > 0 %}
-                    <div class="col-6 col-md-3 text-center border-sm-end">
-                        <div class="text-muted small">Toilettes</div>
-                        <div class="fw-bold fs-5">{{ property.toilets }}</div>
-                    </div>
-                    {% endif %}
-                    {% if property.total_rooms > 0 %}
-                    <div class="col-6 col-md-3 text-center">
-                        <div class="text-muted small">Pièces</div>
-                        <div class="fw-bold fs-5">{{ property.total_rooms }}</div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <h3 class="fw-bold mb-4" style="color: var(--text-main);">Description du bien</h3>
-                <p style="line-height: 1.8; color: var(--text-muted); white-space: pre-line;">
+                <h4 class="fw-bold mb-4 border-bottom pb-2">Description du bien</h4>
+                <div class="description-text" style="white-space: pre-line; line-height: 1.8; color: var(--text-main);">
                     {{ property.description }}
-                </p>
-
-                {% if property.has_garage %}
-                <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4 py-3">
-                    <i class="fa-solid fa-car me-3 fs-3"></i>
-                    <div><strong>Garage inclus</strong> - Ce bien dispose d'un espace de stationnement sécurisé.</div>
                 </div>
-                {% endif %}
+            </div>
 
-                <!-- Nouvel Affichage des Équipements -->
-                <h4 class="fw-bold mb-4" style="color: var(--text-main);">Équipements & Commodités</h4>
-                <div class="row g-3 mb-5">
+            <!-- Amenities -->
+            <div class="details-card">
+                <h4 class="fw-bold mb-4 border-bottom pb-2">Équipements & Commodités</h4>
+                <div class="row g-3">
                     {% if property.wifi %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-wifi text-success me-2"></i> WiFi</div></div>
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-wifi text-success me-2"></i> WiFi</div>
                     {% endif %}
                     {% if property.swimming_pool %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-person-swimming text-success me-2"></i> Piscine</div></div>
-                    {% endif %}
-                    {% if property.gym %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-dumbbell text-success me-2"></i> Salle de sport</div></div>
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-swimming-pool text-success me-2"></i> Piscine</div>
                     {% endif %}
                     {% if property.air_conditioning %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-snowflake text-success me-2"></i> Climatisation</div></div>
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-snowflake text-success me-2"></i> Climatisation</div>
                     {% endif %}
-                    {% if property.refrigerator %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-refrigerator text-success me-2"></i> Frigo</div></div>
-                    {% endif %}
-                    {% if property.washing_machine %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-soap text-success me-2"></i> Lave-linge</div></div>
-                    {% endif %}
-                    {% if property.microwave %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-microwave text-success me-2"></i> Micro-ondes</div></div>
-                    {% endif %}
-                    {% if property.tv_cable %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-tv text-success me-2"></i> TV par câble</div></div>
+                    {% if property.has_garage %}
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-car text-success me-2"></i> Garage</div>
                     {% endif %}
                     {% if property.generator %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-bolt text-success me-2"></i> Groupe éléctrogène</div></div>
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-bolt text-success me-2"></i> Groupe Électrogène</div>
                     {% endif %}
                     {% if property.water_tank %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid fa-faucet-drip text-success me-2"></i> Réservoir d'eau</div></div>
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-faucet text-success me-2"></i> Réservoir d'eau</div>
                     {% endif %}
-                    
-                    {% for equip in property.interior_equipments.all %}
-                    <div class="col-6 col-md-4"><div class="p-3 border rounded shadow-sm bg-white"><i class="fa-solid {{ equip.icon_class }} text-success me-2"></i> {{ equip.name }}{% if equip.brand %} <small class="text-muted">({{ equip.brand }})</small>{% endif %}</div></div>
-                    {% endfor %}
                 </div>
+            </div>
 
-                <h4 class="fw-bold mb-4" style="color: var(--text-main);">Emplacement sur la carte</h4>
+            <!-- Carte -->
+            <div class="details-card">
+                <h4 class="fw-bold mb-4 border-bottom pb-2">Localisation</h4>
                 <div id="propertyMap"></div>
-                {% if not property.latitude %}
-                <p class="text-muted small text-center"><i class="fa-solid fa-info-circle me-1"></i> Coordonnées non précisées, affichage approximatif basé sur {{ property.neighborhood }}.</p>
-                {% endif %}
-                
-                <hr style="border-color: var(--border-color); margin: 30px 0;">
-                
-                <h4 class="fw-bold mb-3" style="color: var(--text-main);">Caractéristiques de "Solvable Filiation"</h4>
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3" style="color: var(--color-light-green); font-size: 1.5rem;">
-                                <i class="fa-solid fa-file-signature"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">Contrat Sécurisé</h6>
-                                <small class="text-muted">Signature numérique via NILS</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3" style="color: var(--color-light-green); font-size: 1.5rem;">
-                                <i class="fa-solid fa-money-bill-transfer"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">Paiement Automatisé</h6>
-                                <small class="text-muted">Suivi garantit par la plateforme</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p class="small text-muted text-center"><i class="fa-solid fa-circle-info me-1"></i> La position exacte vous sera communiquée lors de la visite.</p>
             </div>
         </div>
 
-        <!-- Sidebar (Pricing & Action) -->
-        <!-- Sidebar (Pricing & Action) -->
-            <!-- Administration de l'annonce (Propriétaire uniquement) -->
-            {% if user == property.owner or user.is_staff %}
-            <div class="details-card border-warning mb-4" style="border: 2px dashed var(--color-yellow) !important; background-color: rgba(255, 193, 7, 0.05);">
-                <div class="d-flex align-items-center mb-3">
-                    <i class="fa-solid fa-user-shield text-warning me-2 fs-4"></i>
-                    <h5 class="fw-bold m-0" style="color: var(--text-main);">Administration de l'annonce</h5>
-                </div>
-                <div class="row g-3">
-                    <div class="col-12 mb-2">
-                        <div class="small text-muted fw-bold text-uppercase">Référence Interne (REF)</div>
-                        <div class="p-2 bg-white rounded border fw-bold text-dark">{{ property.internal_ref|default:"Non renseignée" }}</div>
-                    </div>
-                    <div class="col-12">
-                        <div class="small text-muted fw-bold text-uppercase">Contact Privé / Note Invisible</div>
-                        <div class="p-2 bg-white rounded border text-dark">{{ property.private_contact_info|default:"Aucune note enregistrée"|linebreaks }}</div>
-                    </div>
-                </div>
-                <div class="mt-3 text-end">
-                    <a href="{% url 'edit_property' property.id %}" class="btn btn-sm btn-outline-dark rounded-pill">
-                        <i class="fa-solid fa-pen-to-square me-1"></i> Modifier l'annonce
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-
+        <!-- Sidebar (Action & Owner) -->
+        <div class="col-lg-4">
             <!-- Action Card -->
             <div class="details-card sticky-lg-top" style="top: 100px; z-index: 10;">
                 <span class="badge mb-3" style="background-color: var(--color-light-green); color: var(--color-dark-green);">
@@ -447,126 +315,92 @@
                 </a>
                 
                 <p class="text-center small text-muted mb-0">
-                    <i class="fa-solid fa-shield-halved text-success me-1"></i>
-                    Création d'un profil NILS requise avant la visite.
+                    <i class="fa-solid fa-shield-halved text-success me-1"></i> Annonce vérifiée par LogerSN
                 </p>
-            </div>
-            
-            <!-- Owner Info -->
-            <div class="owner-card mt-4">
-                <div class="owner-avatar">
-                    <i class="fa-solid fa-user-tie"></i>
-                </div>
-                <h5 class="fw-bold mb-1" style="color: var(--text-main);">{{ property.owner.company_name|default:"Propriétaire Certifié" }}</h5>
-                <p class="text-muted small mb-3">Membre LogerSN depuis {{ property.owner.date_joined|date:"Y" }}</p>
                 
-                <div class="d-flex justify-content-center gap-2 mb-4">
-                    <div class="badge bg-light text-dark border px-3 py-2">
-                        <i class="fa-solid fa-building me-1"></i> {{ property.owner.properties.count }} biens
+                <hr class="my-4">
+
+                <!-- Owner Mini Profile -->
+                <div class="d-flex align-items-center mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: bold;">
+                            {{ property.owner.first_name|first }}{{ property.owner.last_name|first }}
+                        </div>
                     </div>
-                    {% if property.owner.is_verified_pro %}
-                    <div class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
-                        <i class="fa-solid fa-check-circle me-1"></i> Vérifié
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0 fw-bold">{% if property.owner.company_name %}{{ property.owner.company_name }}{% else %}{{ property.owner.get_full_name }}{% endif %}</h6>
+                        <small class="text-muted">{{ property.owner.get_role_display }} vérifié</small>
                     </div>
-                    {% endif %}
                 </div>
 
-                <div class="d-grid gap-2 mb-3">
-                    <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour, je suis intéressé par votre annonce sur Loger Sénégal : {{ property.title }} ({{ request.scheme }}://{{ request.get_host }}{{ property.get_absolute_url }})" target="_blank" class="btn btn-success w-100 shadow-sm py-2" style="border-radius: 50px; font-weight: 600; background-color: #25D366; border-color: #25D366;">
+                <div class="d-grid gap-2">
+                    <a href="tel:{{ property.owner.phone_number }}" class="btn btn-outline-success">
+                        <i class="fa-solid fa-phone me-2"></i> Appeler
+                    </a>
+                    <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour, je suis intéressé par votre annonce : {{ property.title }}" target="_blank" class="btn btn-whatsapp">
                         <i class="fa-brands fa-whatsapp me-2"></i> WhatsApp
                     </a>
-                    
-                    <a href="{% if user.is_authenticated %}{% url 'initiate-chat' property.id %}{% else %}{% url 'login' %}?next={{ request.path }}{% endif %}" class="btn btn-outline-primary w-100 shadow-sm py-2" style="border-radius: 50px; font-weight: 600; border: 2px solid var(--color-light-green); color: var(--color-dark-green);">
-                        <i class="fa-solid fa-comments me-2"></i> Discuter sur LogerSN
-                    </a>
-                </div>
-                    
-                    <a href="mailto:{{ property.owner.email }}" class="btn btn-outline-dark w-100 py-2" style="border-radius: 50px;">
-                        <i class="fa-regular fa-envelope me-2"></i> Email
-                    </a>
-                    
-                    {% if property.owner.phone_number %}
-                    <a href="tel:{{ property.owner.phone_number }}" class="btn btn-outline-dark w-100 py-2" style="border-radius: 50px;">
-                        <i class="fa-solid fa-phone me-2"></i> {{ property.owner.phone_number }}
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-    <!-- SECTION SEO : ANNONCES SIMILAIRES (PHASE 2) -->
-    {% if related_properties %}
-    <div class="row mt-5">
-        <div class="col-12 mb-4">
-            <h3 class="fw-bold" style="color: var(--color-dark-green);">
-                <i class="fa-solid fa-building-circle-check me-2 text-warning"></i>
-                Annonces similaires que vous aimeriez explorer
-            </h3>
-            <p class="text-muted">Découvrez d'autres opportunités à {{ property.city }} ou de type {{ property.get_property_type_display }}</p>
+</div>
+
+<!-- Modal Images Plein Écran -->
+<div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                <img src="" id="modalImage" class="img-fluid" style="max-height: 90vh;">
+            </div>
         </div>
-        {% for related in related_properties %}
-        <div class="col-md-4 mb-4">
-            {% with property=related %}
-                {% include 'partials/property_card.html' %}
-            {% endwith %}
-        </div>
-        {% endfor %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function changeImage(element) {
-        const mainImage = document.getElementById("expandedImg");
-        mainImage.src = element.src;
-        const thumbnails = document.querySelectorAll(".thumbnail-img");
-        thumbnails.forEach(thumb => thumb.classList.remove("active"));
-        element.classList.add("active");
-    }
-</script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-    // Initialize Map
-    document.addEventListener('DOMContentLoaded', function() {
-        const lat = parseFloat("{{ property.latitude|unlocalize|default:14.7167 }}");
-        const lng = parseFloat("{{ property.longitude|unlocalize|default:-17.4677 }}");
-        const map = L.map('propertyMap').setView([lat, lng], 14);
+    function changeImage(src, element) {
+        document.getElementById('mainImage').src = src;
+        // Update active class
+        document.querySelectorAll('.thumbnail-img').forEach(img => img.classList.remove('active'));
+        element.classList.add('active');
+    }
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Init Map
+        const lat = parseFloat("{{ property.latitude|default:'14.7167'|stringformat:'.7f' }}".replace(',', '.'));
+        const lng = parseFloat("{{ property.longitude|default:'-17.4677'|stringformat:'.7f' }}".replace(',', '.'));
+
+        const map = L.map('propertyMap').setView([lat, lng], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup("<b>{{ property.title }}</b><br>{{ property.neighborhood }}")
-            .openPopup();
-    });
+        L.circle([lat, lng], {
+            color: 'var(--color-light-green)',
+            fillColor: 'var(--color-light-green)',
+            fillOpacity: 0.2,
+            radius: 300
+        }).addTo(map);
 
-    // Favorite Toggle Logic
-    function toggleFavorite(propertyId) {
-        if ("{{ user.is_authenticated }}" === "False") {
-            window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
-            return;
-        }
-
-        fetch(`/favori/basculer/${propertyId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': "{{ csrf_token }}",
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const btn = document.getElementById("favoriteBtn");
-            if (data.status === 'added') {
-                btn.classList.add('active');
+        L.marker([lat, lng]).addTo(map).bindPopup("Zone approximative du bien");
+        
+        // Favorite Logic
+        const favBtn = document.querySelector('.btn-favorite');
+        favBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const icon = this.querySelector('i');
+            if (this.classList.contains('active')) {
+                icon.classList.replace('fa-regular', 'fa-solid');
             } else {
-                btn.classList.remove('active');
+                icon.classList.replace('fa-solid', 'fa-regular');
             }
         });
-    }
+    });
 </script>
 {% endblock %}
