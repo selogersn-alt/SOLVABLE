@@ -15,7 +15,9 @@
         box-shadow: 0 0 0 0.25rem rgba(127, 212, 125, 0.25) !important;
         border-color: var(--color-light-green) !important;
     }
+    #map { height: 350px; border-radius: 15px; margin-top: 10px; z-index: 1; border: 1px solid var(--border-color); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 {% endblock %}
 
 {% block content %}
@@ -98,7 +100,6 @@
                                 {{ form.description }}
                             </div>
                             
-                            <!-- New Optional Technical Fields Section -->
                             <div class="col-12 mt-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
                                 <h5 class="fw-bold mb-3" style="color: var(--text-main);">Détails Techniques (Optionnel)</h5>
                                 <div class="row g-3">
@@ -166,13 +167,30 @@
                                 {{ form.images }}
                             </div>
 
-                            <!-- Section Confidentielle pour Professionnels (Point 4) -->
+                            <!-- CARTE INTERACTIVE -->
+                            <div class="col-12 mt-4">
+                                <label class="form-label fw-bold text-success"><i class="fa-solid fa-map-location-dot me-2"></i>Localisation sur la carte</label>
+                                <p class="small text-muted">Cliquez sur la carte pour placer le bien précisément. Cela aidera les locataires à trouver votre annonce.</p>
+                                <div id="map"></div>
+                                <div class="row g-2 mt-2">
+                                    <div class="col-6">
+                                        <label class="small text-muted">Latitude</label>
+                                        {{ form.latitude }}
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="small text-muted">Longitude</label>
+                                        {{ form.longitude }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Confidentielle pour Professionnels -->
                             <div class="col-12 mt-4 pt-3 border-top" style="border-color: var(--color-yellow) !important;">
                                 <div class="d-flex align-items-center mb-3">
                                     <i class="fa-solid fa-user-shield text-warning me-2 fs-4"></i>
                                     <h5 class="fw-bold m-0" style="color: var(--text-main);">Informations Confidentielles (Professionnels)</h5>
                                 </div>
-                                <p class="small text-muted mb-4">Ces informations sont <strong>strictement confidentielles</strong>. Elles ne seront jamais affichées sur le site public, ni visibles par les autres utilisateurs ou l'administration standard.</p>
+                                <p class="small text-muted mb-4">Ces informations sont <strong>strictement confidentielles</strong>. Elles ne seront jamais affichées sur le site public.</p>
                                 
                                 <div class="row g-3">
                                     <div class="col-md-5">
@@ -183,9 +201,6 @@
                                         <label class="form-label fw-bold small">{{ form.private_contact_info.label }}</label>
                                         {{ form.private_contact_info }}
                                     </div>
-                                </div>
-                                <div class="mt-3 p-2 rounded small" style="background-color: rgba(255, 193, 7, 0.05); border: 1px dashed var(--color-yellow);">
-                                    <i class="fa-solid fa-circle-info text-warning me-1"></i> Utile pour retrouver le propriétaire réel ou noter vos codes internes.
                                 </div>
                             </div>
                         </div>
@@ -201,24 +216,26 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // 1. Logique du formulaire (Champs dynamiques)
         const categorySelect = document.getElementById('id_listing_category');
         const priceLabel = document.getElementById('price_label');
         const pricePerNightContainer = document.getElementById('price_per_night_container');
         const documentTypeContainer = document.getElementById('document_type_container');
 
         function updateFields() {
+            if(!categorySelect) return;
             const category = categorySelect.value;
-            
-            // Toggle Price per Night for Furnished
             if (category === 'FURNISHED') {
                 pricePerNightContainer.style.display = 'block';
                 priceLabel.innerText = "Loyer mensuel (si applicable)";
             } else {
                 pricePerNightContainer.style.display = 'none';
-                
                 if (category === 'SALE') {
                     priceLabel.innerText = "Prix de vente total";
                     documentTypeContainer.style.display = 'block';
@@ -227,21 +244,47 @@
                     documentTypeContainer.style.display = 'none';
                 }
             }
-
-            // Sync document type visibility even for furnished if sale? No, usually sale and furnished are exclusive.
-            // But let's be safe:
-            if (category !== 'SALE') {
-                documentTypeContainer.style.display = 'none';
-            }
         }
 
-        categorySelect.addEventListener('change', updateFields);
-        updateFields(); // Initial call
+        if (categorySelect) {
+            categorySelect.addEventListener('change', updateFields);
+            updateFields();
+        }
+
+        // 2. Logique de la carte
+        const latInput = document.getElementById('id_latitude');
+        const lngInput = document.getElementById('id_longitude');
+        
+        // Rendre les champs readonly pour forcer l'usage de la carte
+        if(latInput) latInput.readOnly = true;
+        if(lngInput) lngInput.readOnly = true;
+
+        let initialLat = 14.7167; // Dakar
+        let initialLng = -17.4677;
+
+        const map = L.map('map').setView([initialLat, initialLng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Fix pour les problèmes d'affichage dans les conteneurs cachés/flex
+        setTimeout(() => { map.invalidateSize(); }, 500);
+
+        let marker;
+
+        map.on('click', function(e) {
+            const lat = e.latlng.lat.toFixed(7);
+            const lng = e.latlng.lng.toFixed(7);
+            
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+            
+            if(latInput) latInput.value = lat;
+            if(lngInput) lngInput.value = lng;
+        });
     });
 </script>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
