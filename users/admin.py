@@ -22,10 +22,10 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('-date_joined',)
     
     fieldsets = (
-        ('Informations de Connexion', {'fields': ('phone_number', 'email', 'password')}),
+        ('Informations de Connexion', {'fields': ('phone_number', 'email', 'years_of_experience', 'password')}),
         ('Vérification & Sécurité', {'fields': ('phone_otp', 'is_phone_verified')}),
         ('Identité', {'fields': ('first_name', 'last_name', 'cni_number', 'profile_picture')}),
-        ('Statut Professionnel', {'fields': ('role', 'is_verified_pro', 'years_of_experience', 'company_name', 'coverage_area')}),
+        ('Statut Professionnel', {'fields': ('role', 'is_verified_pro', 'company_name', 'coverage_area')}),
         ('Badge Solvable & Capacité Financière', {'fields': ('is_solvable', 'solvency_income_avg', 'solvency_max_rent', 'solvency_expiry_date')}),
         ('Délégation : Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'), 'classes': ('collapse',)}),
     )

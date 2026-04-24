@@ -38,6 +38,16 @@
       }
     }
     </script>
+    
+    {% with first_image=property.images.first %}
+    {% if first_image %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ first_image.image_url.url }}">
+        <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{{ first_image.image_url.url }}">
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ first_image.image_url.url }}">
+    {% endif %}
+    {% endwith %}
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:type" content="website">
 {% endblock %}
 
 {% block extra_css %}
@@ -368,23 +378,31 @@
                     <i class="fa-solid fa-key me-2"></i> Postuler pour ce bien
                 </a>
 
-                <!-- Boutons d'Action -->
-                <div class="d-grid gap-3">
+                <!-- Boutons d'Action Principaux -->
+                <div class="d-grid gap-2">
+                    <a href="https://wa.me/{{ property.owner.phone_number|cut:' ' }}?text=Bonjour,%20je%20suis%20int%C3%A9ress%C3%A9%20par%20votre%20annonce%20:%20{{ property.title|urlencode }}%20(%20{{ property.get_property_type_display|urlencode }}%20)%20%C3%A0%20{{ property.neighborhood|urlencode }}.%20Lien%20:%20{{ request.build_absolute_uri|urlencode }}" 
+                       target="_blank" 
+                       class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold animate__animated animate__pulse animate__infinite" 
+                       style="background-color: #25D366; border-color: #25D366;">
+                        <i class="fa-brands fa-whatsapp me-2"></i>Contacter par WhatsApp
+                    </a>
+
                     {% if user.is_authenticated %}
-                        <a href="{% url 'initiate-chat' property.id %}" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold">
-                            <i class="fa-solid fa-comments me-2"></i>Contacter le propriétaire
+                        <a href="{% url 'initiate-chat' property.id %}" class="btn btn-outline-dark btn-sm rounded-pill py-2">
+                            <i class="fa-solid fa-comments me-2"></i>Messagerie interne
                         </a>
                     {% else %}
-                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-success btn-lg rounded-pill shadow-sm py-3 fw-bold">
-                            <i class="fa-solid fa-lock me-2"></i>Connectez-vous pour contacter
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-dark btn-sm rounded-pill py-2">
+                            <i class="fa-solid fa-lock me-2"></i>Se connecter pour discuter
                         </a>
                     {% endif %}
-                    
-                    <!-- Nouveau Bouton WhatsApp -->
+                </div>
+
+                <div class="mt-4">
                     <a href="https://api.whatsapp.com/send?text=Regarde%20ce%20bel%20appartement%20(%20{{ property.get_property_type_display|urlencode }}%20)%20%C3%A0%20{{ property.neighborhood|urlencode }}%20sur%20Loger%20S%C3%A9n%C3%A9gal%20!%20%F0%9F%8F%A0%20Prix:%20{{ property.price|clean_price }}%20FCFA.%20Voir%20ici%20:%20{{ request.build_absolute_uri|urlencode }}" 
                        target="_blank" 
-                       class="btn btn-outline-success btn-lg rounded-pill py-3 fw-bold">
-                        <i class="fa-brands fa-whatsapp me-2"></i>Partager sur WhatsApp
+                       class="btn btn-link text-success text-decoration-none w-100 text-center small fw-bold">
+                        <i class="fa-brands fa-whatsapp me-2"></i>Partager cette annonce sur WhatsApp
                     </a>
                 </div>
 
