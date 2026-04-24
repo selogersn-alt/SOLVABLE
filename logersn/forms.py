@@ -69,7 +69,7 @@ class PropertyForm(forms.ModelForm):
             'refrigerator', 'washing_machine', 'microwave', 'tv_cable',
             'generator', 'water_tank',
             'latitude', 'longitude',
-            'internal_ref', 'private_contact_info'
+            'internal_ref', 'private_contact_info', 'video_url'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Superbe appartement F4 vue mer...'}),
@@ -98,6 +98,7 @@ class PropertyForm(forms.ModelForm):
             'water_tank': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'internal_ref': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Référence interne pour votre agence'}),
             'private_contact_info': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Contact propriétaire, notes privées (Confidentiel)'}),
+            'video_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Ex: https://www.youtube.com/watch?v=... ou lien TikTok'}),
         }
         labels = {
             'title': 'Titre de l\'annonce',
@@ -121,4 +122,5 @@ class PropertyForm(forms.ModelForm):
             'water_tank': 'Réservoir d\'eau',
             'internal_ref': 'REF (Référence interne - Invisible au public)',
             'private_contact_info': 'CONTACT PRIVÉ (Invisible au public & admin)',
+            'video_url': 'Lien Vidéo YouTube / TikTok (Optionnel)',
         }

@@ -286,6 +286,60 @@
                 </div>
             </div>
 
+            <!-- Vidéo -->
+            {% if property.video_url %}
+            <div class="details-card">
+                <h4 class="fw-bold mb-4 border-bottom pb-2"><i class="fa-solid fa-video me-2 text-danger"></i>Visite Vidéo</h4>
+                <div class="video-preview-btn position-relative rounded-4 overflow-hidden shadow-sm" 
+                     style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ property.images.all.0.image_url.url }}'); background-size: cover; background-position: center; height: 200px; cursor: pointer;"
+                     data-bs-toggle="modal" data-bs-target="#videoModal">
+                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white p-4 text-center">
+                        <i class="fa-solid fa-play-circle display-4 mb-2"></i>
+                        <h6 class="fw-bold mb-0">Lancer la visite virtuelle</h6>
+                        <small class="opacity-75">Ouvrir le lecteur vidéo</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Vidéo -->
+            <div class="modal fade" id="videoModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content bg-dark border-0 shadow-lg">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title text-white fw-bold">Visite Vidéo : {{ property.title }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopVideo()"></button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <div class="ratio ratio-16x9" id="videoContainer">
+                                {% with video_embed=property.video_url|embed_video %}
+                                    {% if video_embed %}
+                                        <iframe id="videoIframe" src="{{ video_embed }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    {% else %}
+                                        <div class="p-5 text-center text-white">
+                                            <p>Impossible de charger le lecteur vidéo. <a href="{{ property.video_url }}" target="_blank" class="text-warning">Cliquez ici pour voir sur la plateforme d'origine</a></p>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                function stopVideo() {
+                    var iframe = document.getElementById('videoIframe');
+                    if (iframe) {
+                        var iframeSrc = iframe.src;
+                        iframe.src = iframeSrc; // Cela arrête la lecture en rechargeant l'URL
+                    }
+                }
+                // Arrêter aussi si on clique en dehors du modal
+                document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+                    stopVideo();
+                });
+            </script>
+            {% endif %}
+
             <!-- Carte -->
             <div class="details-card">
                 <h4 class="fw-bold mb-4 border-bottom pb-2">Localisation</h4>

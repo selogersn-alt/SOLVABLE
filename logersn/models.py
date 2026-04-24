@@ -73,9 +73,12 @@ class Property(models.Model):
     generator = models.BooleanField(default=False, verbose_name="Groupe électrogène")
     water_tank = models.BooleanField(default=False, verbose_name="Réservoir d'eau")
     
-    # Géolocalisation (Optionnel)
+    # Géolocalisation
     latitude = models.DecimalField(max_digits=15, decimal_places=10, null=True, blank=True)
     longitude = models.DecimalField(max_digits=15, decimal_places=10, null=True, blank=True)
+    
+    # Vidéo Externe (YouTube / TikTok)
+    video_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="Lien Vidéo (YouTube ou TikTok)")
 
     # Statistiques et Performance
     views_count = models.PositiveIntegerField(default=0, verbose_name="Nombre de vues")
