@@ -6,7 +6,7 @@
 {% block meta_description %}Découvrez ce {{ property.get_property_type_display }} de {{ property.bedrooms }} ch à {{ property.neighborhood }}, {{ property.city }}. Prix : {{ property.price|floatformat:0|intcomma }} FCFA. Annonce vérifiée et sécurisée sur Loger Sénégal, la plateforme n°1 de l'immobilier au Sénégal.{% endblock %}
 
 {% block og_title %}{{ property.title }} - Annonce immo à {{ property.neighborhood }}{% endblock %}
-{% block og_description %}{{ property.get_property_type_display }} à {{ property.neighborhood }} ({{ property.city }}) | {{ property.price|intcomma }} FCFA{% endblock %}
+{% block og_description %}{{ property.get_property_type_display }} à {{ property.neighborhood }} ({{ property.city }}) | {{ property.price|floatformat:0|intcomma }} FCFA{% endblock %}
 
 {% block extra_meta %}
     <script type="application/ld+json">
