@@ -36,13 +36,13 @@ def embed_video(url):
             # rel=0 limite les suggestions aux vidéos de la même chaîne à la fin
             return f"https://www.youtube.com/embed/{match.group(1)}?rel=0&autoplay=1"
             
-    # TikTok
     if "tiktok.com" in url:
         import re
-        # Extraction de l'ID vidéo TikTok (ex: /video/7123...)
+        # Support pour plusieurs formats de liens TikTok
         reg = r'video\/(\d+)'
         match = re.search(reg, url)
         if match:
-            return f"https://www.tiktok.com/embed/v2/{match.group(1)}"
+            # Format d'intégration direct sans le v2 qui peut poser problème
+            return f"https://www.tiktok.com/embed/{match.group(1)}"
             
     return None

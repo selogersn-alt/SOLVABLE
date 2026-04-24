@@ -310,17 +310,17 @@
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopVideo()"></button>
                         </div>
                         <div class="modal-body p-0">
-                            <div class="ratio ratio-16x9" id="videoContainer">
-                                {% with video_embed=property.video_url|embed_video %}
+                            {% with video_embed=property.video_url|embed_video %}
+                            <div id="videoContainer" class="{% if 'tiktok.com' in property.video_url %}ratio ratio-9x16 mx-auto{% else %}ratio ratio-16x9{% endif %}" style="{% if 'tiktok.com' in property.video_url %}max-width: 400px; height: 80vh;{% endif %}">
                                     {% if video_embed %}
-                                        <iframe id="videoIframe" src="{{ video_embed }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                        <iframe id="videoIframe" src="{{ video_embed }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                                     {% else %}
                                         <div class="p-5 text-center text-white">
                                             <p>Impossible de charger le lecteur vidéo. <a href="{{ property.video_url }}" target="_blank" class="text-warning">Cliquez ici pour voir sur la plateforme d'origine</a></p>
                                         </div>
                                     {% endif %}
-                                {% endwith %}
                             </div>
+                            {% endwith %}
                         </div>
                     </div>
                 </div>
