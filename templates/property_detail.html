@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static l10n %}
+{% load static l10n humanize custom_filters %}
 
 {% block title %}{{ property.title }} à louer à {{ property.neighborhood }} | Loger Sénégal{% endblock %}
 
-{% block meta_description %}Découvrez ce {{ property.get_property_type_display }} de {{ property.bedrooms }} ch à {{ property.neighborhood }}, {{ property.city }}. Prix : {{ property.price|floatformat:0 }} FCFA. Annonce vérifiée et sécurisée sur Loger Sénégal, la plateforme n°1 de l'immobilier au Sénégal.{% endblock %}
+{% block meta_description %}Découvrez ce {{ property.get_property_type_display }} de {{ property.bedrooms }} ch à {{ property.neighborhood }}, {{ property.city }}. Prix : {{ property.price|format_price }} FCFA. Annonce vérifiée et sécurisée sur Loger Sénégal, la plateforme n°1 de l'immobilier au Sénégal.{% endblock %}
 
 {% block og_title %}{{ property.title }} - Annonce immo à {{ property.neighborhood }}{% endblock %}
 {% block og_description %}{{ property.get_property_type_display }} à {{ property.neighborhood }} ({{ property.city }}) | {{ property.price|floatformat:0 }} FCFA{% endblock %}
@@ -58,8 +58,9 @@
     </script>
 {% endblock %}
 
-{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
+    #propertyMap { height: 400px; border-radius: 15px; margin-bottom: 20px; z-index: 1; border: 1px solid var(--border-color); }
     /* Specific CSS for the Property Details Page */
     .property-header {
         background-color: var(--color-dark-green);
@@ -433,15 +434,13 @@
                     {{ property.get_property_type_display }}
                 </span>
                 
-                <div class="price-tag">
-                    {% if property.listing_category == 'SALE' %}
-                        {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">(Vente)</span>
-                    {% elif property.listing_category == 'FURNISHED' %}
-                        {{ property.price_per_night|default:property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/nuitée</span>
+                <span class="price-tag">
+                    {% if property.listing_category == 'FURNISHED' %}
+                        {{ property.price_per_night|format_price }} <small>FCFA / Nuit</small>
                     {% else %}
-                        {{ property.price|floatformat:0 }} FCFA <span style="font-size: 1rem; color: var(--text-muted); font-weight: normal;">/mois</span>
+                        {{ property.price|format_price }} <small>FCFA / Mois</small>
                     {% endif %}
-                </div>
+                </span>
                 
                 <a href="{% url 'apply_to_property' property_id=property.id %}" class="btn btn-primary-custom w-100 mb-3 py-3 fs-5">
                     <i class="fa-solid fa-key me-2"></i> Postuler pour ce bien
