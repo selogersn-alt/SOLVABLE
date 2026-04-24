@@ -49,6 +49,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.logersenegal.com',
 ]
 
+# Termii SMS Configuration
+TERMII_API_KEY = os.environ.get('TERMII_API_KEY', 'TLgPLfhEIJlbVRoAXHfRoGJZGLntoUdrFuQzSJhXWHYfujUfSHuTMtlNiISWqj')
+TERMII_SENDER_ID = os.environ.get('TERMII_SENDER_ID', 'LogerSN')
+
 
 # Application definition
 
@@ -62,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
     'django.contrib.sites',
+    'django.contrib.humanize',
     
     # Third-party
     'rest_framework',
