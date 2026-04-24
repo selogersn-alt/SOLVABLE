@@ -217,6 +217,7 @@
                                 <th>Utilisateur</th>
                                 <th>Rôle</th>
                                 <th>Inscription</th>
+                                <th>Exp.</th>
                                 <th>Vérifié</th>
                                 <th>Actions</th>
                             </tr>
@@ -236,7 +237,8 @@
                                     </div>
                                 </td>
                                 <td><span class="badge bg-secondary bg-opacity-10 text-secondary border">{{ u.get_role_display }}</span></td>
-                                <td><small>{{ u.date_joined|date:"d/m/Y H:i" }}</small></td>
+                                <td><small>{{ u.date_joined|date:"d/m/Y" }}</small></td>
+                                <td><span class="badge bg-dark">{{ u.years_of_experience }} ans</span></td>
                                 <td>
                                     {% if u.is_verified_pro %}
                                         <span class="text-success"><i class="fa-solid fa-circle-check"></i> Oui</span>

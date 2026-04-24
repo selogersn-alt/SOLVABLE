@@ -150,8 +150,13 @@
                     </div>
                     <div class="mb-2">
                         <span class="badge bg-secondary">{{ user.get_role_display }}</span>
-                        {% if user.role != 'TENANT' and user.is_verified_pro %}
-                            <span class="badge bg-primary" title="Professionnel Vérifié par Solvable"><i class="fa-solid fa-certificate"></i> Vérifié</span>
+                        {% if user.role != 'TENANT' %}
+                            {% if user.is_verified_pro %}
+                                <span class="badge bg-primary" title="Professionnel Vérifié par Solvable"><i class="fa-solid fa-certificate"></i> Vérifié</span>
+                            {% endif %}
+                            {% if user.years_of_experience > 0 %}
+                                <span class="badge bg-dark mt-1 d-block w-100" style="font-size: 0.7rem;"><i class="fa-solid fa-briefcase me-1"></i> {{ user.years_of_experience }} ans d'exp.</span>
+                            {% endif %}
                         {% endif %}
                     </div>
                     <h5 class="fw-bold m-0 text-truncate" style="color: var(--text-main);">{{ user.email|default:user.phone_number }}</h5>
