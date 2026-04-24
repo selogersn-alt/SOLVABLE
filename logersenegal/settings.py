@@ -212,11 +212,13 @@ TIME_ZONE = 'Africa/Dakar'
 USE_I18N = True
 
 USE_TZ = True
+USE_L10N = False
 
 # DigitalH SEO & UX: Force thousand separator for prices
 USE_THOUSAND_SEPARATOR = True
 THOUSAND_SEPARATOR = ' '
 NUMBER_GROUPING = 3
+DECIMAL_SEPARATOR = ','
 
 
 # Static files (CSS, JavaScript, Images)

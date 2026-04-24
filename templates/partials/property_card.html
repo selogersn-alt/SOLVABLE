@@ -1,4 +1,4 @@
-{% load static humanize custom_filters %}
+{% load static humanize %}
 <div class="property-card shadow-sm border-0 h-100 animate__animated animate__fadeInUp position-relative" style="transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;">
     
     <div class="property-image-wrapper position-relative" style="height: 240px; overflow: hidden; border-top-left-radius: 12px; border-top-right-radius: 12px;">
@@ -50,11 +50,11 @@
         <!-- Prix -->
         <div class="property-price-tag" style="position: absolute; bottom: 12px; right: 12px; background: var(--color-dark-green); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.95rem; z-index: 5; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
             {% if property.listing_category == 'SALE' %}
-                {{ property.price|format_price }} <small style="font-size: 0.65rem; opacity: 0.8;">FCFA</small>
+                {{ property.price|intcomma }} <small style="font-size: 0.65rem; opacity: 0.8;">FCFA</small>
             {% elif property.listing_category == 'FURNISHED' %}
-                {{ property.price_per_night|format_price }} <small style="font-size: 0.65rem; opacity: 0.8;">FCFA/Nuit</small>
+                {{ property.price_per_night|intcomma }} <small style="font-size: 0.65rem; opacity: 0.8;">FCFA/Nuit</small>
             {% else %}
-                {{ property.price|format_price }} <small style="font-size: 0.65rem; opacity: 0.8;">FCFA/Mois</small>
+                {{ property.price|intcomma }} <small style="font-size: 0.65rem; opacity: 0.8;">FCFA/Mois</small>
             {% endif %}
         </div>
         <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(transparent, rgba(0,0,0,0.4)); z-index: 1;"></div>

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static l10n humanize custom_filters %}
+{% load static l10n humanize %}
 
 {% block title %}{{ property.title }} à louer à {{ property.neighborhood }} | Loger Sénégal{% endblock %}
 
-{% block meta_description %}Découvrez ce {{ property.get_property_type_display }} de {{ property.bedrooms }} ch à {{ property.neighborhood }}, {{ property.city }}. Prix : {{ property.price|format_price }} FCFA. Annonce vérifiée et sécurisée sur Loger Sénégal, la plateforme n°1 de l'immobilier au Sénégal.{% endblock %}
+{% block meta_description %}Découvrez ce {{ property.get_property_type_display }} de {{ property.bedrooms }} ch à {{ property.neighborhood }}, {{ property.city }}. Prix : {{ property.price|intcomma }} FCFA. Annonce vérifiée et sécurisée sur Loger Sénégal, la plateforme n°1 de l'immobilier au Sénégal.{% endblock %}
 
 {% block og_title %}{{ property.title }} - Annonce immo à {{ property.neighborhood }}{% endblock %}
 {% block og_description %}{{ property.get_property_type_display }} à {{ property.neighborhood }} ({{ property.city }}) | {{ property.price|floatformat:0 }} FCFA{% endblock %}
@@ -436,9 +436,9 @@
                 
                 <span class="price-tag">
                     {% if property.listing_category == 'FURNISHED' %}
-                        {{ property.price_per_night|format_price }} <small>FCFA / Nuit</small>
+                        {{ property.price_per_night|intcomma }} <small>FCFA / Nuit</small>
                     {% else %}
-                        {{ property.price|format_price }} <small>FCFA / Mois</small>
+                        {{ property.price|intcomma }} <small>FCFA / Mois</small>
                     {% endif %}
                 </span>
                 
