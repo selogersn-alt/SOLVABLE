@@ -33,7 +33,7 @@ class Property(models.Model):
     listing_category = models.CharField(max_length=20, choices=CategoryEnum.choices, default=CategoryEnum.RENT)
     property_type = models.CharField(max_length=50, choices=PROPERTY_TYPE_CHOICES)
     city = models.CharField(max_length=100, choices=CITY_CHOICES, default='DAKAR')
-    neighborhood = models.CharField(max_length=100, choices=NEIGHBORHOOD_CHOICES)
+    neighborhood = models.CharField(max_length=100)
     document_type = models.CharField(max_length=50, choices=DocumentTypeEnum.choices, null=True, blank=True, verbose_name="Type de document")
     price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name="Prix (CFA)")
     

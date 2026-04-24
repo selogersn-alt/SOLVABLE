@@ -93,6 +93,12 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold" style="color: var(--text-main);">{{ form.neighborhood.label }}</label>
                                 {{ form.neighborhood }}
+                                <datalist id="neighborhood_list">
+                                    {% for n in neighborhoods %}
+                                        <option value="{{ n }}">
+                                    {% endfor %}
+                                </datalist>
+                                <small class="text-muted" style="font-size: 0.7rem;">Choisissez dans la liste ou tapez le nom s'il n'existe pas.</small>
                             </div>
                             
                             <div class="col-12">

@@ -457,7 +457,8 @@ def create_property_view(request):
     else:
         form = PropertyForm()
     
-    return render(request, 'property_form.html', {'form': form})
+    from logersn.constants import RAW_NEIGHBORHOODS
+    return render(request, 'property_form.html', {'form': form, 'neighborhoods': sorted(RAW_NEIGHBORHOODS)})
 
 @login_required
 def initiate_payment_view(request, property_id, payment_type):
@@ -701,7 +702,13 @@ def edit_property_view(request, property_id):
     else:
         form = PropertyForm(instance=property_obj)
     
-    return render(request, 'property_form.html', {'form': form, 'is_edit': True, 'property': property_obj})
+    from logersn.constants import RAW_NEIGHBORHOODS
+    return render(request, 'property_form.html', {
+        'form': form, 
+        'is_edit': True, 
+        'property': property_obj,
+        'neighborhoods': sorted(RAW_NEIGHBORHOODS)
+    })
 
 @login_required
 def delete_property_view(request, property_id):

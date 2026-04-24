@@ -51,6 +51,10 @@ CITY_CHOICES = [
 ]
 
 RAW_NEIGHBORHOODS = [
+    # Villes Principales
+    "Dakar", "Thiès", "Mbour", "Saly", "Touba", "Rufisque", "Saint-Louis", "Ziguinchor", "Diourbel", "Louga", 
+    "Fatick", "Kaolack", "Kolda", "Tambacounda", "Matam", "Kaffrine", "Kédougou", "Sédhiou",
+    # Quartiers
     "Almadies", "Almadies 2", "Amitié", "Avenue Bourguiba", "Bambelor", "Bambey", "Bargny", "Bayakh", "Bel air", 
     "Ben Taly", "Biscuiterie", "Bopp", "Cambérène", "Castor", "Centenaire", "Cité asecna", "Cité assemblée", 
     "Cité avion", "Cité Batrain", "Cité biagui", "Cité Check Amar", "Cité Damel", "Cité keur gorgui", 

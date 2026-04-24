@@ -77,7 +77,7 @@ class PropertyForm(forms.ModelForm):
             'property_type': forms.Select(attrs={'class': 'form-select'}),
             'document_type': forms.Select(attrs={'class': 'form-select'}),
             'city': forms.Select(attrs={'class': 'form-select'}),
-            'neighborhood': forms.Select(attrs={'class': 'form-select'}),
+            'neighborhood': forms.TextInput(attrs={'class': 'form-control', 'list': 'neighborhood_list', 'placeholder': 'Tapez ou choisissez le quartier...'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 350000'}),
             'price_per_night': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 45000'}),
             'surface': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'm2'}),
