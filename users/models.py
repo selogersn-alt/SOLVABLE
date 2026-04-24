@@ -58,6 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=20, choices=RoleEnum.choices, default=RoleEnum.TENANT, verbose_name="Statut du compte")
     notification_preference = models.CharField(max_length=10, choices=NotificationMode.choices, default=NotificationMode.BOTH, verbose_name="Préférence de notification")
     is_verified_pro = models.BooleanField(default=False, verbose_name="Professionnel Vérifié (Badge)")
+    years_of_experience = models.PositiveIntegerField(default=0, verbose_name="Années d'expérience")
     # Solvabilité dynamique
     is_solvable = models.BooleanField(default=False)
     solvency_income_avg = models.DecimalField(max_digits=12, decimal_places=2, default=0)

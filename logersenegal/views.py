@@ -1142,7 +1142,7 @@ def public_profile_view(request, user_id=None, slug=None):
     return render(request, 'public_profile.html', {
         'viewed_user': viewed_user,
         'properties': properties,
-        'stats': {'total_properties': properties_count, 'experience_years': 0},
+        'stats': {'total_properties': properties_count, 'experience_years': viewed_user.years_of_experience},
         'share_url': request.build_absolute_uri()
     })
 

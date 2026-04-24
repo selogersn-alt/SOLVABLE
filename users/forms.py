@@ -47,7 +47,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ('phone_number', 'email', 'role', 'is_verified_pro', 'company_name', 'coverage_area', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+        fields = ('phone_number', 'email', 'role', 'is_verified_pro', 'years_of_experience', 'company_name', 'coverage_area', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,7 +60,7 @@ class CustomUserChangeForm(UserChangeForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['company_name', 'email', 'profile_picture', 'slug', 'first_name', 'last_name', 'coverage_area', 'notification_preference']
+        fields = ['company_name', 'email', 'profile_picture', 'slug', 'first_name', 'last_name', 'coverage_area', 'years_of_experience', 'notification_preference']
         widgets = {
             'company_name': forms.TextInput(attrs={'class': 'form-control', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
@@ -70,6 +70,7 @@ class UserProfileForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
             'coverage_area': forms.TextInput(attrs={'class': 'form-control', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
             'notification_preference': forms.Select(attrs={'class': 'form-select', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);'}),
+            'years_of_experience': forms.NumberInput(attrs={'class': 'form-control', 'style': 'background-color: var(--bg-body); color: var(--text-main); border-color: var(--border-color);', 'min': 0}),
         }
         labels = {
             'company_name': 'Nom de l\'agence ou Entreprise',

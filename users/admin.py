@@ -9,7 +9,7 @@ class UserAdmin(BaseUserAdmin):
     form = CustomUserChangeForm
     model = User
     
-    list_display = ('phone_number', 'first_name', 'last_name', 'role', 'phone_otp', 'is_phone_verified', 'is_verified_pro', 'is_active')
+    list_display = ('phone_number', 'first_name', 'last_name', 'role', 'phone_otp', 'is_phone_verified', 'is_verified_pro', 'years_of_experience', 'is_active')
     search_fields = ('email', 'phone_number', 'company_name', 'first_name', 'last_name', 'phone_otp')
     list_filter = ('role', 'is_verified_pro', 'is_active', 'is_staff', 'is_phone_verified')
     actions = [
@@ -24,7 +24,7 @@ class UserAdmin(BaseUserAdmin):
         ('Informations de Connexion', {'fields': ('phone_number', 'email', 'password')}),
         ('Vérification & Sécurité', {'fields': ('phone_otp', 'is_phone_verified')}),
         ('Identité', {'fields': ('first_name', 'last_name', 'cni_number', 'profile_picture')}),
-        ('Statut Professionnel', {'fields': ('role', 'is_verified_pro', 'company_name', 'coverage_area')}),
+        ('Statut Professionnel', {'fields': ('role', 'is_verified_pro', 'years_of_experience', 'company_name', 'coverage_area')}),
         ('Badge Solvable & Capacité Financière', {'fields': ('is_solvable', 'solvency_income_avg', 'solvency_max_rent', 'solvency_expiry_date')}),
         ('Délégation : Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'), 'classes': ('collapse',)}),
     )
