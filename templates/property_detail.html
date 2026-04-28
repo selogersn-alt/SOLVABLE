@@ -523,30 +523,37 @@
         let lngStr = "{{ property.longitude }}".trim().replace(',', '.');
         const mapContainer = document.getElementById('propertyMap');
 
-        // On vérifie que les valeurs ne sont pas vides, pas 'None' et sont des nombres valides
-        if (latStr && lngStr && latStr !== 'None' && lngStr !== 'null' && !isNaN(parseFloat(latStr))) {
-            const lat = parseFloat(latStr);
-            const lng = parseFloat(lngStr);
+        const hasCoords = latStr && lngStr && latStr !== 'None' && latStr !== 'null' && !isNaN(parseFloat(latStr));
 
-            const map = L.map('propertyMap').setView([lat, lng], 15);
+        if (mapContainer) {
+            const map = L.map('propertyMap').setView(
+                hasCoords ? [parseFloat(latStr), parseFloat(lngStr)] : [14.7167, -17.4677], 
+                hasCoords ? 15 : 12
+            );
             
-            // Style "Luxueux et Élégant" - CartoDB Positron
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
                 maxZoom: 20
             }).addTo(map);
 
-            L.circle([lat, lng], {
-                color: 'var(--color-light-green)',
-                fillColor: 'var(--color-light-green)',
-                fillOpacity: 0.2,
-                radius: 300
-            }).addTo(map);
+            if (hasCoords) {
+                const lat = parseFloat(latStr);
+                const lng = parseFloat(lngStr);
+                
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup("<b>{{ property.title|escapejs }}</b><br>{{ property.neighborhood|escapejs }}")
+                    .openPopup();
 
-            L.marker([lat, lng]).addTo(map).bindPopup("<b>Logement principal</b><br>Zone approximative");
+                L.circle([lat, lng], {
+                    color: 'var(--color-light-green)',
+                    fillColor: 'var(--color-light-green)',
+                    fillOpacity: 0.15,
+                    radius: 200
+                }).addTo(map);
+            }
 
-            // Autres logements à proximité (Point 4)
+            // Autres logements à proximité
             const similarProps = [
                 {% for rel in related_properties %}
                 {
@@ -572,10 +579,6 @@
                     marker.bindPopup(`<strong>${p.title}</strong><br><span class='text-success fw-bold'>${p.price}</span><br><a href='${p.url}' class='btn btn-xs btn-success text-white mt-1 w-100' style='font-size:0.7rem;'>Détails</a>`);
                 }
             });
-        } else if (mapContainer) {
-            mapContainer.style.display = 'none';
-            const mapHeader = mapContainer.previousElementSibling;
-            if (mapHeader && mapHeader.tagName === 'H5') mapHeader.style.display = 'none';
         }
         
         // Favorite Logic
