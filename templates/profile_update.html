@@ -9,10 +9,10 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-lg" style="border-radius: 20px; background-color: var(--bg-card);">
                 <div class="card-header bg-success text-white p-4 border-0" style="border-radius: 20px 20px 0 0;">
-                    <h4 class="mb-0 fw-bold"><i class="fa-solid fa-user-gear me-2"></i> Paramètres du Profil Pro</h4>
+                    <h4 class="mb-0 fw-bold"><i class="fa-solid fa-user-gear me-2"></i> {% if user.role == 'TENANT' %}Paramètres du Profil{% else %}Paramètres du Profil Pro{% endif %}</h4>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" id="profileForm">
                         {% csrf_token %}
                         
                         <div class="row g-4">
@@ -28,27 +28,9 @@
                                     {% endif %}
                                 </div>
                                 <div class="mt-3">
-                                    <label class="form-label fw-bold text-muted small text-uppercase">Changer le Logo / Photo de profil</label>
+                                    <label class="form-label fw-bold text-muted small text-uppercase">Changer la Photo de profil</label>
                                     {{ form.profile_picture }}
                                 </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Nom de l'entreprise / Agence</label>
-                                {{ form.company_name }}
-                                <small class="text-muted">S'affiche sur vos annonces et votre profil.</small>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Lien personnalisé (Slug)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text" style="background: var(--bg-body); border-color: var(--border-color); color: var(--text-muted);">logersenegal.com/p/</span>
-                                    {{ form.slug }}
-                                </div>
-                                <small class="text-muted">Lettres, chiffres et tirets uniquement.</small>
-                                {% if form.slug.errors %}
-                                    <div class="text-danger small">{{ form.slug.errors }}</div>
-                                {% endif %}
                             </div>
 
                             <div class="col-md-6">
@@ -66,6 +48,22 @@
                                 {{ form.email }}
                             </div>
 
+                            {% if user.role != 'TENANT' %}
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nom de l'entreprise / Agence</label>
+                                {{ form.company_name }}
+                                <small class="text-muted">S'affiche sur vos annonces et votre profil.</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Lien personnalisé (Slug)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background: var(--bg-body); border-color: var(--border-color); color: var(--text-muted);">logersenegal.com/p/</span>
+                                    {{ form.slug }}
+                                </div>
+                                <small class="text-muted">Lettres, chiffres et tirets uniquement.</small>
+                            </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Zone de couverture</label>
                                 {{ form.coverage_area }}
@@ -77,6 +75,7 @@
                                 {{ form.years_of_experience }}
                                 <small class="text-muted">Nombre d'années dans l'immobilier.</small>
                             </div>
+                            {% endif %}
 
                             <div class="col-12 mt-3">
                                 <div class="p-3 rounded bg-light border" style="border-color: var(--border-color) !important;">
@@ -86,12 +85,54 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 mt-5">
+                            <div class="col-12 mt-4">
                                 <button type="submit" class="btn btn-primary-custom w-100 py-3 fs-5 shadow">
                                     <i class="fa-solid fa-cloud-arrow-up me-2"></i> Enregistrer les modifications
                                 </button>
+                                
+                                {% if user.role == 'TENANT' %}
+                                <div id="switch-pro" class="mt-5 p-4 border border-warning rounded-4 bg-light shadow-sm animate__animated animate__fadeInUp">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fa-solid fa-briefcase fs-3 text-warning me-3"></i>
+                                        <h5 class="fw-bold mb-0">Devenir Professionnel</h5>
+                                    </div>
+                                    <p class="small text-muted">Basculez vers un compte professionnel pour publier des annonces, gérer un portefeuille de biens et accéder aux statistiques avancées.</p>
+                                    <div class="alert alert-warning border-0 small py-2">
+                                        <i class="fa-solid fa-circle-exclamation me-1"></i> <strong>Attention :</strong> Cette action est définitive. Vous ne pourrez plus redevenir un simple locataire.
+                                    </div>
+                                    <button type="button" class="btn btn-warning w-100 fw-bold py-2 mt-2" data-bs-toggle="modal" data-bs-target="#confirmProModal">
+                                        Basculer en Compte Professionnel
+                                    </button>
+                                </div>
+                                {% endif %}
+                                
                                 <a href="{% url 'dashboard' %}" class="btn btn-link w-100 mt-2 text-muted text-decoration-none">Annuler et retourner au tableau de bord</a>
                             </div>
+                        </div>
+                    </form>
+                </div>
+
+                {% if user.role == 'TENANT' %}
+                <!-- Modal de confirmation Pro -->
+                <div class="modal fade" id="confirmProModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                            <div class="modal-body p-4 text-center">
+                                <i class="fa-solid fa-user-tie fs-1 text-success mb-3"></i>
+                                <h4 class="fw-bold">Confirmation de statut</h4>
+                                <p class="text-muted">Êtes-vous sûr de vouloir devenir un professionnel ? Vous devrez ensuite renseigner les informations de votre agence ou activité.</p>
+                                <div class="d-grid gap-2">
+                                    <form action="{% url 'switch_to_pro' %}" method="POST">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Oui, devenir Professionnel</button>
+                                    </form>
+                                    <button type="button" class="btn btn-light w-100 py-2" data-bs-dismiss="modal">Annuler</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
                         </div>
                     </form>
                 </div>

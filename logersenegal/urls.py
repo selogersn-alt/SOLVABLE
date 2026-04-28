@@ -61,7 +61,8 @@ from .views import (
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view,
-    increment_click_view, duplicate_property_view, seo_directory_view
+    increment_click_view, duplicate_property_view, seo_directory_view,
+    switch_to_pro_view
 )
 from logersn.seo_views import seo_search_view
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
@@ -127,6 +128,8 @@ urlpatterns = [
     path('application/<uuid:application_id>/update/', update_application_status_view, name='update_application_status'),
     path('application/<uuid:application_id>/supprimer/', delete_application_view, name='delete_application'),
     path('verifier-telephone/', verify_phone_view, name='verify_phone'),
+    path('profile/update/', update_profile_view, name='update_profile'),
+    path('profile/switch-pro/', switch_to_pro_view, name='switch_to_pro'),
     path('profil-public/<uuid:user_id>/', public_profile_view, name='public_profile'),
     path('p/<slug:slug>/', public_profile_view, name='public_profile_slug'),
     path('mon-compte/profil/modifier/', update_profile_view, name='update_profile'),

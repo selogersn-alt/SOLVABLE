@@ -523,6 +523,10 @@ from logersn.forms import PropertyForm
 
 @login_required
 def create_property_view(request):
+    if request.user.role == 'TENANT':
+        messages.warning(request, "Vous devez avoir un profil professionnel pour publier une annonce. Basculez votre profil ici.")
+        return redirect(reverse('update_profile') + '#switch-pro')
+        
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES)
         if form.is_valid():
@@ -1250,6 +1254,23 @@ def update_profile_view(request):
     else:
         form = UserProfileForm(instance=request.user)
     return render(request, 'profile_update.html', {'form': form})
+
+@login_required
+def switch_to_pro_view(request):
+    """
+    Bascule irréversible d'un compte Locataire vers un compte Professionnel.
+    """
+    if request.method == 'POST':
+        if request.user.role == 'TENANT':
+            request.user.role = 'AGENT' # Par défaut en Agent indépendant
+            request.user.save()
+            messages.success(request, "Félicitations ! Votre compte est désormais un compte professionnel. Veuillez compléter les informations de votre agence.")
+            return redirect('update_profile')
+        else:
+            messages.info(request, "Votre compte est déjà de type professionnel.")
+            return redirect('dashboard')
+            
+    return redirect('update_profile')
 
 def public_profile_view(request, user_id=None, slug=None):
     from users.models import User
