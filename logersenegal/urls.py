@@ -181,7 +181,7 @@ urlpatterns = [
     # --- RECHERCHE SEO DYNAMIQUE ---
     path('recherche/<str:type_slug>/', seo_search_view, name='seo_search'),
     path('seo-directory/', seo_directory_view, name='seo_directory'),
-    path('recherche/<slug:type_slug>/<slug:ville_slug>/', seo_search_view, name='seo_search_city'),
+    path('recherche/<slug:type_slug>/<slug:city_slug>/', seo_search_view, name='seo_search_city'),
     path('recherche/<str:type_slug>/<str:city_slug>/<str:neighborhood_slug>/', seo_search_view, name='seo_search_neighborhood'),
 ]
 from django.conf import settings
