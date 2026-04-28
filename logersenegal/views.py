@@ -447,26 +447,35 @@ def dashboard_view(request):
     
     # --- STATISTIQUES AVANCÉES (POUR PROS) ---
     from django.db.models import Avg, Max, Min, Sum
-    pro_stats = {}
-    if request.user.role != 'TENANT':
-        all_pro_props = request.user.properties.all()
-        pro_stats = all_pro_props.aggregate(
-            avg_price=Avg('price'),
-            max_price=Max('price'),
-            min_price=Min('price'),
-            total_views=Sum('views_count'),
-            total_clicks=Sum('clicks_count')
-        )
-        # Bien le plus vu
-        pro_stats['most_viewed'] = all_pro_props.order_by('-views_count').first()
-        # Dépenses totales (Transactions réussies)
-        pro_stats['total_spent'] = request.user.transactions.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum'] or 0
-        
-        # Données pour graphique (Vues par annonce - Top 5)
-        top_props = all_pro_props.order_by('-views_count')[:5]
-        pro_stats['chart_labels'] = [p.title[:15] + '...' for p in top_props]
-        pro_stats['chart_data'] = [p.views_count for p in top_props]
+    pro_stats = {'chart_labels': [], 'chart_data': [], 'total_spent': 0, 'avg_price': 0, 'max_price': 0, 'total_views': 0}
     
+    if request.user.role != 'TENANT':
+        try:
+            all_pro_props = request.user.properties.all()
+            if all_pro_props.exists():
+                stats = all_pro_props.aggregate(
+                    avg_price=Avg('price'),
+                    max_price=Max('price'),
+                    min_price=Min('price'),
+                    total_views=Sum('views_count'),
+                    total_clicks=Sum('clicks_count')
+                )
+                pro_stats.update(stats)
+                # Bien le plus vu
+                pro_stats['most_viewed'] = all_pro_props.order_by('-views_count').first()
+                
+                # Données pour graphique (Vues par annonce - Top 5)
+                top_props = all_pro_props.order_by('-views_count')[:5]
+                pro_stats['chart_labels'] = [ (p.title[:15] + '...') if p.title else "Sans titre" for p in top_props]
+                pro_stats['chart_data'] = [p.views_count for p in top_props]
+            
+            # Dépenses totales (Transactions réussies) - Toujours calculé si pro
+            total_spent = request.user.transactions.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum']
+            pro_stats['total_spent'] = total_spent or 0
+        except Exception as e:
+            import logging
+            logging.error(f"Dashboard Stats Error for {request.user}: {e}")
+
     from logersn.constants import PROPERTY_TYPE_CHOICES
     
     from users.models import UserPoints

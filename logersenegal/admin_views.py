@@ -1,17 +1,19 @@
 import openpyxl
 from openpyxl.styles import Font, Alignment
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from users.models import User, KYCProfile
 from solvable.models import RentalFiliation, IncidentReport, PaymentHistory
-import datetime
-from django.db.models import Sum
-from django.utils import timezone
 from logersn.models import Property, Transaction
+import datetime
+from django.utils import timezone
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+from django.contrib import messages
+from django.utils.html import strip_tags
 
-@staff_member_required
 @staff_member_required
 def admin_statistics_view(request):
     today = timezone.now()
