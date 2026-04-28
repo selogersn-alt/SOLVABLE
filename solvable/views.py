@@ -461,10 +461,8 @@ def create_filiation_pro_view(request):
                     role='TENANT'
                 )
                 # Créer le profil NILS associé
-                from users.utils import generate_nils_number
                 NILS_Profile.objects.create(
                     user=tenant,
-                    nils_number=generate_nils_number(),
                     nils_type='TENANT'
                 )
                 messages.info(request, f"Nouveau profil locataire créé pour {phone}. Un SMS d'invitation sera bientôt envoyé.")
