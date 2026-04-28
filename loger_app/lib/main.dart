@@ -11,6 +11,7 @@ import 'screens/property_list_screen.dart';
 import 'screens/property_detail_screen.dart';
 import 'screens/professionals_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/add_property_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -188,6 +189,17 @@ class _MainNavigationState extends State<MainNavigation> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddPropertyScreen()),
+          );
+        },
+        backgroundColor: const Color(0xFF0B4629),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: Container(
         padding: const EdgeInsets.only(top: 8),
         decoration: BoxDecoration(
@@ -197,7 +209,7 @@ class _MainNavigationState extends State<MainNavigation> {
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onTabTapped,
-          selectedItemColor: const Color(0xFF004D40),
+          selectedItemColor: const Color(0xFF0B4629),
           unselectedItemColor: Colors.blueGrey.shade200,
           showSelectedLabels: true,
           showUnselectedLabels: true,

@@ -171,13 +171,20 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                     ),
                     child: Stack(
                       children: [
-                        // Logo en filigrane (Watermark)
+                        // Logo en filigrane (Watermark) - Positionnement amélioré pour tablettes
                         Positioned(
-                          top: 80,
-                          right: -40,
+                          top: 60,
+                          right: -30,
                           child: Opacity(
                             opacity: 0.1,
-                            child: Image.asset('assets/img/logo.png', width: 300),
+                            child: Transform.rotate(
+                              angle: -0.2,
+                              child: Image.asset(
+                                'assets/img/logo.png', 
+                                width: MediaQuery.of(context).size.width * 0.7, // Responsive width
+                                fit: BoxFit.contain,
+                              ),
+                            ),
                           ),
                         ),
                         Padding(

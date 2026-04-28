@@ -7,6 +7,8 @@ import 'solvency_docs_screen.dart';
 import 'legal_screen.dart';
 import 'help_screen.dart';
 import 'login_screen.dart';
+import 'edit_profile_screen.dart';
+import 'add_property_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -47,11 +49,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  Future<void> _launchWeb(String path) async {
-    final Uri url = Uri.parse('https://logersenegal.com/$path');
-    await launchUrl(url, mode: LaunchMode.inAppWebView);
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = AuthService().currentUser;
@@ -59,7 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Paramètres', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text('Paramètres', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF062B1A))),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -75,6 +72,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
              FadeInDown(child: _buildAuthPrompt()),
           ],
           
+          const SizedBox(height: 32),
+          _buildSectionHeader('Mon Compte'),
+          _buildNativeButton('Modifier mon Profil', Icons.person_outline_rounded, () {
+            if (user != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen(user: user)));
+            }
+          }),
+          _buildNativeButton('Mes Annonces', Icons.list_alt_rounded, () {
+            // TODO: MyPropertiesScreen
+          }),
+          _buildNativeButton('Vérification NILS', Icons.verified_user_rounded, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SolvencyDocsScreen()));
+          }),
+          _buildNativeButton('Ajouter un bien', Icons.add_business_rounded, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPropertyScreen()));
+          }),
+
           const SizedBox(height: 32),
           _buildSectionHeader('Sécurité'),
           _buildToggle(
@@ -104,12 +118,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           
           const SizedBox(height: 32),
-          _buildSectionHeader('Espace Web Sécurisé'),
-          _buildWebButton('Mon Profil Complet', 'profil/', Icons.person_outline_rounded),
-          _buildWebButton('Mes Annonces Déposées', 'mes-annonces/', Icons.list_alt_rounded),
-          _buildWebButton('Vérification NILS', 'nils/', Icons.verified_user_rounded),
-
-          const SizedBox(height: 32),
           _buildSectionHeader('Support & Légal'),
           Container(
             margin: const EdgeInsets.only(top: 12),
@@ -117,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.help_outline_rounded, color: Color(0xFF004D40)),
+                  leading: const Icon(Icons.help_outline_rounded, color: Color(0xFF0B4629)),
                   title: const Text('Centre d\'aide & FAQ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   subtitle: const Text('Comprendre le fonctionnement et la sécurité', style: TextStyle(fontSize: 11)),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
@@ -139,7 +147,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (user != null)
             FadeInUp(
               child: ElevatedButton(
-                onPressed: () => AuthService().logout(),
+                onPressed: () async {
+                  await AuthService().logout();
+                  setState(() {});
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade50,
                   foregroundColor: Colors.red,
@@ -167,8 +178,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           CircleAvatar(
             radius: 35,
-            backgroundColor: const Color(0xFF004D40).withOpacity(0.1),
-            child: Text(user.firstName[0], style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF004D40))),
+            backgroundColor: const Color(0xFF0B4629).withOpacity(0.1),
+            child: Text(user.firstName[0], style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0B4629))),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -176,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('${user.firstName} ${user.lastName}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-                Text(user.email, style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 13)),
+                Text(user.phoneNumber, style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 13)),
               ],
             ),
           ),
@@ -188,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildAuthPrompt() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(28)),
+      decoration: BoxDecoration(color: const Color(0xFF062B1A), borderRadius: BorderRadius.circular(28)),
       child: Column(
         children: [
           const Icon(Icons.lock_rounded, color: Colors.amber, size: 40),
@@ -223,15 +234,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF004D40), Color(0xFF1A237E)]),
+        gradient: const LinearGradient(colors: [Color(0xFF0B4629), Color(0xFF062B1A)]),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
         children: [
           const Icon(Icons.shield_rounded, color: Colors.amber, size: 30),
           const SizedBox(width: 16),
-          const Expanded(child: Text('Statut NILS : VÉRIFIÉ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-          TextButton(onPressed: () => _launchWeb('nils/'), child: const Text('DÉTAILS', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold))),
+          Expanded(child: Text(user.isVerified ? 'STATUT NILS : VÉRIFIÉ' : 'STATUT NILS : EN ATTENTE', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          if (!user.isVerified)
+            TextButton(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SolvencyDocsScreen())), 
+              child: const Text('SÉCURISER', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold))
+            ),
         ],
       ),
     );
@@ -246,23 +261,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       margin: const EdgeInsets.only(top: 12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF004D40)),
+        leading: Icon(icon, color: const Color(0xFF0B4629)),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         subtitle: Text(sub, style: const TextStyle(fontSize: 11)),
-        trailing: Switch.adaptive(value: val, activeColor: const Color(0xFF004D40), onChanged: onChanged),
+        trailing: Switch.adaptive(value: val, activeColor: const Color(0xFF0B4629), onChanged: onChanged),
       ),
     );
   }
 
-  Widget _buildWebButton(String title, String path, IconData icon) {
+  Widget _buildNativeButton(String title, IconData icon, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
       child: ListTile(
-        leading: Icon(icon, color: Colors.blueGrey),
+        leading: Icon(icon, color: const Color(0xFF0B4629)),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-        trailing: const Icon(Icons.open_in_new_rounded, size: 18, color: Colors.blueGrey),
-        onTap: () => _launchWeb(path),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+        onTap: onTap,
       ),
     );
   }
