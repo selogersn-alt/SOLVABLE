@@ -4,7 +4,7 @@ from django.conf import settings
 
 def call_gemini_api(prompt, history=None):
     """
-    Version FINALE et INTELLIGENTE de NOHAN via Groq/Llama3.
+    Version OPTIMISÉE SÉNÉGAL de NOHAN.
     """
     api_key = getattr(settings, 'GROQ_API_KEY', None)
     if not api_key:
@@ -13,33 +13,31 @@ def call_gemini_api(prompt, history=None):
     url = "https://api.groq.com/openai/v1/chat/completions"
     
     system_instruction = (
-        "TU ES NOHAN, l'assistant expert de Loger Sénégal. "
-        "TON DOMAINE : Immobilier au Sénégal exclusivement. "
-        "CONSIGNES STRICTES : "
-        "- Tu parles d'APPARTEMENTS, VILLAS, TERRAINS. Jamais de voitures, d'hôtels ou de voyages. "
-        "- Tu es sur Loger Sénégal, le site n°1 de location sécurisée. "
-        "- Tu connais le Badge Solvable (gratuit pour les locataires) et les Points NILS (fiabilité). "
-        "- Ton ton est Premium, poli et professionnel. "
-        "- Si un utilisateur cherche un bien (ex: un F4), demande-lui sa zone préférée (Dakar, Saly, etc.) et son budget."
+        "TU ES NOHAN, l'expert immobilier n°1 de Loger Sénégal. "
+        "CONSIGNES DE RÉPONSE : "
+        "- Monnaie : Utilise uniquement le FCFA (XOF). Jamais de DA ou d'Euro. "
+        "- Inscription : Sur Loger Sénégal, on s'inscrit avec son NUMÉRO DE TÉLÉPHONE. "
+        "- Style : Sois concis. Ne fais pas de longs textes historiques sur les villes. Va droit au but. "
+        "- Ton : Professionnel, chaleureux et Premium. "
+        "- Services clés : Badge Solvable (gratuit, rassure les proprios) et Points NILS (indice de confiance). "
+        "- Objectif : Aider l'utilisateur à trouver un bien et l'inciter à contacter l'agent via WhatsApp."
     )
 
     messages = [
         {"role": "system", "content": system_instruction}
     ]
 
-    # Restaurer la mémoire (historique)
     if history:
-        for msg in history[-6:]: # Se souvient des 6 derniers messages
+        for msg in history[-6:]:
             role = "user" if msg['role'] == 'user' else "assistant"
             messages.append({"role": role, "content": msg['content']})
             
-    # Ajouter la question actuelle
     messages.append({"role": "user", "content": prompt})
 
     payload = {
         "model": "llama-3.1-8b-instant",
         "messages": messages,
-        "temperature": 0.6,
+        "temperature": 0.5, # Plus précis, moins créatif
         "max_tokens": 500,
     }
 
@@ -54,6 +52,6 @@ def call_gemini_api(prompt, history=None):
             result = response.json()
             return result['choices'][0]['message']['content']
         else:
-            return "Je suis là ! Pouvez-vous reformuler votre question immobilière ?"
+            return "Je suis à votre service. Comment puis-je vous aider pour votre recherche immobilière ?"
     except Exception as e:
-        return "Je fais une petite maintenance technique. Un instant !"
+        return "Je synchronise mes données. Un instant !"
