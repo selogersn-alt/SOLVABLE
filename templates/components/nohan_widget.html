@@ -182,16 +182,12 @@
                     const aiDiv = document.createElement('div');
                     aiDiv.className = 'nohan-msg-ai';
                     
-                    // 1. Détection des liens URLs classiques pour les rendre cliquables
-                    let contentWithLinks = data.response.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #DAA520; text-decoration: underline;">$1</a>');
-                    
-                    // 2. Parsing des tags [PROPERTY_CARD:...]
-                    let processedResponse = contentWithLinks.replace(/\n/g, '<br>');
-                    const cardRegex = /\[PROPERTY_CARD:(.*?)\]/g;
-                    processedResponse = processedResponse.replace(cardRegex, (match, dataStr) => {
+                    // 1. On extrait d'abord les PROPERTY_CARD pour éviter que le link-parser ne les corrompe
+                    let cards = [];
+                    let textWithPlaceholders = data.response.replace(/\[PROPERTY_CARD:(.*?)\]/g, (match, dataStr) => {
                         try {
                             const pData = JSON.parse(dataStr.replace(/&quot;/g, '"'));
-                            return `
+                            const cardHtml = `
                                 <div class="nohan-property-card shadow-sm border-0">
                                     <img src="${pData.image}" alt="${pData.title}" class="img-fluid rounded-top">
                                     <div class="nohan-property-card-body">
@@ -201,13 +197,24 @@
                                     </div>
                                 </div>
                             `;
+                            cards.push(cardHtml);
+                            return `___PROPERTY_CARD_${cards.length - 1}___`;
                         } catch(e) {
                             console.error("Card parsing error", e);
                             return "";
                         }
                     });
 
-                    aiDiv.innerHTML = processedResponse;
+                    // 2. On rend les liens cliquables dans le texte restant
+                    let processedText = textWithPlaceholders.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #DAA520; text-decoration: underline;">$1</a>');
+                    processedText = processedText.replace(/\n/g, '<br>');
+
+                    // 3. On réinjecte les cartes HTML
+                    cards.forEach((cardHtml, index) => {
+                        processedText = processedText.replace(`___PROPERTY_CARD_${index}___`, cardHtml);
+                    });
+
+                    aiDiv.innerHTML = processedText;
                     messagesContainer.appendChild(aiDiv);
                     
                     // Mettre à jour l'historique
