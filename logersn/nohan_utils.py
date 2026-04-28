@@ -5,6 +5,7 @@ from django.conf import settings
 def call_gemini_api(prompt, history=None):
     """
     Appelle l'API Google Gemini pour générer une réponse de NOHAN.
+    Version simplifiée pour éviter les erreurs de format et de région.
     """
     api_key = getattr(settings, 'GEMINI_API_KEY', None)
     if not api_key:
@@ -13,65 +14,45 @@ def call_gemini_api(prompt, history=None):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     
     system_instruction = (
-        "Tu es NOHAN, l'assistant virtuel Premium de Loger Sénégal (Solvable). "
-        "Ta mission est d'être l'ambassadeur du site et l'expert immobilier pour nos utilisateurs. "
-        "CONNAISSANCES DU SITE : "
-        "- Nous sommes la plateforme n°1 au Sénégal pour la location sécurisée. "
-        "- Nous proposons des appartements, villas, studios (meublés ou vides) et terrains. "
-        "- Le système NILS est notre exclusivité : il certifie la fiabilité des locataires et bailleurs. "
-        "- Le Badge Solvable est GRATUIT pour les locataires et augmente leurs chances de 80%. "
-        "- Nous avons des agences partenaires certifiées à Dakar, Thiès, Saly et Saint-Louis. "
-        "RÈGLES D'OR : "
-        "1. Ton ton doit être extrêmement poli, élégant et expert (Haut de gamme). "
-        "2. Ne parle JAMAIS de sujets en dehors de l'immobilier ou de Loger Sénégal. "
-        "3. Si on te pose une question sur un bien précis, explique que tu peux aider à trouver mais invite l'utilisateur à contacter le Pro via le bouton WhatsApp pour les détails finaux. "
-        "4. Tu connais les catégories : Location vide, Location meublée, Vente, Terrains. "
-        "5. Tu aides les Pros à booster leurs annonces (Top Ads, Pop-up Premium)."
+        "TU ES NOHAN, l'assistant expert Premium de Loger Sénégal. "
+        "CONSIGNES : "
+        "- Tu parles d'immobilier au Sénégal uniquement. "
+        "- Tu es poli, expert et serviable. "
+        "- Tu connais le système NILS (crédits de fiabilité) et le Badge Solvable (gratuit pour les locataires). "
+        "- Si on te demande de créer un compte, explique qu'il suffit de cliquer sur le bouton 'Se connecter' puis 'S'inscrire'. "
+        "- Si on cherche un appartement, conseille d'utiliser les filtres de recherche ou de contacter les agents via WhatsApp."
     )
 
-    contents = []
-    # Gemini 1.5 Flash gère mieux une structure simple pour les instructions système
-    contents.append({
-        "role": "user",
-        "parts": [{"text": f"SYSTEM INSTRUCTION: {system_instruction}"}]
-    })
-    contents.append({
-        "role": "model",
-        "parts": [{"text": "Compris. Je suis NOHAN, l'assistant Premium de Loger Sénégal. Je suis prêt à aider les utilisateurs avec expertise."}]
-    })
-
-    # Ajouter l'historique
+    # On fusionne l'instruction système dans le premier message pour plus de compatibilité
+    messages = []
+    
+    full_prompt = f"{system_instruction}\n\nVoici l'historique récent :\n"
     if history:
-        for msg in history:
-            contents.append({
-                "role": "user" if msg['role'] == 'user' else "model",
-                "parts": [{"text": msg['content']}]
-            })
-            
-    # Ajouter le prompt actuel
-    contents.append({
-        "role": "user",
-        "parts": [{"text": prompt}]
-    })
+        for msg in history[-5:]: # Limiter à l'historique récent
+            role = "Utilisateur" if msg['role'] == 'user' else "Nohan"
+            full_prompt += f"{role}: {msg['content']}\n"
+    
+    full_prompt += f"\nNouvelle question de l'utilisateur : {prompt}"
 
     payload = {
-        "contents": contents,
+        "contents": [{
+            "parts": [{"text": full_prompt}]
+        }],
         "generationConfig": {
-            "temperature": 0.5, # Plus stable et moins créatif
-            "topK": 40,
-            "topP": 0.95,
-            "maxOutputTokens": 800,
+            "temperature": 0.4,
+            "maxOutputTokens": 500,
         }
     }
 
     try:
-        response = requests.post(url, json=payload, timeout=15) # Augmentation du timeout
+        response = requests.post(url, json=payload, timeout=15)
         if response.status_code != 200:
-            print(f"Gemini API Error: {response.text}")
-            return "Je rencontre une forte affluence en ce moment. Pouvez-vous reformuler votre question ?"
+            # Fallback simple si la requête complexe échoue
+            print(f"Gemini Error: {response.text}")
+            return "Je suis là ! Pouvez-vous répéter votre question ? Je suis prêt à vous aider."
             
         result = response.json()
         return result['candidates'][0]['content']['parts'][0]['text']
     except Exception as e:
-        print(f"Gemini API Exception: {e}")
-        return "Je suis en train de mettre à jour mes connaissances immobilières. Posez-moi votre question à nouveau dans quelques secondes."
+        print(f"Gemini Exception: {e}")
+        return "Je fais une petite maintenance technique. Je reviens vers vous dans quelques secondes !"
