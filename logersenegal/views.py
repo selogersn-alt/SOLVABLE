@@ -65,7 +65,7 @@ def home_view(request):
     # Slider : Uniquement les annonces boostées ET VALIDÉES
     try:
         boosted_properties = Property.objects.filter(
-            is_boosted=True,
+            boost_status='ACTIVE',
             is_published=True
         ).select_related('owner').prefetch_related('images').order_by('-created_at')
 
@@ -172,14 +172,24 @@ def properties_list_view(request):
     if request.GET.get('generator') == 'on':
         properties = properties.filter(generator=True)
         
-    # Tris : Boosté en premier, puis le tri choisi par l'utilisateur
+    # Tris : Boosté (Validé) en premier, puis le tri choisi par l'utilisateur
     sort = request.GET.get('sort')
     if sort == 'price_asc':
-        properties = properties.order_by('-is_boosted', 'price')
+        properties = properties.order_by(
+            models.Case(models.When(boost_status='ACTIVE', then=0), default=1),
+            'price'
+        )
     elif sort == 'price_desc':
-        properties = properties.order_by('-is_boosted', '-price')
+        properties = properties.order_by(
+            models.Case(models.When(boost_status='ACTIVE', then=0), default=1),
+            '-price'
+        )
     else:
-        properties = properties.order_by('-created_at', '-id')
+        properties = properties.order_by(
+            models.Case(models.When(boost_status='ACTIVE', then=0), default=1),
+            '-created_at', 
+            '-id'
+        )
 
     # Pagination (Essentiel pour éviter les Erreurs 500 sur de longues listes)
     from django.core.paginator import Paginator
@@ -187,9 +197,12 @@ def properties_list_view(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
         
-    # Extraire les annonces pour le bandeau défilant du haut (Boostées uniquement)
+    # Extraire les annonces pour le bandeau défilant du haut (Boostées & Validées)
     try:
-        boosted_slider = Property.objects.filter(is_published=True, is_boosted=True).select_related('owner').prefetch_related('images').order_by('-created_at', '-id')[:10]
+        boosted_slider = Property.objects.filter(
+            is_published=True, 
+            boost_status='ACTIVE'
+        ).select_related('owner').prefetch_related('images').order_by('-created_at', '-id')[:10]
     except Exception:
         boosted_slider = Property.objects.none()
     
@@ -427,6 +440,28 @@ def dashboard_view(request):
     # Pendings filiations to approve
     pending_approvals = request.user.landlord_filiations.filter(status=RentalFiliation.StatusEnum.PENDING_APPROVAL)
     
+    # --- STATISTIQUES AVANCÉES (POUR PROS) ---
+    from django.db.models import Avg, Max, Min, Sum
+    pro_stats = {}
+    if request.user.role != 'TENANT':
+        all_pro_props = request.user.properties.all()
+        pro_stats = all_pro_props.aggregate(
+            avg_price=Avg('price'),
+            max_price=Max('price'),
+            min_price=Min('price'),
+            total_views=Sum('views_count'),
+            total_clicks=Sum('clicks_count')
+        )
+        # Bien le plus vu
+        pro_stats['most_viewed'] = all_pro_props.order_by('-views_count').first()
+        # Dépenses totales (Transactions réussies)
+        pro_stats['total_spent'] = request.user.transactions.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        # Données pour graphique (Vues par annonce - Top 5)
+        top_props = all_pro_props.order_by('-views_count')[:5]
+        pro_stats['chart_labels'] = [p.title[:15] + '...' for p in top_props]
+        pro_stats['chart_data'] = [p.views_count for p in top_props]
+    
     from logersn.constants import PROPERTY_TYPE_CHOICES
     
     from users.models import UserPoints
@@ -444,6 +479,7 @@ def dashboard_view(request):
         'property_types': PROPERTY_TYPE_CHOICES,
         'filters': request.GET,
         'points_balance': points_balance.balance,
+        'pro_stats': pro_stats,
     }
     return render(request, 'dashboard.html', context)
 
@@ -570,18 +606,18 @@ def payment_callback_view(request):
             messages.success(request, "Paiement réussi ! Votre annonce est maintenant prête à être validée par l'admin.")
 
         elif transaction.transaction_type == 'BOOST' and transaction.property:
-            transaction.property.is_boosted = True
-            # Activation pour la durée payée
+            # DigitalH : On ne l'active plus immédiatement, on attend la validation Admin
+            transaction.property.boost_status = 'PENDING'
             transaction.property.boost_until = timezone.now() + datetime.timedelta(days=transaction.days)
             transaction.property.save()
-            messages.success(request, f"Félicitations ! Votre annonce est maintenant boostée pour {transaction.days} jour(s).")
+            messages.success(request, f"Paiement reçu ! Votre boost de {transaction.days} jour(s) est en attente de validation par l'administrateur.")
 
         elif transaction.transaction_type == 'POPUP' and transaction.property:
-            transaction.property.is_featured_popup = True
-            # Activation pour la durée payée
+            # DigitalH : On ne l'active plus immédiatement, on attend la validation Admin
+            transaction.property.popup_status = 'PENDING'
             transaction.property.popup_until = timezone.now() + datetime.timedelta(days=transaction.days)
             transaction.property.save()
-            messages.success(request, f"Félicitations ! Votre annonce apparaîtra désormais dans les pop-ups pour {transaction.days} jour(s).")
+            messages.success(request, f"Paiement reçu ! Votre mise en avant Pop-up est en attente de validation par l'administrateur.")
 
         return redirect('payment_success', transaction_id=transaction.id)
 
@@ -1277,6 +1313,40 @@ def guide_agences_view(request):
 
 def guide_courtiers_view(request):
     return render(request, 'guides/courtiers.html')
+@login_required
+def duplicate_property_view(request, property_id):
+    """
+    Duplique une annonce existante pour permettre au pro de la faire remonter sans tout ressaisir.
+    Status réinitialisé à 'En attente' et 'Non payé'.
+    """
+    original = get_object_or_404(Property, id=property_id, owner=request.user)
+    
+    # 1. Cloner l'objet Property
+    new_prop = original
+    new_prop.pk = None # Django crée un nouvel ID
+    new_prop.id = uuid.uuid4() # Générer un nouvel UUID
+    new_prop.title = f"{original.title} (Copie)"
+    new_prop.is_published = False
+    new_prop.is_paid = False
+    new_prop.is_boosted = False
+    new_prop.is_featured_popup = False
+    new_prop.views_count = 0
+    new_prop.boosted_views_count = 0
+    new_prop.clicks_count = 0
+    new_prop.slug = None # Sera régénéré au save()
+    new_prop.save()
+    
+    # 2. Cloner les images
+    for img in original.images.all():
+        PropertyImage.objects.create(
+            property=new_prop,
+            image_url=img.image_url,
+            is_primary=img.is_primary
+        )
+        
+    messages.success(request, "L'annonce a été dupliquée avec succès. Vous pouvez maintenant la modifier ou la publier.")
+    return redirect('edit_property', property_id=new_prop.id)
+
 @require_POST
 @csrf_exempt
 def increment_click_view(request, property_id):

@@ -21,11 +21,11 @@ class PropertyEquipmentInline(admin.TabularInline):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ('get_thumbnail', 'title', 'owner', 'listing_category', 'price', 'is_paid', 'is_boosted', 'is_published')
-    list_filter = ('listing_category', 'property_type', 'is_published', 'is_paid', 'is_boosted', 'is_featured_popup', 'city', 'created_at')
+    list_display = ('get_thumbnail', 'title', 'owner', 'listing_category', 'price', 'is_paid', 'boost_status', 'popup_status', 'is_published')
+    list_filter = ('listing_category', 'property_type', 'is_published', 'is_paid', 'boost_status', 'popup_status', 'city', 'created_at')
     search_fields = ('title', 'description', 'city', 'neighborhood')
     inlines = [PropertyImageInline, PropertyEquipmentInline]
-    actions = ['publish_properties', 'unpublish_properties', 'mark_as_paid', 'boost_selected']
+    actions = ['publish_properties', 'unpublish_properties', 'mark_as_paid', 'approve_boost', 'approve_popup']
 
     def get_thumbnail(self, obj):
         first_img = obj.images.filter(is_primary=True).first() or obj.images.first()
@@ -56,12 +56,15 @@ class PropertyAdmin(admin.ModelAdmin):
         queryset.update(is_paid=True)
         self.message_user(request, f"{queryset.count()} annonce(s) marquées comme payées.")
 
-    @admin.action(description="🚀 Booster les annonces sélectionnées")
-    def boost_selected(self, request, queryset):
-        from django.utils import timezone
-        import datetime
-        queryset.update(is_boosted=True, boost_until=timezone.now() + datetime.timedelta(days=7))
-        self.message_user(request, f"{queryset.count()} annonce(s) boostées pour 7 jours.")
+    @admin.action(description="⚡ Valider le BOOST")
+    def approve_boost(self, request, queryset):
+        queryset.update(boost_status='ACTIVE', is_boosted=True)
+        self.message_user(request, f"{queryset.count()} boost(s) validé(s) et activé(s).")
+
+    @admin.action(description="🖼️ Valider le POP-UP")
+    def approve_popup(self, request, queryset):
+        queryset.update(popup_status='ACTIVE', is_featured_popup=True)
+        self.message_user(request, f"{queryset.count()} pop-up(s) validé(s) et activé(s).")
 
 @admin.register(PropertyEquipment)
 class PropertyEquipmentAdmin(admin.ModelAdmin):

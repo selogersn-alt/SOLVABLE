@@ -93,6 +93,15 @@ class Property(models.Model):
     is_boosted = models.BooleanField(default=False, verbose_name="Annonce Boostée")
     boost_until = models.DateTimeField(null=True, blank=True, verbose_name="Boost valide jusqu'au")
     
+    class StatusEnum(models.TextChoices):
+        NONE = 'NONE', 'Aucun'
+        PENDING = 'PENDING', 'En attente de validation'
+        ACTIVE = 'ACTIVE', 'Actif'
+        EXPIRED = 'EXPIRED', 'Expiré'
+
+    boost_status = models.CharField(max_length=20, choices=StatusEnum.choices, default=StatusEnum.NONE)
+    popup_status = models.CharField(max_length=20, choices=StatusEnum.choices, default=StatusEnum.NONE)
+
     is_featured_popup = models.BooleanField(default=False, verbose_name="Mise en avant Pop-up")
     popup_until = models.DateTimeField(null=True, blank=True, verbose_name="Pop-up valide jusqu'au")
 
@@ -138,8 +147,11 @@ class Property(models.Model):
         if self.admin_note and self.admin_note != old_note:
             if self.owner.email:
                 try:
+                    import threading
                     from logersenegal.emails import send_property_update_notification
-                    send_property_update_notification(self, self.admin_note)
+                    # Utiliser un thread pour ne pas bloquer le save() et fixer la lenteur de soumission
+                    thread = threading.Thread(target=send_property_update_notification, args=(self, self.admin_note))
+                    thread.start()
                 except Exception as e:
                     print(f"Erreur notification admin_note: {e}")
 
@@ -213,10 +225,17 @@ class Transaction(models.Model):
         BOOST = 'BOOST', 'Boost d\'Annonce'
         POPUP = 'POPUP', 'Mise en avant Pop-up'
 
+    class BoostType(models.TextChoices):
+        NONE = 'NONE', 'Aucun'
+        FEED = 'FEED', 'In-Feed (Liste)'
+        SLIDER = 'SLIDER', 'Slider (Accueil)'
+        POPUP = 'POPUP', 'Pop-up Premium'
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
     property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     transaction_type = models.CharField(max_length=20, choices=TypeEnum.choices)
+    boost_type = models.CharField(max_length=20, choices=BoostType.choices, default=BoostType.NONE)
     amount = models.DecimalField(max_digits=20, decimal_places=2)
     reference = models.CharField(max_length=100, unique=True, verbose_name="Référence FedaPay / Interne")
     status = models.CharField(max_length=20, choices=[('PENDING', 'En attente'), ('SUCCESS', 'Réussite'), ('FAILED', 'Échec')], default='PENDING')
@@ -235,7 +254,9 @@ class PricingConfig(models.Model):
     publication_fee_sale = models.DecimalField(max_digits=20, decimal_places=2, default=500.00, verbose_name="Prix Publication (Vente)")
     publication_fee_furnished = models.DecimalField(max_digits=20, decimal_places=2, default=300.00, verbose_name="Prix Publication (Meublé)")
     
-    boost_daily_fee = models.DecimalField(max_digits=20, decimal_places=2, default=100.00, verbose_name="Prix Boost par jour")
+    # Boosts
+    boost_daily_fee = models.DecimalField(max_digits=20, decimal_places=2, default=100.00, verbose_name="Prix Boost In-Feed par jour")
+    boost_slider_fee = models.DecimalField(max_digits=20, decimal_places=2, default=200.00, verbose_name="Prix Boost Slider par jour")
     popup_daily_fee = models.DecimalField(max_digits=20, decimal_places=2, default=500.00, verbose_name="Prix Pop-up par jour")
 
     class Meta:

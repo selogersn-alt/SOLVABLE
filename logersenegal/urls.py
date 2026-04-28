@@ -59,8 +59,9 @@ from .views import (
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view,
-    increment_click_view
+    increment_click_view, duplicate_property_view
 )
+from logersn.seo_views import seo_search_view
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ads.views import ads_txt_view  # Certification Google
 from .admin_views import admin_statistics_view, admin_marketing_email_view
@@ -91,6 +92,7 @@ urlpatterns = [
     path('annonces/<slug:slug>/', property_detail_view, name='property_detail_slug'),
     path('annonces/<uuid:property_id>/click/', increment_click_view, name='increment_click'),
     path('annonces/<uuid:property_id>/modifier/', edit_property_view, name='edit_property'),
+    path('annonces/<uuid:property_id>/dupliquer/', duplicate_property_view, name='duplicate_property'),
     path('annonces/<uuid:property_id>/supprimer/', delete_property_view, name='delete_property'),
     
     # Certification Ads (Google AdSense)
@@ -173,6 +175,11 @@ urlpatterns = [
         template_name='pwa/sw.js',
         content_type='application/javascript'
     ), name='pwa-sw'),
+
+    # --- RECHERCHE SEO DYNAMIQUE ---
+    path('recherche/<str:type_slug>/', seo_search_view, name='seo_search'),
+    path('recherche/<str:type_slug>/<str:city_slug>/', seo_search_view, name='seo_search_city'),
+    path('recherche/<str:type_slug>/<str:city_slug>/<str:neighborhood_slug>/', seo_search_view, name='seo_search_neighborhood'),
 ]
 from django.conf import settings
 from django.conf.urls.static import static
