@@ -28,6 +28,12 @@ PROPERTY_TYPE_CHOICES = [
     ('USAGE_PRO', 'Usage professionnel'),
 ]
 
+LISTING_CATEGORY_CHOICES = [
+    ('RENT', 'Location'),
+    ('SALE', 'Vente'),
+    ('FURNISHED', 'Location Meublée'),
+]
+
 CITY_CHOICES = [
     ('DAKAR', 'Dakar'),
     ('THIES', 'Thiès'),
