@@ -13,19 +13,34 @@ def call_gemini_api(prompt, history=None):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     
     system_instruction = (
-        "Tu t'appelles NOHAN. Tu es l'assistant intelligent officiel de la plateforme immobilière 'Loger Sénégal' (aussi appelée Solvable). "
-        "Ton but est d'aider les locataires et les professionnels. "
-        "Tu es expert sur : "
-        "1. Le système de points NILS (récompenses pour la fiabilité). "
-        "2. Le badge de solvabilité Solvable (certification des locataires). "
-        "3. Le fonctionnement général du site (annonces, contrats de bail numériques). "
-        "Ton ton est professionnel, chaleureux, serviable et très poli. Tu réponds principalement en français, "
-        "mais tu peux parler Wolof ou Anglais si l'utilisateur le demande. "
-        "Si tu ne connais pas une réponse spécifique sur une annonce, invite l'utilisateur à contacter directement le propriétaire via le bouton WhatsApp sur l'annonce."
+        "Tu es NOHAN, l'assistant virtuel Premium de Loger Sénégal (Solvable). "
+        "Ta mission est d'être l'ambassadeur du site et l'expert immobilier pour nos utilisateurs. "
+        "CONNAISSANCES DU SITE : "
+        "- Nous sommes la plateforme n°1 au Sénégal pour la location sécurisée. "
+        "- Nous proposons des appartements, villas, studios (meublés ou vides) et terrains. "
+        "- Le système NILS est notre exclusivité : il certifie la fiabilité des locataires et bailleurs. "
+        "- Le Badge Solvable est GRATUIT pour les locataires et augmente leurs chances de 80%. "
+        "- Nous avons des agences partenaires certifiées à Dakar, Thiès, Saly et Saint-Louis. "
+        "RÈGLES D'OR : "
+        "1. Ton ton doit être extrêmement poli, élégant et expert (Haut de gamme). "
+        "2. Ne parle JAMAIS de sujets en dehors de l'immobilier ou de Loger Sénégal. "
+        "3. Si on te pose une question sur un bien précis, explique que tu peux aider à trouver mais invite l'utilisateur à contacter le Pro via le bouton WhatsApp pour les détails finaux. "
+        "4. Tu connais les catégories : Location vide, Location meublée, Vente, Terrains. "
+        "5. Tu aides les Pros à booster leurs annonces (Top Ads, Pop-up Premium)."
     )
 
     contents = []
-    # Ajouter l'historique si présent
+    # Gemini 1.5 Flash gère mieux une structure simple pour les instructions système
+    contents.append({
+        "role": "user",
+        "parts": [{"text": f"SYSTEM INSTRUCTION: {system_instruction}"}]
+    })
+    contents.append({
+        "role": "model",
+        "parts": [{"text": "Compris. Je suis NOHAN, l'assistant Premium de Loger Sénégal. Je suis prêt à aider les utilisateurs avec expertise."}]
+    })
+
+    # Ajouter l'historique
     if history:
         for msg in history:
             contents.append({
@@ -36,24 +51,27 @@ def call_gemini_api(prompt, history=None):
     # Ajouter le prompt actuel
     contents.append({
         "role": "user",
-        "parts": [{"text": f"Instruction système: {system_instruction}\n\nUtilisateur: {prompt}"}]
+        "parts": [{"text": prompt}]
     })
 
     payload = {
         "contents": contents,
         "generationConfig": {
-            "temperature": 0.7,
+            "temperature": 0.5, # Plus stable et moins créatif
             "topK": 40,
             "topP": 0.95,
-            "maxOutputTokens": 1024,
+            "maxOutputTokens": 800,
         }
     }
 
     try:
-        response = requests.post(url, json=payload, timeout=10)
-        response.raise_for_status()
+        response = requests.post(url, json=payload, timeout=15) # Augmentation du timeout
+        if response.status_code != 200:
+            print(f"Gemini API Error: {response.text}")
+            return "Je rencontre une forte affluence en ce moment. Pouvez-vous reformuler votre question ?"
+            
         result = response.json()
         return result['candidates'][0]['content']['parts'][0]['text']
     except Exception as e:
-        print(f"Gemini API Error: {e}")
-        return "Oups ! J'ai un petit bug technique. Réessayez dans un instant, je vais me rafraîchir les idées."
+        print(f"Gemini API Exception: {e}")
+        return "Je suis en train de mettre à jour mes connaissances immobilières. Posez-moi votre question à nouveau dans quelques secondes."

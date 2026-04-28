@@ -1,20 +1,20 @@
 <!-- Widget NOHAN - Assistant IA -->
 <div id="nohan-wrapper" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050; font-family: 'Inter', sans-serif;">
     <!-- Bouton d'activation -->
-    <button id="nohan-toggle" class="btn btn-success rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border: 2px solid #DAA520; transition: all 0.3s ease;">
-        <i class="fa-solid fa-robot fs-3 text-white"></i>
+    <button id="nohan-toggle" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0 overflow-hidden" style="width: 65px; height: 65px; border: 3px solid #DAA520; transition: all 0.3s ease; background: white;">
+        <img src="/static/img/nohan_avatar.png" alt="NOHAN" style="width: 100%; height: 100%; object-fit: cover;">
     </button>
 
     <!-- Fenêtre de Chat -->
-    <div id="nohan-chat" class="card shadow-lg d-none" style="width: 350px; border-radius: 20px; overflow: hidden; border: none; transform: translateY(10px); transition: all 0.3s ease;">
-        <div class="card-header d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, var(--color-dark-green), #084d2a); color: white;">
+    <div id="nohan-chat" class="card shadow-lg d-none" style="width: 380px; border-radius: 25px; overflow: hidden; border: none; transform: translateY(10px); transition: all 0.3s ease;">
+        <div class="card-header d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, var(--color-dark-green), #062c1a); color: white; border-bottom: 2px solid #DAA520;">
             <div class="d-flex align-items-center">
-                <div class="bg-white rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-robot text-success"></i>
+                <div class="rounded-circle bg-white p-1 me-2" style="width: 45px; height: 45px; overflow: hidden; border: 2px solid #DAA520;">
+                    <img src="/static/img/nohan_avatar.png" alt="NOHAN" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 <div>
-                    <h6 class="mb-0 fw-bold">NOHAN</h6>
-                    <small class="opacity-75" style="font-size: 0.7rem;">Assistant Intelligent</small>
+                    <h6 class="mb-0 fw-bold" style="letter-spacing: 1px;">NOHAN</h6>
+                    <small class="opacity-75" style="font-size: 0.75rem;"><i class="fa-solid fa-circle text-success me-1" style="font-size: 0.5rem;"></i> Expert Immobilier</small>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white" id="nohan-close" style="font-size: 0.8rem;"></button>
@@ -24,8 +24,10 @@
             <div id="nohan-messages" class="flex-grow-1 p-3 overflow-auto" style="scrollbar-width: thin;">
                 <!-- Message d'accueil -->
                 <div class="d-flex mb-3">
-                    <div class="bg-white p-2 rounded-3 shadow-sm small border" style="max-width: 85%;">
-                        Bonjour ! Je suis <strong>NOHAN</strong>. Je suis là pour vous aider à naviguer sur Loger Sénégal. Comment puis-je vous assister aujourd'hui ?
+                    <div class="bg-white p-3 rounded-4 shadow-sm small border-start border-4 border-success" style="max-width: 90%; line-height: 1.5;">
+                        Bienvenue ! Je suis <strong>NOHAN</strong>, votre conseiller expert Loger Sénégal. <br><br>
+                        Je peux vous aider à comprendre le système de points <strong>NILS</strong>, à obtenir votre <strong>Badge Solvable</strong> ou à naviguer parmi nos annonces certifiées. <br><br>
+                        Comment puis-je vous servir ?
                     </div>
                 </div>
             </div>
