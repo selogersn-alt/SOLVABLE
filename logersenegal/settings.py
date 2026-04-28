@@ -53,6 +53,9 @@ CSRF_TRUSTED_ORIGINS = [
 TERMII_API_KEY = os.environ.get('TERMII_API_KEY', 'TLgPLfhEIJlbVRoAXHfRoGJZGLntoUdrFuQzSJhXWHYfujUfSHuTMtlNiISWqj')
 TERMII_SENDER_ID = os.environ.get('TERMII_SENDER_ID', 'LogerSN')
 
+# Google Gemini AI Configuration (NOHAN)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyDKDR6fbvkX9J3m4U9ur9R7t5sXG2H2nTA')
+
 
 # Application definition
 
