@@ -1471,14 +1471,38 @@ def create_booking_view(request, property_id):
                 message=message
             )
             
-            # Notification Pro
+            # Notification Pro par Mail
             from logersenegal.emails import send_booking_notification
             try:
                 send_booking_notification(booking)
             except:
                 pass
             
-            messages.success(request, "🎉 Votre demande de réservation a été envoyée au propriétaire !")
+            # --- REDIRECTION CHAT (Nouveau Point 2) ---
+            from chat.models import Conversation, Message
+            owner = property_obj.owner
+            conversation = Conversation.objects.filter(
+                topic=Conversation.TopicEnum.PROPERTY_INQUIRY,
+                related_property=property_obj,
+                participants=request.user
+            ).filter(participants=owner).first()
+
+            if not conversation:
+                conversation = Conversation.objects.create(
+                    topic=Conversation.TopicEnum.PROPERTY_INQUIRY,
+                    related_property=property_obj
+                )
+                conversation.participants.add(request.user, owner)
+            
+            # Envoi du message récapitulatif
+            Message.objects.create(
+                conversation=conversation,
+                sender=request.user,
+                content=f"📅 Demande de Réservation envoyée !\nAnnonce : {property_obj.title}\nDates : du {start_date} au {end_date}\nMessage : {message}"
+            )
+            
+            messages.success(request, "🎉 Votre demande de réservation a été envoyée !")
+            return redirect(f"{reverse('dashboard')}?conv={conversation.id}")
         except Exception as e:
             messages.error(request, f"Erreur lors de la réservation : {e}")
             
@@ -1515,14 +1539,38 @@ def schedule_visit_view(request, property_id):
                 preferred_time=time_str
             )
             
-            # Notification Pro
+            # Notification Pro par Mail
             from logersenegal.emails import send_visit_notification
             try:
                 send_visit_notification(visit)
             except:
                 pass
+
+            # --- REDIRECTION CHAT (Nouveau Point 2) ---
+            from chat.models import Conversation, Message
+            owner = property_obj.owner
+            conversation = Conversation.objects.filter(
+                topic=Conversation.TopicEnum.PROPERTY_INQUIRY,
+                related_property=property_obj,
+                participants=request.user
+            ).filter(participants=owner).first()
+
+            if not conversation:
+                conversation = Conversation.objects.create(
+                    topic=Conversation.TopicEnum.PROPERTY_INQUIRY,
+                    related_property=property_obj
+                )
+                conversation.participants.add(request.user, owner)
+            
+            # Envoi du message récapitulatif
+            Message.objects.create(
+                conversation=conversation,
+                sender=request.user,
+                content=f"🕒 Demande de Visite envoyée !\nAnnonce : {property_obj.title}\nDate : le {date_str} à {time_str}"
+            )
             
             messages.success(request, "📅 Demande de visite confirmée ! Le propriétaire vous contactera.")
+            return redirect(f"{reverse('dashboard')}?conv={conversation.id}")
         except Exception as e:
             messages.error(request, f"Erreur lors de la planification : {e}")
             

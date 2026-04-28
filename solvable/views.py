@@ -245,29 +245,54 @@ def download_receipt_view(request, payment_id):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
-@login_required
 def apply_to_property_view(request, property_id):
+    from logersn.models import Property
+    from solvable.models import PropertyApplication
+    from chat.models import Conversation, Message
+    from django.urls import reverse
+    
     property_obj = get_object_or_404(Property, id=property_id, is_published=True)
     
-    nils = request.user.nils_profile
-    if not nils:
-        messages.warning(request, "Pour postuler, vous devez d'abord créer votre profil NILS (numéro d'identification locative).")
+    if not request.user.is_authenticated:
+        messages.info(request, "Veuillez vous connecter ou créer un compte pour postuler à ce bien.")
+        return redirect(f"{reverse('login')}?next={property_obj.get_absolute_url()}")
+    
+    owner = property_obj.owner
+    if owner == request.user:
+        messages.info(request, "Vous ne pouvez pas postuler à votre propre annonce.")
         return redirect('dashboard')
     
-    # Check if already applied
-    if PropertyApplication.objects.filter(property=property_obj, applicant=request.user).exists():
-        messages.info(request, "Vous avez déjà postulé pour ce bien. L'agent étudie votre dossier.")
-        return redirect('property_detail', property_id=property_id)
+    # Check if already applied (optional but good for data integrity)
+    if not PropertyApplication.objects.filter(property=property_obj, applicant=request.user).exists():
+        PropertyApplication.objects.create(
+            property=property_obj,
+            applicant=request.user,
+            message=f"Bonjour, je suis intéressé par votre annonce : {property_obj.title}."
+        )
     
-    # Create application
-    PropertyApplication.objects.create(
-        property=property_obj,
-        applicant=request.user,
-        message=f"Bonjour, je suis intéressé par votre annonce : {property_obj.title}. Voici mon numéro NILS : {nils.nils_number}"
-    )
+    # Redirection vers la messagerie interne
+    conversation = Conversation.objects.filter(
+        topic=Conversation.TopicEnum.PROPERTY_INQUIRY,
+        related_property=property_obj,
+        participants=request.user
+    ).filter(participants=owner).first()
     
-    messages.success(request, f"Votre candidature pour '{property_obj.title}' a été envoyée avec succès !")
-    return redirect('dashboard')
+    if not conversation:
+        conversation = Conversation.objects.create(
+            topic=Conversation.TopicEnum.PROPERTY_INQUIRY,
+            related_property=property_obj
+        )
+        conversation.participants.add(request.user, owner)
+        
+        # Message automatique
+        Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            content=f"📢 Candidature envoyée ! Bonjour, je suis vivement intéressé par votre annonce '{property_obj.title}'. Pouvons-nous en discuter ?"
+        )
+    
+    messages.success(request, f"Votre candidature pour '{property_obj.title}' a été envoyée !")
+    return redirect(f"{reverse('dashboard')}?conv={conversation.id}")
 
 @login_required
 def start_filiation_view(request, application_id):
