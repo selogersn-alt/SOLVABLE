@@ -1,15 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:animate_do/animate_do.dart';
+import '../services/auth_service.dart';
 import 'register_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
-  Future<void> _launchWebLogin() async {
-    final Uri url = Uri.parse('https://logersenegal.com/connexion/');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  Future<void> _handleLogin() async {
+    if (_phoneController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    
+    final success = await AuthService().login(
+      _phoneController.text,
+      _passwordController.text,
+    );
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        Navigator.pop(context, true); // Return true to indicate successful login
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Identifiants invalides ou erreur réseau')),
+        );
+      }
     }
   }
 
@@ -19,7 +49,7 @@ class LoginScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // Background Aesthetic Circle
+          // Background Aesthetic
           Positioned(
             top: -100,
             right: -100,
@@ -27,7 +57,7 @@ class LoginScreen extends StatelessWidget {
               width: 300,
               height: 300,
               decoration: BoxDecoration(
-                color: const Color(0xFF004D40).withOpacity(0.05),
+                color: const Color(0xFF0B4629).withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
             ),
@@ -39,138 +69,118 @@ class LoginScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   FadeInLeft(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded, color: Colors.black54),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white,
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
-                        ),
-                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.black),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
                   FadeInDown(
-                    delay: const Duration(milliseconds: 200),
                     child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20)],
-                        ),
-                        child: Image.asset('assets/img/logo.png', width: 100),
-                      ),
+                      child: Image.asset('assets/img/logo.png', width: 120),
                     ),
                   ),
                   const SizedBox(height: 48),
                   FadeInUp(
-                    delay: const Duration(milliseconds: 400),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: const Text(
+                      'Bon retour !',
+                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF062B1A), letterSpacing: -1),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 100),
+                    child: const Text(
+                      'Connectez-vous pour gérer vos biens et votre solvabilité.',
+                      style: TextStyle(fontSize: 15, color: Colors.blueGrey, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // Form Fields
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 200),
+                    child: Column(
                       children: [
-                        Text(
-                          'Connexion Sécurisée',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF004D40),
-                            letterSpacing: -1,
-                          ),
+                        _buildTextField(
+                          controller: _phoneController,
+                          hint: 'Téléphone ou Email',
+                          icon: Icons.phone_android_rounded,
+                          keyboardType: TextInputType.emailAddress,
                         ),
-                        SizedBox(height: 12),
-                        Text(
-                          'Pour garantir votre sécurité et l’authenticité des annonces via le système NILS, connectez-vous sur notre plateforme web certifiée.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.blueGrey,
-                            height: 1.6,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          controller: _passwordController,
+                          hint: 'Mot de passe',
+                          icon: Icons.lock_outline_rounded,
+                          isPassword: true,
+                          obscureText: _obscurePassword,
+                          onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 50),
+                  
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {},
+                      child: const Text('Mot de passe oublié ?', style: TextStyle(color: Color(0xFF0B4629), fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
                   FadeInUp(
-                    delay: const Duration(milliseconds: 600),
+                    delay: const Duration(milliseconds: 300),
                     child: Container(
                       width: double.infinity,
+                      height: 60,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF004D40), Color(0xFF1A237E)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
+                          colors: [Color(0xFF0B4629), Color(0xFF062B1A)],
                         ),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF004D40).withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
+                          BoxShadow(color: const Color(0xFF0B4629).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: _launchWebLogin,
+                        onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.lock_open_rounded, color: Colors.white),
-                            SizedBox(width: 12),
-                            Text(
-                              'ALLER SUR LE WEB',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
-                            ),
-                          ],
-                        ),
+                        child: _isLoading 
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('SE CONNECTER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  FadeInUp(
-                    delay: const Duration(milliseconds: 800),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                              );
-                            },
-                            child: RichText(
-                              text: const TextSpan(
-                                text: "Pas de compte ? ",
-                                style: TextStyle(color: Colors.blueGrey, fontSize: 14),
-                                children: [
-                                  TextSpan(
-                                    text: "S'inscrire ici",
-                                    style: TextStyle(color: Color(0xFF004D40), fontWeight: FontWeight.w800),
-                                  ),
-                                ],
-                              ),
+                  
+                  const SizedBox(height: 40),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
+                      },
+                      child: RichText(
+                        text: const TextSpan(
+                          text: "Nouveau ici ? ",
+                          style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                          children: [
+                            TextSpan(
+                              text: "Créer un compte",
+                              style: TextStyle(color: Color(0xFF0B4629), fontWeight: FontWeight.w900),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(
-                              "Continuer en mode découverte",
-                              style: TextStyle(color: Colors.blueGrey.shade300, fontSize: 13, decoration: TextDecoration.underline),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -179,6 +189,43 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.w400),
+          prefixIcon: Icon(icon, color: const Color(0xFF0B4629), size: 20),
+          suffixIcon: isPassword 
+            ? IconButton(
+                icon: Icon(obscureText ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: Colors.blueGrey, size: 20),
+                onPressed: onToggleVisibility,
+              )
+            : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        ),
       ),
     );
   }

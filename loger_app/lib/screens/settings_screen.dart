@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import 'solvency_docs_screen.dart';
 import 'legal_screen.dart';
 import 'help_screen.dart';
+import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -197,9 +198,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Text('Connectez-vous pour profiter de toutes les fonctionnalités.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 13)),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () => _launchWeb('connexion/'),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF004D40), padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15)),
-            child: const Text('CONNEXION WEB', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const LoginScreen())
+              );
+              if (result == true) {
+                setState(() {}); // Refresh to show profile
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0B4629), 
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            ),
+            child: const Text('SE CONNECTER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
