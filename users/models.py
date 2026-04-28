@@ -22,8 +22,7 @@ class UserManager(BaseUserManager):
         user.phone_otp = str(random.randint(100000, 999999))
         
         user.save(using=self._db)
-        # Envoi automatique si email présent
-        user.send_otp()
+        # user.send_otp() # Désactivé pour simplifier l'inscription (Vérification admin ultérieure)
         return user
 
     def create_superuser(self, phone_number, password=None, **extra_fields):
@@ -73,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.solvency_expiry_date >= timezone.now().date()
     
     profile_picture = models.FileField(upload_to='profile_pics/', null=True, blank=True, verbose_name="Photo de profil ou Logo")
-    is_phone_verified = models.BooleanField(default=False, verbose_name="Téléphone vérifié")
+    is_phone_verified = models.BooleanField(default=True, verbose_name="Téléphone vérifié")
     phone_otp = models.CharField(max_length=6, null=True, blank=True, verbose_name="Code OTP")
     first_name = models.CharField(max_length=150, null=True, blank=True, verbose_name="Prénom")
     last_name = models.CharField(max_length=150, null=True, blank=True, verbose_name="Nom")

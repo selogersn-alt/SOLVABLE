@@ -466,15 +466,9 @@
                         <i class="fa-brands fa-whatsapp me-2"></i>Contacter par WhatsApp
                     </a>
 
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'initiate-chat' property.id %}" class="btn btn-outline-dark btn-sm rounded-pill py-2">
-                            <i class="fa-solid fa-comments me-2"></i>Messagerie interne
-                        </a>
-                    {% else %}
-                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-dark btn-sm rounded-pill py-2">
-                            <i class="fa-solid fa-lock me-2"></i>Se connecter pour discuter
-                        </a>
-                    {% endif %}
+                    <a href="{% url 'initiate-chat' property.id %}" class="btn btn-outline-dark btn-sm rounded-pill py-2">
+                        <i class="fa-solid fa-comments me-2"></i>Messagerie interne
+                    </a>
                 </div>
 
                 <div class="mt-4">

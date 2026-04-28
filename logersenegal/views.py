@@ -823,13 +823,18 @@ def delete_property_view(request, property_id):
     
     return render(request, 'confirm_delete.html', {'property': property_obj, 'type': 'annonce'})
 
-@login_required
 def initiate_chat_view(request, property_id):
     """Start or resume a conversation with a property owner."""
     from logersn.models import Property
     from chat.models import Conversation
     
-    target_property = get_object_or_404(Property, id=property_id)
+    property_obj = get_object_or_404(Property, id=property_id)
+    
+    if not request.user.is_authenticated:
+        messages.info(request, "Veuillez vous connecter pour discuter avec le propriétaire.")
+        return redirect(f"{reverse('login')}?next={property_obj.get_absolute_url()}")
+    
+    target_property = property_obj
     
     # Incrémentation des statistiques d'interaction (Analytics)
     target_property.clicks_count += 1
@@ -854,6 +859,14 @@ def initiate_chat_view(request, property_id):
             related_property=target_property
         )
         conversation.participants.add(request.user, owner)
+        
+        # Message automatique d'intérêt
+        from chat.models import Message
+        Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            content=f"Bonjour, je suis intéressé par votre annonce : '{target_property.title}'. Pouvez-vous me donner plus de détails ?"
+        )
         
     return redirect(f"{reverse('dashboard')}?conv={conversation.id}")
 
@@ -1433,13 +1446,16 @@ def seo_directory_view(request):
                     })
 
     return render(request, 'seo_directory.html', {'links': links})
-@login_required
 def create_booking_view(request, property_id):
     from logersn.models import Property
     from solvable.models import PropertyBooking
     from django.contrib import messages
     
     property_obj = get_object_or_404(Property, id=property_id)
+    
+    if not request.user.is_authenticated:
+        messages.info(request, "Veuillez vous connecter ou créer un compte pour réserver ce bien.")
+        return redirect(f"{reverse('login')}?next={property_obj.get_absolute_url()}")
     
     if request.method == 'POST':
         start_date = request.POST.get('start_date')
@@ -1468,13 +1484,16 @@ def create_booking_view(request, property_id):
             
     return redirect(property_obj.get_absolute_url())
 
-@login_required
 def schedule_visit_view(request, property_id):
     from logersn.models import Property
     from solvable.models import PropertyVisitRequest
     from datetime import datetime, timedelta
     
     property_obj = get_object_or_404(Property, id=property_id)
+    
+    if not request.user.is_authenticated:
+        messages.info(request, "Veuillez vous connecter ou créer un compte pour planifier une visite.")
+        return redirect(f"{reverse('login')}?next={property_obj.get_absolute_url()}")
     
     if request.method == 'POST':
         date_str = request.POST.get('visit_date')
