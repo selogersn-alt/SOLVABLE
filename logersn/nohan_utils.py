@@ -11,8 +11,8 @@ def call_gemini_api(prompt, history=None):
     if not api_key:
         return "Désolé, ma connexion au cerveau central est interrompue (Clé API manquante)."
 
-    # Utilisation de la version v1 stable
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+    # Retour à v1beta (requis pour gemini-1.5-flash selon votre erreur 404)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     
     system_instruction = (
         "TU ES NOHAN, l'assistant expert Premium de Loger Sénégal. "
