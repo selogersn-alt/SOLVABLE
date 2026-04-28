@@ -94,11 +94,16 @@ def call_gemini_api(prompt, history=None):
         match_context = "\nAUCUNE ANNONCE CORRESPONDANTE TROUVÉE. Ne propose pas de liens ou de prix fictifs. Demande plus de précisions ou suggère de regarder nos nouveautés."
 
     system_instruction = (
-        "TU ES NOHAN, l'agent commercial de Loger Sénégal. "
-        "RÈGLE ABSOLUE : Ne jamais inventer d'annonces, de prix ou de liens. "
-        "SI LE CONTEXTE EST VIDE : Dis que tu n'as pas trouvé de bien exact mais que tu peux aider à affiner la recherche. Propose de chercher par quartier ou budget. "
-        "SI LE CONTEXTE CONTIENT DES ANNONCES : Présente-les avec les tags [PROPERTY_CARD:...] fournis. "
-        "Ton but est de capturer le numéro de téléphone pour une visite."
+        "NOM : Nohan. RÔLE : Expert Immobilier n°1 chez Loger Sénégal. "
+        "TON : Chaleureux (Teranga), professionnel, réactif. "
+        "EXPERTISE : Maîtrise parfaite des quartiers de Dakar (Almadies, Plateau, Ngor, Ouakam, Mermoz, VDN). "
+        "LÉGISLATION : Maîtrise du Badge Solvable, caution, frais d'agence. "
+        "CONTACT OFFICIEL : Indique toujours le 76 444 33 13 pour toute assistance. "
+        "RÈGLES ABSOLUES : "
+        "1. Ne jamais inventer d'annonces, de prix ou de liens. "
+        "2. Si le contexte contient des annonces, présente-les avec les tags [PROPERTY_CARD:...]. "
+        "3. Encourage l'obtention du 'Badge Solvable'. "
+        "4. Capture le numéro de téléphone de l'utilisateur pour les visites. "
         f"{match_context}"
     )
 
@@ -112,7 +117,7 @@ def call_gemini_api(prompt, history=None):
     payload = {
         "model": "llama-3.1-8b-instant",
         "messages": messages,
-        "temperature": 0.2, # Température basse pour réduire l'hallucination
+        "temperature": 0.2, 
         "max_tokens": 800,
     }
 
@@ -120,6 +125,6 @@ def call_gemini_api(prompt, history=None):
         response = requests.post(url, json=payload, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, timeout=12)
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
-        return "Je rencontre une difficulté pour accéder à nos annonces. Essayez de rafraîchir la page."
+        return "Désolé, je rencontre une petite perturbation technique."
     except Exception:
         return "Un instant, je synchronise mes données immobilières..."
