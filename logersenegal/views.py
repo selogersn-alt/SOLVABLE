@@ -763,7 +763,9 @@ def edit_property_view(request, property_id):
             property_obj.is_published = False 
             property_obj.save()
             
-                # Ajout de nouvelles images (Synchronous)
+            # Ajout de nouvelles images (Synchronous)
+            images = request.FILES.getlist('images')
+            if images:
                 from logersn.models import PropertyImage
                 for image in images:
                     try:
