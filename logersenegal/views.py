@@ -1384,6 +1384,46 @@ def increment_click_view(request, property_id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
+def seo_directory_view(request):
+    """
+    Génère une liste exhaustive de liens de recherche pour booster le SEO (Maillage interne).
+    """
+    from logersn.constants import PROPERTY_TYPE_CHOICES, CITY_CHOICES
+    from django.utils.text import slugify
+    
+    # On limite aux types et villes les plus populaires pour ne pas exploser le DOM
+    top_types = [t for t in PROPERTY_TYPE_CHOICES if t[0] in ['APARTMENT', 'VILLA', 'STUDIO', 'CHAMBRE_SDB_INTERNE', 'COMMERCIAL', 'TERRAIN']]
+    top_cities = [c for c in CITY_CHOICES if c[0] in ['DAKAR', 'THIES', 'MBOUR', 'SALY', 'RUFISQUE', 'SAINT_LOUIS', 'TOUBA']]
+    
+    # Liste de quartiers majeurs pour Dakar
+    top_neighborhoods = ["Almadies", "Plateau", "Ngor", "Yoff", "Keur Massar", "Liberté 6", "Mermoz", "Sacré Cœur", "Fann", "Point E", "Parcelles Assainies", "Guédiawaye"]
+
+    links = []
+    for t_code, t_name in top_types:
+        # Type seul
+        links.append({
+            'title': f"{t_name} au Sénégal",
+            'url': f"/recherche/{slugify(t_name)}/"
+        })
+        
+        for c_code, c_name in top_cities:
+            # 1. Type + Ville
+            links.append({
+                'title': f"{t_name} à {c_name}",
+                'url': f"/recherche/{slugify(t_name)}/{slugify(c_name)}/"
+            })
+            
+            # 2. Type + Ville + Quartier (seulement pour Dakar)
+            if c_code == 'DAKAR':
+                for q in top_neighborhoods:
+                    links.append({
+                        'title': f"{t_name} à {q}",
+                        'url': f"/recherche/{slugify(t_name)}/{slugify(c_name)}/{slugify(q)}/"
+                    })
+
+    return render(request, 'seo_directory.html', {'links': links})
+
+
 
 def custom_404_view(request, exception=None):
     """Gestionnaire d'erreur 404 (Page Introuvable)."""
