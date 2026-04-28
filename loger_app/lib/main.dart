@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-import 'models/property_model.dart';
 import 'screens/property_list_screen.dart';
 import 'screens/property_detail_screen.dart';
 import 'screens/professionals_screen.dart';
@@ -22,10 +21,11 @@ import 'package:timeago/timeago.dart' as timeago;
 void main() async {
   timeago.setLocaleMessages('fr', timeago.FrMessages());
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await SentryFlutter.init(
     (options) {
-      options.dsn = 'https://example@sentry.io/123456'; // À remplacer par le vrai DNS
+      options.dsn =
+          'https://example@sentry.io/123456'; // À remplacer par le vrai DNS
       options.tracesSampleRate = 1.0;
     },
     appRunner: () async {
@@ -35,10 +35,10 @@ void main() async {
       } catch (e) {
         debugPrint('Firebase/Notification Init Error: $e');
       }
-  
+
       await Hive.initFlutter();
       await Hive.openBox('properties_cache');
-  
+
       runApp(const LogerApp());
     },
   );
@@ -98,7 +98,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkBiometrics() async {
     try {
-      final bool canAuthenticate = await auth.canCheckBiometrics || await auth.isDeviceSupported();
+      final bool canAuthenticate =
+          await auth.canCheckBiometrics || await auth.isDeviceSupported();
       if (canAuthenticate) {
         final bool didAuthenticate = await auth.authenticate(
           localizedReason: 'Sécurisez votre accès à Loger Sénégal',
@@ -137,7 +138,11 @@ class _SplashScreenState extends State<SplashScreen> {
             FadeInUp(
               child: const Text(
                 "L'immobilier en toute confiance",
-                style: TextStyle(color: Color(0xFF004D40), fontWeight: FontWeight.bold, fontSize: 13),
+                style: TextStyle(
+                  color: Color(0xFF004D40),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
             const SizedBox(height: 40),
@@ -176,7 +181,8 @@ class _MainNavigationState extends State<MainNavigation> {
                   onPropertyTap: (property) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => PropertyDetailScreen(property: property),
+                        builder: (context) =>
+                            PropertyDetailScreen(property: property),
                       ),
                     );
                   },
@@ -204,7 +210,13 @@ class _MainNavigationState extends State<MainNavigation> {
         padding: const EdgeInsets.only(top: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, -4))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
         ),
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
@@ -261,7 +273,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Favoris', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text(
+          'Favoris',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -270,9 +285,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.favorite_border_rounded, size: 80, color: Colors.blueGrey.shade100),
+            Icon(
+              Icons.favorite_border_rounded,
+              size: 80,
+              color: Colors.blueGrey.shade100,
+            ),
             const SizedBox(height: 16),
-            const Text('Vos coups de coeur s\'afficheront ici', style: TextStyle(color: Colors.grey)),
+            const Text(
+              'Vos coups de coeur s\'afficheront ici',
+              style: TextStyle(color: Colors.grey),
+            ),
           ],
         ),
       ),

@@ -124,7 +124,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             bottomRight: Radius.circular(msg.isMe ? 0 : 15),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 3, offset: const Offset(0, 1)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 3, offset: const Offset(0, 1)),
           ],
         ),
         child: Column(

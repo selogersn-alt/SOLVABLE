@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:animate_do/animate_do.dart';
@@ -12,7 +10,6 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'search_results_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
-import 'solvency_docs_screen.dart';
 
 class PropertyListScreen extends StatefulWidget {
   final Function(Property) onPropertyTap;
@@ -25,15 +22,17 @@ class PropertyListScreen extends StatefulWidget {
 class _PropertyListScreenState extends State<PropertyListScreen> {
   final ApiService _apiService = ApiService();
   static const _pageSize = 10;
-  final PagingController<int, Property> _pagingController = PagingController(firstPageKey: 1);
+  final PagingController<int, Property> _pagingController = PagingController(
+    firstPageKey: 1,
+  );
   final TextEditingController _searchController = TextEditingController();
-  
+
   String _selectedCity = 'TOUT';
   String _selectedType = 'TOUT';
   String _selectedCategory = 'TOUT';
   String _selectedNeighborhood = 'TOUT';
   Timer? _refreshTimer;
-  
+
   final Map<String, String> _categoryMap = {
     'TOUT': 'TOUT',
     'LOCATION': 'RENT',
@@ -51,7 +50,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     'RUFISQUE': 'RUFISQUE',
     'SAINT-LOUIS': 'SAINT_LOUIS',
     'SOMONE': 'SOMONE',
-    'NGAPAROU': 'NGAPAROU'
+    'NGAPAROU': 'NGAPAROU',
   };
 
   final Map<String, String> _typeMap = {
@@ -63,13 +62,25 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     'TERRAIN': 'TERRAIN',
     'BUREAU': 'BUREAU',
     'COMMERCIAL': 'COMMERCIAL',
-    'IMMEUBLE': 'IMMEUBLE'
+    'IMMEUBLE': 'IMMEUBLE',
   };
 
   late final List<String> _cities = _cityMap.keys.toList();
   late final List<String> _types = _typeMap.keys.toList();
   final List<String> _neighborhoods = [
-    'TOUT', 'Almadies', 'Plateau', 'Mermoz', 'Ngor', 'Ouakam', 'Point E', 'Fann', 'Liberté 6', 'Sacré Coeur', 'Keur Massar', 'Guediawaye', 'Pikine'
+    'TOUT',
+    'Almadies',
+    'Plateau',
+    'Mermoz',
+    'Ngor',
+    'Ouakam',
+    'Point E',
+    'Fann',
+    'Liberté 6',
+    'Sacré Coeur',
+    'Keur Massar',
+    'Guediawaye',
+    'Pikine',
   ];
 
   @override
@@ -80,7 +91,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     if (cached.isNotEmpty) {
       _pagingController.itemList = cached;
     }
-    
+
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
@@ -92,15 +103,24 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         page: pageKey,
         city: _selectedCity == 'TOUT' ? null : _cityMap[_selectedCity],
         propertyType: _selectedType == 'TOUT' ? null : _typeMap[_selectedType],
-        neighborhood: _selectedNeighborhood == 'TOUT' ? null : _selectedNeighborhood,
-        search: _searchController.text.isNotEmpty ? _searchController.text : null,
+        neighborhood: _selectedNeighborhood == 'TOUT'
+            ? null
+            : _selectedNeighborhood,
+        search: _searchController.text.isNotEmpty
+            ? _searchController.text
+            : null,
       );
       final isLastPage = !newItems['next'];
       if (isLastPage) {
-        _pagingController.appendLastPage(newItems['properties'] as List<Property>);
+        _pagingController.appendLastPage(
+          newItems['properties'] as List<Property>,
+        );
       } else {
         final nextPageKey = pageKey + 1;
-        _pagingController.appendPage(newItems['properties'] as List<Property>, nextPageKey);
+        _pagingController.appendPage(
+          newItems['properties'] as List<Property>,
+          nextPageKey,
+        );
       }
     } catch (error) {
       _pagingController.error = error;
@@ -136,10 +156,17 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
             ),
             title: RichText(
               text: const TextSpan(
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
                 children: [
                   TextSpan(text: 'Loger'),
-                  TextSpan(text: 'Sénégal', style: TextStyle(color: Color(0xFF27C66E))),
+                  TextSpan(
+                    text: 'Sénégal',
+                    style: TextStyle(color: Color(0xFF27C66E)),
+                  ),
                 ],
               ),
             ),
@@ -159,14 +186,20 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(40),
+                      ),
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [Color(0xFF0B4629), Color(0xFF062B1A)],
                       ),
                       boxShadow: [
-                        BoxShadow(color: const Color(0xFF0B4629).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+                        BoxShadow(
+                          color: const Color(0xFF0B4629).withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
                       ],
                     ),
                     child: Stack(
@@ -180,8 +213,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                             child: Transform.rotate(
                               angle: -0.2,
                               child: Image.asset(
-                                'assets/img/logo.png', 
-                                width: MediaQuery.of(context).size.width * 0.7, // Responsive width
+                                'assets/img/logo.png',
+                                width:
+                                    MediaQuery.of(context).size.width *
+                                    0.7, // Responsive width
                                 fit: BoxFit.contain,
                               ),
                             ),
@@ -196,10 +231,20 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                                 child: RichText(
                                   textAlign: TextAlign.center,
                                   text: const TextSpan(
-                                    style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, height: 1.1),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.1,
+                                    ),
                                     children: [
                                       TextSpan(text: "Trouvez votre "),
-                                      TextSpan(text: "logement idéal ", style: TextStyle(color: Color(0xFFF5C42F))),
+                                      TextSpan(
+                                        text: "logement idéal ",
+                                        style: TextStyle(
+                                          color: Color(0xFFF5C42F),
+                                        ),
+                                      ),
                                       TextSpan(text: "au Sénégal"),
                                     ],
                                   ),
@@ -210,17 +255,23 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                                 child: const Text(
                                   "La plateforme immobilière la plus sécurisée pour louer ou acheter en toute sérénité.",
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w500),
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 120), // Espace pour la carte
+                              const SizedBox(
+                                height: 120,
+                              ), // Espace pour la carte
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   // Floating Search Card (Moteur Complet)
                   Positioned(
                     bottom: 0,
@@ -231,11 +282,17 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 40, offset: const Offset(0, 15)),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 40,
+                              offset: const Offset(0, 15),
+                            ),
                           ],
                         ),
                         child: Column(
@@ -248,29 +305,48 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                             _buildCitySelector(),
                             const SizedBox(height: 16),
                             ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SearchResultsScreen(
-                                        city: _selectedCity == 'TOUT' ? null : _cityMap[_selectedCity],
-                                        type: _selectedType == 'TOUT' ? null : _typeMap[_selectedType],
-                                        category: _selectedCategory == 'TOUT' ? null : _selectedCategory,
-                                        search: _searchController.text.isNotEmpty ? _searchController.text : null,
-                                      ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SearchResultsScreen(
+                                      city: _selectedCity == 'TOUT'
+                                          ? null
+                                          : _cityMap[_selectedCity],
+                                      type: _selectedType == 'TOUT'
+                                          ? null
+                                          : _typeMap[_selectedType],
+                                      category: _selectedCategory == 'TOUT'
+                                          ? null
+                                          : _selectedCategory,
+                                      search: _searchController.text.isNotEmpty
+                                          ? _searchController.text
+                                          : null,
                                     ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF5C42F),
-                                  foregroundColor: const Color(0xFF0B4629),
-                                  padding: const EdgeInsets.symmetric(vertical: 18),
-                                  minimumSize: const Size(double.infinity, 56),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  elevation: 0,
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFF5C42F),
+                                foregroundColor: const Color(0xFF0B4629),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
                                 ),
-                                child: const Text('RECHERCHER', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 1)),
+                                minimumSize: const Size(double.infinity, 56),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 0,
                               ),
+                              child: const Text(
+                                'RECHERCHER',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -292,7 +368,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(color: const Color(0xFFF1F5F9)),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 30, offset: const Offset(0, 10)),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -300,18 +380,29 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.shield_outlined, color: Colors.redAccent, size: 28),
+                        const Icon(
+                          Icons.shield_outlined,
+                          color: Colors.redAccent,
+                          size: 28,
+                        ),
                         const SizedBox(width: 12),
                         const Text(
                           "Système NILS",
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       "Analysez la solvabilité d'un candidat avant de signer.",
-                      style: TextStyle(color: Colors.blueGrey, fontSize: 13, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     TextField(
@@ -320,14 +411,22 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                         prefixIcon: const Icon(Icons.search, size: 20),
                         filled: true,
                         fillColor: const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
-                        final Uri url = Uri.parse('https://logersenegal.com/nils/recherche/');
-                        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                        final Uri url = Uri.parse(
+                          'https://logersenegal.com/nils/recherche/',
+                        );
+                        if (!await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        )) {
                           debugPrint('Could not launch $url');
                         }
                       },
@@ -335,10 +434,15 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                         backgroundColor: const Color(0xFF0B4629),
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                         elevation: 0,
                       ),
-                      child: const Text("ANALYSER LE PROFIL", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        "ANALYSER LE PROFIL",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -359,16 +463,37 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text('À la Une', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
-                      Text('Sélection de prestige', style: TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.w500)),
+                      Text(
+                        'À la Une',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(
+                        'Sélection de prestige',
+                        style: TextStyle(
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                   TextButton(
                     onPressed: () {},
                     child: Row(
                       children: const [
-                        Text('Voir tout', style: TextStyle(color: Color(0xFF27C66E), fontWeight: FontWeight.bold)),
-                        Icon(Icons.chevron_right_rounded, color: Color(0xFF27C66E)),
+                        Text(
+                          'Voir tout',
+                          style: TextStyle(
+                            color: Color(0xFF27C66E),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFF27C66E),
+                        ),
                       ],
                     ),
                   ),
@@ -380,27 +505,36 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
           PagedSliverList<int, Property>(
             pagingController: _pagingController,
             builderDelegate: PagedChildBuilderDelegate<Property>(
-              itemBuilder: (context, item, index) => AnimationConfiguration.staggeredList(
-                position: index,
-                duration: const Duration(milliseconds: 600),
-                child: SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: _buildPropertyCard(item),
+              itemBuilder: (context, item, index) =>
+                  AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 600),
+                    child: SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildPropertyCard(item),
+                        ),
+                      ),
                     ),
                   ),
+              firstPageProgressIndicatorBuilder: (_) => _buildSkeletonLoader(),
+              newPageProgressIndicatorBuilder: (_) => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
                 ),
               ),
-              firstPageProgressIndicatorBuilder: (_) => _buildSkeletonLoader(),
-              newPageProgressIndicatorBuilder: (_) => const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
               noItemsFoundIndicatorBuilder: (_) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('Aucun bien trouvé'),
-                    TextButton(onPressed: () => _refresh(), child: const Text('Recharger')),
+                    TextButton(
+                      onPressed: () => _refresh(),
+                      child: const Text('Recharger'),
+                    ),
                   ],
                 ),
               ),
@@ -410,7 +544,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   children: [
                     const Text('Erreur lors du chargement des annonces'),
                     const SizedBox(height: 10),
-                    ElevatedButton(onPressed: () => _refresh(), child: const Text('Réessayer')),
+                    ElevatedButton(
+                      onPressed: () => _refresh(),
+                      child: const Text('Réessayer'),
+                    ),
                   ],
                 ),
               ),
@@ -427,7 +564,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          const Icon(Icons.category_outlined, color: Color(0xFFF5C42F), size: 22),
+          const Icon(
+            Icons.category_outlined,
+            color: Color(0xFFF5C42F),
+            size: 22,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -436,18 +577,24 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                hint: const Text('Je cherche...', style: TextStyle(color: Colors.blueGrey)),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueGrey),
+                hint: const Text(
+                  'Je cherche...',
+                  style: TextStyle(color: Colors.blueGrey),
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.blueGrey,
+                ),
                 items: _categoryMap.keys.map((String cat) {
                   return DropdownMenuItem<String>(
                     value: cat,
                     child: Text(
-                      cat, 
+                      cat,
                       style: const TextStyle(
-                        color: Colors.black, 
+                        color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 15
-                      )
+                        fontSize: 15,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -478,7 +625,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
               controller: _searchController,
               decoration: const InputDecoration(
                 hintText: 'Mots-clés (Villa, piscine...)',
-                hintStyle: TextStyle(color: Colors.blueGrey, fontSize: 15, fontWeight: FontWeight.w500),
+                hintStyle: TextStyle(
+                  color: Colors.blueGrey,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
                 border: InputBorder.none,
               ),
               onSubmitted: (_) => _refresh(),
@@ -494,7 +645,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          const Icon(Icons.location_on_outlined, color: Color(0xFF27C66E), size: 22),
+          const Icon(
+            Icons.location_on_outlined,
+            color: Color(0xFF27C66E),
+            size: 22,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -503,18 +658,24 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                hint: const Text('Où cherchez-vous ?', style: TextStyle(color: Colors.blueGrey)),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueGrey),
+                hint: const Text(
+                  'Où cherchez-vous ?',
+                  style: TextStyle(color: Colors.blueGrey),
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.blueGrey,
+                ),
                 items: _cities.map((String city) {
                   return DropdownMenuItem<String>(
                     value: city,
                     child: Text(
-                      city, 
+                      city,
                       style: const TextStyle(
-                        color: Colors.black, 
+                        color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 15
-                      )
+                        fontSize: 15,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -548,18 +709,24 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                hint: const Text('Type de bien', style: TextStyle(color: Colors.blueGrey)),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueGrey),
+                hint: const Text(
+                  'Type de bien',
+                  style: TextStyle(color: Colors.blueGrey),
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.blueGrey,
+                ),
                 items: _types.map((String type) {
                   return DropdownMenuItem<String>(
                     value: type,
                     child: Text(
-                      type, 
+                      type,
                       style: const TextStyle(
-                        color: Colors.black, 
+                        color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 15
-                      )
+                        fontSize: 15,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -584,7 +751,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          const Icon(Icons.location_on_outlined, color: Color(0xFF27C66E), size: 22),
+          const Icon(
+            Icons.location_on_outlined,
+            color: Color(0xFF27C66E),
+            size: 22,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -593,18 +764,24 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                hint: const Text('Quartier', style: TextStyle(color: Colors.blueGrey)),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.blueGrey),
+                hint: const Text(
+                  'Quartier',
+                  style: TextStyle(color: Colors.blueGrey),
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.blueGrey,
+                ),
                 items: _neighborhoods.map((String neighborhood) {
                   return DropdownMenuItem<String>(
                     value: neighborhood,
                     child: Text(
-                      neighborhood, 
+                      neighborhood,
                       style: const TextStyle(
-                        color: Colors.black, 
+                        color: Colors.black,
                         fontWeight: FontWeight.w600,
-                        fontSize: 15
-                      )
+                        fontSize: 15,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -631,7 +808,9 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,7 +820,9 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: CachedNetworkImage(
-                    imageUrl: p.images.isNotEmpty ? p.images.first.imageUrl : '',
+                    imageUrl: p.images.isNotEmpty
+                        ? p.images.first.imageUrl
+                        : '',
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -653,20 +834,40 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Text(
                           p.listingCategoryDisplay.toUpperCase(),
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.black),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xFF27C66E), borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF27C66E),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Text(
                           timeago.format(p.createdAt, locale: 'fr'),
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -677,17 +878,26 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   right: 12,
                   child: GestureDetector(
                     onTap: () async {
-                      final success = await _apiService.toggleFavorite(p.id.toString());
+                      final success = await _apiService.toggleFavorite(
+                        p.id.toString(),
+                      );
                       if (success && mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Favoris mis à jour'), duration: Duration(seconds: 1)),
+                          const SnackBar(
+                            content: Text('Favoris mis à jour'),
+                            duration: Duration(seconds: 1),
+                          ),
                         );
                       }
                     },
                     child: const CircleAvatar(
                       backgroundColor: Colors.white,
                       radius: 18,
-                      child: Icon(Icons.favorite_border_rounded, size: 18, color: Colors.black),
+                      child: Icon(
+                        Icons.favorite_border_rounded,
+                        size: 18,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -698,20 +908,46 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                  Text(
+                    p.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('${p.neighborhood}, ${p.city}', style: const TextStyle(color: Colors.blueGrey, fontSize: 13)),
+                  Text(
+                    '${p.neighborhood}, ${p.city}',
+                    style: const TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Text(
                         '${NumberFormat.decimalPattern('fr').format(p.price)} F',
-                        style: const TextStyle(color: Color(0xFF27C66E), fontWeight: FontWeight.w900, fontSize: 18),
+                        style: const TextStyle(
+                          color: Color(0xFF27C66E),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.bed_rounded, size: 16, color: Colors.blueGrey),
+                      const Icon(
+                        Icons.bed_rounded,
+                        size: 16,
+                        color: Colors.blueGrey,
+                      ),
                       const SizedBox(width: 4),
-                      Text('${p.bedrooms}', style: const TextStyle(color: Colors.blueGrey, fontSize: 12)),
+                      Text(
+                        '${p.bedrooms}',
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ],

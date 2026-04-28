@@ -27,13 +27,16 @@ class _SolvencyDocsScreenState extends State<SolvencyDocsScreen> {
   };
 
   Future<void> _pickFile(String type) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'pdf', 'png'],
-    );
-
-    if (result != null) {
-      setState(() => _selectedFiles[type] = File(result.files.single.path!));
+    try {
+      FilePickerResult? result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'pdf', 'png'],
+      );
+      if (result != null) {
+        setState(() => _selectedFiles[type] = File(result.files.single.path!));
+      }
+        } catch (e) {
+      debugPrint('File picker error: $e');
     }
   }
 
@@ -43,7 +46,8 @@ class _SolvencyDocsScreenState extends State<SolvencyDocsScreen> {
     setState(() => _isUploading[type] = true);
     
     try {
-      final success = await ApiService().uploadSolvencyDocument(type, _selectedFiles[type]!);
+      final apiService = ApiService();
+      final success = await apiService.uploadSolvencyDocument(type, _selectedFiles[type]!);
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Document $type envoyé avec succès !')));
@@ -131,14 +135,14 @@ class _SolvencyDocsScreenState extends State<SolvencyDocsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)],
       ),
       child: Column(
         children: [
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: const Color(0xFF0B4629).withOpacity(0.1),
+                backgroundColor: const Color(0xFF0B4629).withValues(alpha: 0.1),
                 child: Icon(icon, color: const Color(0xFF0B4629), size: 20),
               ),
               const SizedBox(width: 16),

@@ -115,7 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         gradient: const LinearGradient(colors: [Color(0xFF0B4629), Color(0xFF062B1A)]),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(color: const Color(0xFF0B4629).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+                          BoxShadow(color: const Color(0xFF0B4629).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10)),
                         ],
                       ),
                       child: ElevatedButton(
@@ -183,7 +183,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15)],
       ),
       child: TextField(
         controller: controller,

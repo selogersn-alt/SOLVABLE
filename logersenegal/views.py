@@ -509,24 +509,18 @@ def create_property_view(request):
             property_obj.is_paid = False
             property_obj.save()
             
-            # Gestion des images multiples en arrière-plan (DigitalH Optimization)
-            # On utilise un thread pour ne pas bloquer l'utilisateur pendant la conversion WebP/Resizing
-            import threading
+            # Gestion des images multiples (Synchronous for reliability)
             from logersn.models import PropertyImage
-
-            def process_property_images(prop, images_list):
+            for i, image in enumerate(images):
                 try:
-                    for i, image in enumerate(images_list):
-                        PropertyImage.objects.create(
-                            property=prop,
-                            image_url=image,
-                            is_primary=(i == 0)
-                        )
+                    PropertyImage.objects.create(
+                        property=property_obj,
+                        image_url=image,
+                        is_primary=(i == 0)
+                    )
                 except Exception as e:
-                    print(f"Error processing images in background: {e}")
+                    print(f"Error processing image {i}: {e}")
 
-            image_thread = threading.Thread(target=process_property_images, args=(property_obj, images))
-            image_thread.start()
                 
             pricing = FedaPayBridge.get_pricing()
             fee = pricing['publication_rent']
@@ -769,23 +763,17 @@ def edit_property_view(request, property_id):
             property_obj.is_published = False 
             property_obj.save()
             
-            # Ajout de nouvelles images si fournies en arrière-plan
-            images = request.FILES.getlist('images')
-            if images:
-                import threading
+                # Ajout de nouvelles images (Synchronous)
                 from logersn.models import PropertyImage
-
-                def process_edit_images(prop, images_list):
+                for image in images:
                     try:
-                        for image in images_list:
-                            PropertyImage.objects.create(
-                                property=prop,
-                                image_url=image
-                            )
+                        PropertyImage.objects.create(
+                            property=property_obj,
+                            image_url=image
+                        )
                     except Exception as e:
-                        print(f"Error processing edit images: {e}")
+                        print(f"Error processing edit image: {e}")
 
-                threading.Thread(target=process_edit_images, args=(property_obj, images)).start()
             
             messages.success(request, "Votre annonce a été mise à jour ! Elle sera de nouveau visible après validation.")
             return redirect('dashboard')

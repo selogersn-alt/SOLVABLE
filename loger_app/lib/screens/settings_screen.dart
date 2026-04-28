@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import 'solvency_docs_screen.dart';
 import 'legal_screen.dart';
@@ -166,19 +166,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildProfile(dynamic user) {
+  Widget _buildProfile(AppUser user) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20)],
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 35,
-            backgroundColor: const Color(0xFF0B4629).withOpacity(0.1),
+            backgroundColor: const Color(0xFF0B4629).withValues(alpha: 0.1),
             child: Text(user.firstName[0], style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0B4629))),
           ),
           const SizedBox(width: 20),
@@ -230,7 +230,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildNILSCard(dynamic user) {
+  Widget _buildNILSCard(AppUser user) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -264,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         leading: Icon(icon, color: const Color(0xFF0B4629)),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         subtitle: Text(sub, style: const TextStyle(fontSize: 11)),
-        trailing: Switch.adaptive(value: val, activeColor: const Color(0xFF0B4629), onChanged: onChanged),
+        trailing: Switch.adaptive(value: val, activeTrackColor: const Color(0xFF0B4629), onChanged: onChanged),
       ),
     );
   }

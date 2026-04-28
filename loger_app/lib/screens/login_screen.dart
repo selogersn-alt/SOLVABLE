@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 300,
               height: 300,
               decoration: BoxDecoration(
-                color: const Color(0xFF0B4629).withOpacity(0.05),
+                color: const Color(0xFF0B4629).withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
             ),
@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(color: const Color(0xFF0B4629).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+                          BoxShadow(color: const Color(0xFF0B4629).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10)),
                         ],
                       ),
                       child: ElevatedButton(
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: TextField(
         controller: controller,
