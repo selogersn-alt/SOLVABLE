@@ -378,17 +378,20 @@
         const map = L.map('map').setView([initialLat, initialLng], 12);
         
         // Style "Luxueux et Élégant" - CartoDB Voyager (Plus coloré et moderne)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
 
-        setTimeout(() => { map.invalidateSize(); }, 500);
+        // Forcer le rendu
+        setTimeout(() => { map.invalidateSize(); }, 600);
 
         let marker;
         if (latInput.value && lngInput.value) {
-            const currentPos = [parseFloat(latInput.value), parseFloat(lngInput.value)];
+            const currentPos = [
+                parseFloat(latInput.value.toString().replace(',', '.')), 
+                parseFloat(lngInput.value.toString().replace(',', '.'))
+            ];
             if (!isNaN(currentPos[0]) && !isNaN(currentPos[1])) {
                 marker = L.marker(currentPos).addTo(map);
                 map.setView(currentPos, 15);

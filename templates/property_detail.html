@@ -531,11 +531,13 @@
                 hasCoords ? 15 : 12
             );
             
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                subdomains: 'abcd',
                 maxZoom: 20
             }).addTo(map);
+
+            // Forcer le rendu correct (important si le conteneur a des animations)
+            setTimeout(() => { map.invalidateSize(); }, 500);
 
             if (hasCoords) {
                 const lat = parseFloat(latStr);
@@ -557,8 +559,8 @@
             const similarProps = [
                 {% for rel in related_properties %}
                 {
-                    "lat": {{ rel.latitude|default:"null" }},
-                    "lng": {{ rel.longitude|default:"null" }},
+                    "lat": parseFloat("{{ rel.latitude }}".replace(',', '.')) || null,
+                    "lng": parseFloat("{{ rel.longitude }}".replace(',', '.')) || null,
                     "title": "{{ rel.title|escapejs }}",
                     "price": "{{ rel.price|clean_price }} F",
                     "url": "{% url 'property_detail' rel.id %}"

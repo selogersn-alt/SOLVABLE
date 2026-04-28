@@ -508,8 +508,8 @@
             {
                 "id": "{{ prop.id }}",
                 "title": "{{ prop.title|escapejs }}",
-                "lat": {{ prop.latitude|default:"null" }},
-                "lng": {{ prop.longitude|default:"null" }},
+                "lat": parseFloat("{{ prop.latitude }}".replace(',', '.')) || null,
+                "lng": parseFloat("{{ prop.longitude }}".replace(',', '.')) || null,
                 "price": "{% if prop.listing_category == 'SALE' %}{{ prop.price|floatformat:0 }} F{% elif prop.listing_category == 'FURNISHED' %}{{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit{% else %}{{ prop.price|floatformat:0 }} F/Mois{% endif %}",
                 "url": "{% url 'property_detail' prop.id %}",
                 "img": "{% if prop.images.first %}{{ prop.images.first.image_url.url }}{% endif %}"
@@ -522,11 +522,14 @@
             scrollWheelZoom: false
         }).setView([14.7167, -17.4677], 12);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        // Correction DigitH : On utilise des URLs sans sous-domaines pour maximiser la compatibilité
+        L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
+
+        // Forcer le rendu correct
+        setTimeout(() => { map.invalidateSize(); }, 500);
 
         const markers = [];
         propertiesData.forEach(prop => {
