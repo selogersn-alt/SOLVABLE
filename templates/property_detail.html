@@ -454,6 +454,37 @@
             </div>
         </div>
     </div>
+
+    <!-- ANNONCES SIMILAIRES (Nouveau Point 3) -->
+    {% if related_properties %}
+    <div class="container mt-5 pt-4 border-top">
+        <h3 class="fw-bold mb-4" style="color: var(--text-main);"><i class="fa-solid fa-layer-group me-2 text-success"></i>Annonces Similaires</h3>
+        <div class="row g-4">
+            {% for rel in related_properties %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden" style="background: var(--bg-card);">
+                    <a href="{% url 'property_detail' rel.id %}" class="text-decoration-none">
+                        <div style="height: 160px; position: relative;">
+                            {% if rel.images.first %}
+                                <img src="{{ rel.images.first.image_url.url }}" class="w-100 h-100 object-fit-cover">
+                            {% else %}
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"><i class="fa-solid fa-image text-muted"></i></div>
+                            {% endif %}
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge bg-success shadow-sm">{{ rel.price|clean_price }} F</span>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h6 class="fw-bold mb-1 text-truncate" style="color: var(--text-main);">{{ rel.title }}</h6>
+                            <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i> {{ rel.neighborhood }}</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Modal Images Plein Écran -->
@@ -500,7 +531,34 @@
             radius: 300
         }).addTo(map);
 
-        L.marker([lat, lng]).addTo(map).bindPopup("Zone approximative du bien");
+        L.marker([lat, lng]).addTo(map).bindPopup("<b>Logement principal</b><br>Zone approximative");
+
+        // Autres logements à proximité (Point 4)
+        const similarProps = [
+            {% for rel in related_properties %}
+            {
+                "lat": {{ rel.latitude|default:"null" }},
+                "lng": {{ rel.longitude|default:"null" }},
+                "title": "{{ rel.title|escapejs }}",
+                "price": "{{ rel.price|clean_price }} F",
+                "url": "{% url 'property_detail' rel.id %}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        similarProps.forEach(p => {
+            if (p.lat && p.lng) {
+                const marker = L.marker([p.lat, p.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:#ff9f43; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);'></div>",
+                        iconSize: [14, 14],
+                        iconAnchor: [7, 7]
+                    })
+                }).addTo(map);
+                marker.bindPopup(`<strong>${p.title}</strong><br><span class='text-success fw-bold'>${p.price}</span><br><a href='${p.url}' class='btn btn-xs btn-success text-white mt-1 w-100' style='font-size:0.7rem;'>Détails</a>`);
+            }
+        });
         
         // Favorite Logic
         const favBtn = document.querySelector('.btn-favorite');

@@ -148,7 +148,7 @@ def properties_list_view(request):
         except Exception:
             pass
             
-    if property_type and property_type != 'ALL':
+    if property_type and property_type != 'ALL' and property_type != '':
         properties = properties.filter(property_type=property_type)
         
     # Filtrage par prix (Conversion robuste float)
@@ -209,14 +209,18 @@ def properties_list_view(request):
     # Optimisation spécifique pour les "Chambres" et "Studios" (Intentions de recherche fortes)
     type_label = "Annonce immobilière"
     if property_type == 'CHAMBRE_SDB_INTERNE':
-        type_label = "Chambre à louer avec salle de bain interne"
+        type_label = "Chambres à louer (SDB interne)"
     elif property_type == 'CHAMBRE_SIMPLE':
-        type_label = "Chambre à louer"
+        type_label = "Chambres simples à louer"
     elif property_type == 'MINI_STUDIO':
-        type_label = "Mini Studio à louer"
+        type_label = "Mini Studios à louer"
     elif property_type == 'STUDIO_SEPARE':
-        type_label = "Studio séparé à louer"
-    elif property_type and property_type != 'ALL':
+        type_label = "Studios séparés à louer"
+    elif property_type == 'APARTMENT':
+        type_label = "Appartements à louer"
+    elif property_type == 'VILLA':
+        type_label = "Villas à louer/vendre"
+    elif property_type and property_type != 'ALL' and property_type != '':
         from logersn.constants import PROPERTY_TYPE_CHOICES
         type_label = dict(PROPERTY_TYPE_CHOICES).get(property_type, property_type)
     
@@ -265,12 +269,14 @@ def property_detail_view(request, property_id=None, slug=None):
         update_kwargs['boosted_views_count'] = F('boosted_views_count') + 1
     Property.objects.filter(id=property_obj.id).update(**update_kwargs)
     
-    # Biens similaires (même ville ou même type) - Optimisé avec select_related/prefetch_related
+    # Biens similaires (même quartier, même ville ou même type) - Priorité aux boostés
     related_properties = Property.objects.filter(
         is_published=True
     ).filter(
-        Q(city=property_obj.city) | Q(property_type=property_obj.property_type)
-    ).select_related('owner').prefetch_related('images').exclude(id=property_obj.id)[:4]
+        Q(neighborhood=property_obj.neighborhood) | 
+        Q(city=property_obj.city) | 
+        Q(property_type=property_obj.property_type)
+    ).select_related('owner').prefetch_related('images').exclude(id=property_obj.id).order_by('-is_boosted', '-created_at')[:4]
 
     # Vérifie si l'annonce est en favoris pour l'utilisateur connecté
     is_favorite = False

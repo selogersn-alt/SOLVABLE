@@ -172,13 +172,78 @@
                                     <div class="col-md-3">
                                         <div class="form-check mt-3">
                                             {{ form.has_security }}
-                                            <label class="form-check-label fw-bold small ms-2" for="{{ form.has_security.id_for_label }}">Sécurité</label>
+                                            <label class="form-check-label fw-bold small ms-2" for="{{ form.has_security.id_for_label }}">Sécurité 24/7</label>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-check mt-3">
                                             {{ form.has_concierge }}
                                             <label class="form-check-label fw-bold small ms-2" for="{{ form.has_concierge.id_for_label }}">Conciergerie</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mt-4 pt-3 border-top">
+                                        <h5 class="fw-bold mb-3" style="color: var(--text-main);"><i class="fa-solid fa-sparkles text-success me-2"></i>Commodités & Équipements</h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.swimming_pool }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.swimming_pool.id_for_label }}">Piscine</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.wifi }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.wifi.id_for_label }}">WiFi</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.air_conditioning }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.air_conditioning.id_for_label }}">Climatisation</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.generator }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.generator.id_for_label }}">Groupe Électrogène</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.water_tank }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.water_tank.id_for_label }}">Réservoir d'eau</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.gym }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.gym.id_for_label }}">Salle de sport</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.refrigerator }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.refrigerator.id_for_label }}">Réfrigérateur</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.washing_machine }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.washing_machine.id_for_label }}">Lave-linge</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.microwave }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.microwave.id_for_label }}">Micro-ondes</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    {{ form.tv_cable }}
+                                                    <label class="form-check-label fw-bold small ms-2" for="{{ form.tv_cable.id_for_label }}">TV par câble</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-12 mt-3">
