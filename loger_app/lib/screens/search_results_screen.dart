@@ -11,6 +11,7 @@ import 'package:timeago/timeago.dart' as timeago;
 class SearchResultsScreen extends StatefulWidget {
   final String? city;
   final String? type;
+  final String? category;
   final String? neighborhood;
   final String? search;
 
@@ -18,6 +19,7 @@ class SearchResultsScreen extends StatefulWidget {
     super.key,
     this.city,
     this.type,
+    this.category,
     this.neighborhood,
     this.search,
   });
@@ -46,6 +48,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         page: pageKey,
         city: widget.city,
         propertyType: widget.type,
+        listingCategory: widget.category,
         neighborhood: widget.neighborhood,
         search: widget.search,
       );

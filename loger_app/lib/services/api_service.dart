@@ -10,10 +10,11 @@ class ApiService {
   static const String baseUrl = 'https://logersenegal.com/api';
   final _storage = const FlutterSecureStorage();
 
-  Future<Map<String, dynamic>> fetchProperties({String? city, String? propertyType, String? neighborhood, String? search, int page = 1}) async {
+  Future<Map<String, dynamic>> fetchProperties({String? city, String? propertyType, String? listingCategory, String? neighborhood, String? search, int page = 1}) async {
     final queryParameters = <String, String>{};
     if (city != null && city != 'TOUT') queryParameters['city'] = city;
     if (propertyType != null && propertyType != 'TOUT') queryParameters['property_type'] = propertyType;
+    if (listingCategory != null && listingCategory != 'TOUT') queryParameters['listing_category'] = listingCategory;
     if (neighborhood != null && neighborhood != 'TOUT') {
       queryParameters['neighborhood'] = _normalizeNeighborhood(neighborhood);
     }
