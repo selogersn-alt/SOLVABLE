@@ -98,6 +98,9 @@ class Property(models.Model):
 
     is_paid = models.BooleanField(default=False, verbose_name="Frais de publication payés")
     
+    # Champ de communication Admin -> Pro
+    admin_note = models.TextField(blank=True, null=True, verbose_name="Note de l'administrateur (Sera envoyée au propriétaire)")
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -109,6 +112,18 @@ class Property(models.Model):
         return reverse('property_detail', kwargs={'property_id': self.id})
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        # On détecte si la note admin a changé (pour ne pas spammer)
+        old_note = None
+        if not is_new:
+            try:
+                # Utiliser .only pour la performance lors du check
+                old_instance = Property.objects.filter(pk=self.pk).only('admin_note').first()
+                if old_instance:
+                    old_note = old_instance.admin_note
+            except Exception:
+                pass
+
         if not self.slug or self.slug.startswith('propriete-'):
             from django.utils.text import slugify
             base_slug = slugify(self.title)
@@ -116,7 +131,17 @@ class Property(models.Model):
                 base_slug = "propriete"
             # On ajoute une partie de l'ID pour garantir l'unicité absolue
             self.slug = f"{base_slug}-{str(self.id)[:8]}"
+            
         super().save(*args, **kwargs)
+
+        # Notification automatique si l'admin a écrit une note
+        if self.admin_note and self.admin_note != old_note:
+            if self.owner.email:
+                try:
+                    from logersenegal.emails import send_property_update_notification
+                    send_property_update_notification(self, self.admin_note)
+                except Exception as e:
+                    print(f"Erreur notification admin_note: {e}")
 
     def get_main_image(self):
         primary_image = self.images.filter(is_primary=True).first()

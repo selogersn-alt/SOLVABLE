@@ -79,3 +79,13 @@ def send_application_status_email(application):
         user.email
     )
 
+def send_property_update_notification(property, message):
+    """Notification au propriétaire d'une modification faite par l'admin."""
+    user = property.owner
+    return send_html_email(
+        f"Mise à jour de votre annonce : {property.title}",
+        "emails/property_update_admin.html",
+        {'user': user, 'property': property, 'admin_message': message},
+        user.email
+    )
+

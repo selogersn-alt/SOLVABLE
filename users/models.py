@@ -47,6 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     company_name = models.CharField(max_length=150, null=True, blank=True, verbose_name="Nom de l'agence ou de l'entreprise")
     slug = models.SlugField(max_length=200, unique=True, null=True, blank=True, verbose_name="Lien personnalisé")
     coverage_area = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zone de couverture")
+    website = models.URLField(max_length=255, null=True, blank=True, verbose_name="Site Internet / Portfolio")
     
     # Système de Parrainage DigitalH
     referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals', verbose_name="Parrainé par")

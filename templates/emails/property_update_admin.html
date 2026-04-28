@@ -1,0 +1,26 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<h2 style="color: #0b4629; margin-bottom: 20px;">Mise à jour de votre annonce</h2>
+
+<p>Bonjour <strong>{{ user.get_full_name }}</strong>,</p>
+
+<p>L'équipe de modération de <strong>Loger Sénégal</strong> a apporté une modification ou a une information importante concernant votre annonce : <br>
+<span style="color: #0b4629; font-weight: 700;">{{ property.title }}</span></p>
+
+<div style="background-color: #fdf6e3; border-left: 4px solid #f39c12; padding: 20px; margin: 20px 0; border-radius: 4px;">
+    <p style="margin: 0; color: #7f8c8d; font-size: 14px; font-weight: bold; text-transform: uppercase;">Message de l'administrateur :</p>
+    <p style="margin: 10px 0 0 0; color: #2c3e50; font-style: italic;">"{{ admin_message }}"</p>
+</div>
+
+<p>Nous vous invitons à consulter votre annonce pour voir les changements ou répondre aux demandes si nécessaire.</p>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}{% url 'property_detail' property.id %}" class="button">Voir mon annonce en ligne</a>
+</div>
+
+<p style="margin-top: 30px; font-size: 14px; color: #7f8c8d;">
+    Merci de votre confiance,<br>
+    L'équipe Loger Sénégal.
+</p>
+{% endblock %}

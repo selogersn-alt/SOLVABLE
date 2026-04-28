@@ -438,6 +438,13 @@
                     <div class="flex-grow-1 ms-3">
                         <h6 class="mb-0 fw-bold">{% if property.owner.company_name %}{{ property.owner.company_name }}{% else %}{{ property.owner.get_full_name }}{% endif %}</h6>
                         <small class="text-muted">{{ property.owner.get_role_display }} vérifié</small>
+                        {% if property.owner.website %}
+                            <div class="mt-1">
+                                <a href="{{ property.owner.website }}" target="_blank" class="text-success small text-decoration-none">
+                                    <i class="fa-solid fa-globe me-1"></i> Site Internet
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -514,11 +521,13 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         // Init Map
-        const latStr = "{{ property.latitude|default:'' }}".replace(',', '.');
-        const lngStr = "{{ property.longitude|default:'' }}".replace(',', '.');
+        // Correction DigitH : On récupère les valeurs brutes et on gère tous les cas (None, '', 0)
+        let latStr = "{{ property.latitude }}".trim().replace(',', '.');
+        let lngStr = "{{ property.longitude }}".trim().replace(',', '.');
         const mapContainer = document.getElementById('propertyMap');
 
-        if (latStr && lngStr && latStr !== 'None' && lngStr !== '' && !isNaN(parseFloat(latStr))) {
+        // On vérifie que les valeurs ne sont pas vides, pas 'None' et sont des nombres valides
+        if (latStr && lngStr && latStr !== 'None' && lngStr !== 'null' && !isNaN(parseFloat(latStr))) {
             const lat = parseFloat(latStr);
             const lng = parseFloat(lngStr);
 
