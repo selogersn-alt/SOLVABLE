@@ -262,14 +262,14 @@
 
 <!-- HERO SECTION : MOTEUR DE RECHERCHE IMMOBILIER (Priorité #1) -->
 <section class="hero-section py-5 position-relative" style="background: linear-gradient(135deg, var(--color-dark-green) 0%, #062b1a 100%); min-height: 600px; display: flex; align-items: center; border-radius: 0 0 50px 50px; margin-bottom: -50px; z-index: 5; overflow: hidden;">
-    <!-- Logo en filigrane pour le fond -->
-    <div class="position-absolute start-50 top-50 translate-middle opacity-10" style="width: 600px; height: 600px; background: url('{% static 'img/icon-512x512.png' %}') center/contain no-repeat; z-index: 1;"></div>
+    <!-- Logo en filigrane optimisé : Utilisation de multiply pour enlever le fond blanc si présent -->
+    <div class="position-absolute start-50 top-50 translate-middle opacity-20" style="width: 100%; max-width: 800px; height: 800px; background: url('{% static 'img/icon-512x512.png' %}') center/contain no-repeat; z-index: 1; mix-blend-mode: multiply; pointer-events: none;"></div>
     
     <div class="container position-relative" style="z-index: 2;">
         <div class="row justify-content-center">
             <div class="col-lg-10 text-center">
-                <h1 class="display-3 fw-bold text-white mb-3 animate__animated animate__fadeInDown">Trouvez votre <span style="color: var(--color-yellow);">logement idéal</span> au Sénégal</h1>
-                <p class="lead text-white opacity-90 mb-5 animate__animated animate__fadeInUp">La plateforme immobilière la plus sécurisée pour louer ou acheter en toute sérénité.</p>
+                <h1 class="display-3 fw-bold text-white mb-3 animate__animated animate__fadeInDown" style="text-shadow: 0 4px 15px rgba(0,0,0,0.5);">Trouvez votre <span style="color: var(--color-yellow);">logement idéal</span> au Sénégal</h1>
+                <p class="lead text-white opacity-90 mb-5 animate__animated animate__fadeInUp fw-bold" style="text-shadow: 0 2px 10px rgba(0,0,0,0.5);">La plateforme immobilière la plus sécurisée pour louer ou acheter en toute sérénité.</p>
                 
                 <!-- LE MOTEUR DE RECHERCHE IMMOBILIER -->
                 <div class="card border-0 shadow-lg p-3" style="border-radius: 30px; background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2) !important;">
