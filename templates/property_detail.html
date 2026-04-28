@@ -514,63 +514,77 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         // Init Map
-        const lat = parseFloat("{{ property.latitude|default:'14.7167' }}".replace(',', '.'));
-        const lng = parseFloat("{{ property.longitude|default:'-17.4677' }}".replace(',', '.'));
+        const latStr = "{{ property.latitude|default:'' }}".replace(',', '.');
+        const lngStr = "{{ property.longitude|default:'' }}".replace(',', '.');
+        const mapContainer = document.getElementById('propertyMap');
 
-        const map = L.map('propertyMap').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
+        if (latStr && lngStr && latStr !== 'None' && lngStr !== '' && !isNaN(parseFloat(latStr))) {
+            const lat = parseFloat(latStr);
+            const lng = parseFloat(lngStr);
 
-        L.circle([lat, lng], {
-            color: 'var(--color-light-green)',
-            fillColor: 'var(--color-light-green)',
-            fillOpacity: 0.2,
-            radius: 300
-        }).addTo(map);
+            const map = L.map('propertyMap').setView([lat, lng], 15);
+            
+            // Style "Luxueux et Élégant" - CartoDB Positron
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
 
-        L.marker([lat, lng]).addTo(map).bindPopup("<b>Logement principal</b><br>Zone approximative");
+            L.circle([lat, lng], {
+                color: 'var(--color-light-green)',
+                fillColor: 'var(--color-light-green)',
+                fillOpacity: 0.2,
+                radius: 300
+            }).addTo(map);
 
-        // Autres logements à proximité (Point 4)
-        const similarProps = [
-            {% for rel in related_properties %}
-            {
-                "lat": {{ rel.latitude|default:"null" }},
-                "lng": {{ rel.longitude|default:"null" }},
-                "title": "{{ rel.title|escapejs }}",
-                "price": "{{ rel.price|clean_price }} F",
-                "url": "{% url 'property_detail' rel.id %}"
-            }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ];
+            L.marker([lat, lng]).addTo(map).bindPopup("<b>Logement principal</b><br>Zone approximative");
 
-        similarProps.forEach(p => {
-            if (p.lat && p.lng) {
-                const marker = L.marker([p.lat, p.lng], {
-                    icon: L.divIcon({
-                        className: 'custom-div-icon',
-                        html: "<div style='background-color:#ff9f43; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);'></div>",
-                        iconSize: [14, 14],
-                        iconAnchor: [7, 7]
-                    })
-                }).addTo(map);
-                marker.bindPopup(`<strong>${p.title}</strong><br><span class='text-success fw-bold'>${p.price}</span><br><a href='${p.url}' class='btn btn-xs btn-success text-white mt-1 w-100' style='font-size:0.7rem;'>Détails</a>`);
-            }
-        });
+            // Autres logements à proximité (Point 4)
+            const similarProps = [
+                {% for rel in related_properties %}
+                {
+                    "lat": {{ rel.latitude|default:"null" }},
+                    "lng": {{ rel.longitude|default:"null" }},
+                    "title": "{{ rel.title|escapejs }}",
+                    "price": "{{ rel.price|clean_price }} F",
+                    "url": "{% url 'property_detail' rel.id %}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            similarProps.forEach(p => {
+                if (p.lat && p.lng) {
+                    const marker = L.marker([p.lat, p.lng], {
+                        icon: L.divIcon({
+                            className: 'custom-div-icon',
+                            html: "<div style='background-color:#ff9f43; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5);'></div>",
+                            iconSize: [14, 14],
+                            iconAnchor: [7, 7]
+                        })
+                    }).addTo(map);
+                    marker.bindPopup(`<strong>${p.title}</strong><br><span class='text-success fw-bold'>${p.price}</span><br><a href='${p.url}' class='btn btn-xs btn-success text-white mt-1 w-100' style='font-size:0.7rem;'>Détails</a>`);
+                }
+            });
+        } else if (mapContainer) {
+            mapContainer.style.display = 'none';
+            const mapHeader = mapContainer.previousElementSibling;
+            if (mapHeader && mapHeader.tagName === 'H5') mapHeader.style.display = 'none';
+        }
         
         // Favorite Logic
         const favBtn = document.querySelector('.btn-favorite');
-        favBtn.addEventListener('click', function() {
-            this.classList.toggle('active');
-            const icon = this.querySelector('i');
-            if (this.classList.contains('active')) {
-                icon.classList.replace('fa-regular', 'fa-solid');
-            } else {
-                icon.classList.replace('fa-solid', 'fa-regular');
-            }
-        });
+        if (favBtn) {
+            favBtn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const icon = this.querySelector('i');
+                if (this.classList.contains('active')) {
+                    icon.classList.replace('fa-regular', 'fa-solid');
+                } else {
+                    icon.classList.replace('fa-solid', 'fa-regular');
+                }
+            });
+        }
 
         // Click Tracking Logic (WhatsApp, Phone, Chat)
         const contactButtons = document.querySelectorAll('a[href^="https://wa.me/"], a[href^="tel:"], a[href*="initiate-chat"]');

@@ -284,13 +284,18 @@
                                 <p class="small text-muted">Cliquez sur la carte pour placer le bien précisément. Cela aidera les locataires à trouver votre annonce.</p>
                                 <div id="map"></div>
                                 <div class="row g-2 mt-2">
-                                    <div class="col-6">
+                                    <div class="col-5">
                                         <label class="small text-muted">Latitude</label>
                                         {{ form.latitude }}
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-5">
                                         <label class="small text-muted">Longitude</label>
                                         {{ form.longitude }}
+                                    </div>
+                                    <div class="col-2 d-flex align-items-end">
+                                        <button type="button" id="btn-geolocate" class="btn btn-outline-success w-100" title="Me géolocaliser">
+                                            <i class="fa-solid fa-crosshairs"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -365,25 +370,30 @@
         // 2. Logique de la carte
         const latInput = document.getElementById('id_latitude');
         const lngInput = document.getElementById('id_longitude');
+        const geolocateBtn = document.getElementById('btn-geolocate');
         
-        // Rendre les champs readonly pour forcer l'usage de la carte
-        if(latInput) latInput.readOnly = true;
-        if(lngInput) lngInput.readOnly = true;
-
-        let initialLat = 14.7167; // Dakar
-        let initialLng = -17.4677;
+        let initialLat = parseFloat(latInput.value) || 14.7167; // Dakar par défaut
+        let initialLng = parseFloat(lngInput.value) || -17.4677;
 
         const map = L.map('map').setView([initialLat, initialLng], 12);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        
+        // Style "Luxueux et Élégant" - CartoDB Positron
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 20
         }).addTo(map);
 
-        // Fix pour les problèmes d'affichage dans les conteneurs cachés/flex
         setTimeout(() => { map.invalidateSize(); }, 500);
 
         let marker;
+        if (latInput.value && lngInput.value) {
+            const currentPos = [parseFloat(latInput.value), parseFloat(lngInput.value)];
+            if (!isNaN(currentPos[0]) && !isNaN(currentPos[1])) {
+                marker = L.marker(currentPos).addTo(map);
+                map.setView(currentPos, 15);
+            }
+        }
 
         map.on('click', function(e) {
             const lat = e.latlng.lat.toFixed(7);
@@ -395,9 +405,57 @@
                 marker = L.marker(e.latlng).addTo(map);
             }
             
-            if(latInput) latInput.value = lat;
-            if(lngInput) lngInput.value = lng;
+            latInput.value = lat;
+            lngInput.value = lng;
         });
+
+        // Mise à jour de la carte si on tape manuellement les coordonnées
+        [latInput, lngInput].forEach(input => {
+            if(input) {
+                input.readOnly = false; // Permettre l'écriture manuelle
+                input.addEventListener('input', function() {
+                    const lat = parseFloat(latInput.value);
+                    const lng = parseFloat(lngInput.value);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const newPos = [lat, lng];
+                        if (marker) {
+                            marker.setLatLng(newPos);
+                        } else {
+                            marker = L.marker(newPos).addTo(map);
+                        }
+                        map.setView(newPos, 15);
+                    }
+                });
+            }
+        });
+
+        // Géolocalisation
+        if (geolocateBtn) {
+            geolocateBtn.addEventListener('click', function() {
+                if ("geolocation" in navigator) {
+                    geolocateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude.toFixed(7);
+                        const lng = position.coords.longitude.toFixed(7);
+                        latInput.value = lat;
+                        lngInput.value = lng;
+                        const newPos = [lat, lng];
+                        if (marker) {
+                            marker.setLatLng(newPos);
+                        } else {
+                            marker = L.marker(newPos).addTo(map);
+                        }
+                        map.setView(newPos, 16);
+                        geolocateBtn.innerHTML = '<i class="fa-solid fa-crosshairs"></i>';
+                    }, function(error) {
+                        alert("Erreur de géolocalisation: " + error.message);
+                        geolocateBtn.innerHTML = '<i class="fa-solid fa-crosshairs"></i>';
+                    });
+                } else {
+                    alert("Votre navigateur ne supporte pas la géolocalisation.");
+                }
+            });
+        }
     });
 </script>
 {% endblock %}
