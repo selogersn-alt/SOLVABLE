@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from .models import Property, PropertyImage, Transaction, PricingConfig, Favorite, PropertyEquipment
+from .models import Property, PropertyImage, Transaction, PricingConfig, Favorite, PropertyEquipment, NohanMessage
 from logersenegal.emails import send_property_published_email
 
 class PropertyImageInline(admin.TabularInline):
@@ -101,3 +101,14 @@ class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'property', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('user__email', 'user__phone_number', 'property__title')
+
+@admin.register(NohanMessage)
+class NohanMessageAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'role', 'user', 'session_key', 'content_preview')
+    list_filter = ('role', 'created_at')
+    search_fields = ('content', 'user__phone_number', 'session_key')
+    readonly_fields = ('created_at',)
+
+    def content_preview(self, obj):
+        return obj.content[:100] + "..." if len(obj.content) > 100 else obj.content
+    content_preview.short_description = "Message"

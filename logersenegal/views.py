@@ -1617,14 +1617,15 @@ def schedule_visit_view(request, property_id):
             
     return redirect(property_obj.get_absolute_url())
 
-@login_required
 def nohan_chat_view(request):
     """
     Endpoint AJAX pour discuter avec NOHAN (Assistant IA).
+    Ouvert aux visiteurs et enregistre les conversations pour l'IA.
     """
     if request.method == 'POST':
         import json
         from logersn.nohan_utils import call_gemini_api
+        from logersn.models import NohanMessage
         
         try:
             data = json.loads(request.body)
@@ -1634,9 +1635,25 @@ def nohan_chat_view(request):
             if not user_message:
                 return JsonResponse({'error': 'Message vide'}, status=400)
                 
-            # Appel à Gemini
+            # 1. Enregistrer le message de l'utilisateur
+            NohanMessage.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key,
+                role='user',
+                content=user_message
+            )
+
+            # 2. Appel à l'IA (Groq/Llama)
             ai_response = call_gemini_api(user_message, history)
             
+            # 3. Enregistrer la réponse de l'IA
+            NohanMessage.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key,
+                role='assistant',
+                content=ai_response
+            )
+
             return JsonResponse({
                 'response': ai_response,
                 'role': 'model'

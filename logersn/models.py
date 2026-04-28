@@ -292,3 +292,18 @@ class PropertyEquipment(models.Model):
     
     def __str__(self):
         return f"{self.name} for {self.property.title}"
+
+class NohanMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    role = models.CharField(max_length=10) # 'user' or 'assistant'
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = "Message Nohan"
+        verbose_name_plural = "Messages Nohan (Intelligence Artificielle)"
+
+    def __str__(self):
+        return f"{self.role} - {self.created_at}"
