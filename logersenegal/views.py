@@ -310,13 +310,23 @@ def property_detail_view(request, property_id=None, slug=None):
 
 def login_view(request):
     if request.method == 'POST':
-        phone = request.POST.get('phone')
+        phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password')
+        
+        # Tentative 1 : Format exact envoyé (généralement +221...)
         user = authenticate(request, phone_number=phone, password=password)
+        
+        # Tentative 2 : Si échec et commence par +, essayer sans le +
+        if user is None and phone.startswith('+'):
+            user = authenticate(request, phone_number=phone[1:], password=password)
+            
+        # Tentative 3 : Si échec et format Sénégalais (+2217...), essayer juste le 7...
+        if user is None and phone.startswith('+221'):
+            user = authenticate(request, phone_number=phone[4:], password=password)
         
         if user is not None:
             login(request, user)
-            messages.success(request, f"Bienvenue, {user.phone_number} !")
+            messages.success(request, f"Bienvenue, {user.get_full_name()} !")
             return redirect('dashboard')
         else:
             messages.error(request, "Numéro de téléphone ou mot de passe incorrect.")
