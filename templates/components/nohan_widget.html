@@ -31,6 +31,11 @@
                         Comment puis-je vous servir ?
                     </div>
                 </div>
+                <div id="nohan-quick-replies" class="d-flex flex-wrap gap-2 mt-2 px-1">
+                    <button class="btn btn-sm nohan-quick-btn" data-query="🏠 Je cherche un appartement">🏠 Louer un bien</button>
+                    <button class="btn btn-sm nohan-quick-btn" data-query="🛡️ Comment obtenir le Badge Solvable ?">🛡️ Badge Solvable</button>
+                    <button class="btn btn-sm nohan-quick-btn" data-query="📈 Je veux booster mon annonce">📈 Booster mon annonce</button>
+                </div>
             </div>
             
             <div class="p-3 bg-white border-top">
@@ -101,6 +106,19 @@
         color: #999;
         margin-bottom: 10px;
     }
+    .nohan-quick-btn {
+        border-radius: 15px;
+        font-size: 0.75rem;
+        background: white;
+        border: 1px solid var(--color-dark-green);
+        color: var(--color-dark-green);
+        transition: all 0.2s ease;
+        padding: 5px 12px;
+    }
+    .nohan-quick-btn:hover {
+        background: var(--color-dark-green);
+        color: white;
+    }
 </style>
 
 <script>
@@ -123,9 +141,13 @@
 
         close.onclick = () => chat.classList.add('d-none');
 
-        async function sendMessage() {
-            const text = input.value.trim();
+        async function sendMessage(customText = null) {
+            const text = customText || input.value.trim();
             if (!text) return;
+
+            // Masquer les suggestions après le premier message
+            const qr = document.getElementById('nohan-quick-replies');
+            if(qr) qr.style.display = 'none';
 
             // Ajouter le message utilisateur à l'UI
             const userDiv = document.createElement('div');
@@ -150,10 +172,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({
-                        message: text,
-                        history: history
-                    })
+                    body: JSON.stringify({ message: text, history: history })
                 });
 
                 const data = await response.json();
@@ -163,19 +182,22 @@
                     const aiDiv = document.createElement('div');
                     aiDiv.className = 'nohan-msg-ai';
                     
-                    // Parsing des tags [PROPERTY_CARD:...]
-                    let processedResponse = data.response.replace(/\n/g, '<br>');
+                    // 1. Détection des liens URLs classiques pour les rendre cliquables
+                    let contentWithLinks = data.response.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #DAA520; text-decoration: underline;">$1</a>');
+                    
+                    // 2. Parsing des tags [PROPERTY_CARD:...]
+                    let processedResponse = contentWithLinks.replace(/\n/g, '<br>');
                     const cardRegex = /\[PROPERTY_CARD:(.*?)\]/g;
                     processedResponse = processedResponse.replace(cardRegex, (match, dataStr) => {
                         try {
                             const pData = JSON.parse(dataStr.replace(/&quot;/g, '"'));
                             return `
-                                <div class="nohan-property-card">
-                                    <img src="${pData.image}" alt="${pData.title}">
+                                <div class="nohan-property-card shadow-sm border-0">
+                                    <img src="${pData.image}" alt="${pData.title}" class="img-fluid rounded-top">
                                     <div class="nohan-property-card-body">
                                         <div class="nohan-property-card-title">${pData.title}</div>
-                                        <div class="nohan-property-card-price">${pData.price} FCFA</div>
-                                        <a href="${pData.url}" class="nohan-property-btn" target="_blank">Voir l'annonce</a>
+                                        <div class="nohan-property-card-price text-success">${pData.price} FCFA</div>
+                                        <a href="${pData.url}" class="btn btn-dark btn-sm w-100 mt-2" target="_blank">Voir l'annonce</a>
                                     </div>
                                 </div>
                             `;
@@ -196,7 +218,7 @@
                     throw new Error(data.error || 'Erreur inconnue');
                 }
             } catch (error) {
-                typingDiv.remove();
+                if(typingDiv) typingDiv.remove();
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'text-danger small mb-2';
                 errorDiv.textContent = "Désolé, j'ai eu un souci technique : " + error.message;
@@ -206,7 +228,12 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        sendBtn.onclick = sendMessage;
+        // Gérer les clics sur les boutons de suggestion
+        document.querySelectorAll('.nohan-quick-btn').forEach(btn => {
+            btn.onclick = () => sendMessage(btn.getAttribute('data-query'));
+        });
+
+        sendBtn.onclick = () => sendMessage();
         input.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
     });
 </script>

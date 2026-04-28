@@ -1,5 +1,6 @@
 import requests
 import json
+import re
 from django.conf import settings
 from logersn.models import Property
 from django.urls import reverse
@@ -7,28 +8,40 @@ from django.db.models import Q
 
 def search_matching_properties(query):
     """
-    Recherche des biens immobiliers correspondant à la demande de l'utilisateur.
-    Retourne des tags [PROPERTY_CARD:...] pour le frontend.
+    Recherche avancée des biens immobiliers.
+    Détecte les budgets (ex: 200 000) et les types de biens (ex: F3).
     """
-    keywords = query.split()
+    query = query.lower()
     search_query = Q(is_published=True, is_active=True)
     
-    # Recherche basique sur le titre, ville, quartier, description
-    has_keywords = False
-    for word in keywords:
-        if len(word) > 2:
-            search_query &= (Q(title__icontains=word) | Q(city__icontains=word) | Q(neighborhood__icontains=word) | Q(description__icontains=word))
-            has_keywords = True
-    
-    if not has_keywords:
-        return []
+    # 1. Détection du budget (ex: "moins de 200 000" ou "budget 300k")
+    price_match = re.search(r'(\d+)\s*(?:000|k|fr|fcfa)', query)
+    if price_match:
+        price_val = int(price_match.group(1))
+        if '000' not in price_match.group(0) and 'k' in query:
+            price_val = price_val * 1000
+        # On cherche des biens jusqu'à 15% au-dessus du budget
+        search_query &= Q(price__lte=price_val * 1.15)
 
+    # 2. Détection du type de bien / chambres (ex: F3, 3 chambres, studio)
+    room_match = re.search(r'f(\d+)|(\d+)\s*chambre', query)
+    if room_match:
+        rooms = room_match.group(1) or room_match.group(2)
+        search_query &= (Q(title__icontains=f"F{rooms}") | Q(description__icontains=f"F{rooms}") | Q(bedrooms=rooms))
+    elif "studio" in query:
+        search_query &= (Q(title__icontains="studio") | Q(description__icontains="studio"))
+
+    # 3. Mots-clés généraux (quartiers, ville)
+    keywords = query.split()
+    for word in keywords:
+        if len(word) > 3 and word not in ["louer", "cherche", "appartement", "maison", "chambre"]:
+            search_query &= (Q(title__icontains=word) | Q(city__icontains=word) | Q(neighborhood__icontains=word) | Q(description__icontains=word))
+    
     properties = Property.objects.filter(search_query).order_by('-is_boosted', '-created_at')[:3]
     
     results = []
     for p in properties:
         url = f"https://logersenegal.com{reverse('property_detail_slug', args=[p.slug])}"
-        # Récupération de l'image principale
         primary_img = p.images.filter(is_primary=True).first() or p.images.first()
         img_url = "https://logersenegal.com/static/images/placeholder-property.jpg"
         if primary_img and primary_img.image_url:
@@ -36,7 +49,6 @@ def search_matching_properties(query):
             if not img_url.startswith('http'):
                 img_url = f"https://logersenegal.com{img_url}"
 
-        # Création du tag JSON pour le frontend
         card_data = {
             "title": p.title,
             "price": f"{p.price:,}".replace(",", " "),
@@ -50,58 +62,51 @@ def search_matching_properties(query):
 
 def call_gemini_api(prompt, history=None):
     """
-    Version avec CAPTURE DE LEAD et CARTES VISUELLES.
+    Version optimisée pour Loger Sénégal avec expertise locale.
     """
     api_key = getattr(settings, 'GROQ_API_KEY', None)
     if not api_key:
-        return "Erreur de configuration (Groq)."
+        return "Nohan est en maintenance technique. Revenez dans un instant !"
 
     url = "https://api.groq.com/openai/v1/chat/completions"
     
-    # 1. Recherche de biens correspondants
     matches = search_matching_properties(prompt)
     match_context = ""
     if matches:
-        match_context = "\nVoici des cartes d'annonces réelles sur notre site. Affiche-les à l'utilisateur :\n" + "\n".join(matches)
+        match_context = "\nCONTEXTE : J'ai trouvé ces annonces réelles dans notre base : \n" + "\n".join(matches)
 
     system_instruction = (
-        "TU ES NOHAN, l'agent commercial expert de Loger Sénégal. "
-        "OBJECTIF : Vendre des biens et capturer des leads. "
-        "CONSIGNES : "
-        "- Utilise exclusivement le FCFA. "
-        "- Si l'utilisateur est intéressé par un bien, dis-lui : 'Je peux transmettre votre dossier au propriétaire pour une visite prioritaire. Quel est votre numéro de téléphone ?'. "
-        "- Si des tags [PROPERTY_CARD:...] sont fournis dans le contexte, inclus-les TEL QUELS dans ta réponse. "
-        "- Ton ton doit être premium, accueillant et pro-actif. "
+        "NOM : Nohan. RÔLE : Expert Immobilier n°1 chez Loger Sénégal. "
+        "TON : Chaleureux (Teranga), professionnel, réactif. "
+        "EXPERTISE : Maîtrise parfaite des quartiers de Dakar (Almadies, Plateau, Ngor, Ouakam, Mermoz, VDN) "
+        "et de la législation (Badge Solvable, caution, frais d'agence). "
+        "RÈGLES : "
+        "1. Priorise toujours les biens trouvés dans le CONTEXTE si présents. "
+        "2. Si un utilisateur demande un bien, propose les cartes [PROPERTY_CARD:...] et demande son numéro pour une visite. "
+        "3. Encourage l'obtention du 'Badge Solvable' pour rassurer les bailleurs. "
+        "4. Ne mentionne jamais d'autres sites web. "
+        "5. Reste bref et efficace. "
         f"{match_context}"
     )
 
     messages = [{"role": "system", "content": system_instruction}]
-
     if history:
-        for msg in history[-6:]:
-            role = "user" if msg['role'] == 'user' else "assistant"
-            messages.append({"role": role, "content": msg['content']})
+        for msg in history[-5:]:
+            messages.append({"role": "user" if msg['role'] == 'user' else "assistant", "content": msg['content']})
             
     messages.append({"role": "user", "content": prompt})
 
     payload = {
         "model": "llama-3.1-8b-instant",
         "messages": messages,
-        "temperature": 0.6,
-        "max_tokens": 1000,
-    }
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "temperature": 0.5,
+        "max_tokens": 800,
     }
 
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        response = requests.post(url, json=payload, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, timeout=12)
         if response.status_code == 200:
-            result = response.json()
-            return result['choices'][0]['message']['content']
-        else:
-            return "Je suis Nohan, à votre service. Comment puis-je vous aider dans votre recherche immobilière aujourd'hui ?"
-    except Exception as e:
-        return "Je mets à jour mes catalogues de biens. Un instant !"
+            return response.json()['choices'][0]['message']['content']
+        return "Désolé, je rencontre une petite perturbation. Comment puis-je vous aider ?"
+    except Exception:
+        return "Je suis en train de vérifier nos dernières annonces. Posez votre question à nouveau dans 5 secondes !"
