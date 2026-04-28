@@ -261,7 +261,10 @@
 </div>
 
 <!-- HERO SECTION : MOTEUR DE RECHERCHE IMMOBILIER (Priorité #1) -->
-<section class="hero-section py-5 position-relative" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; min-height: 600px; display: flex; align-items: center; border-radius: 0 0 50px 50px; margin-bottom: -50px; z-index: 5;">
+<section class="hero-section py-5 position-relative" style="background: linear-gradient(135deg, var(--color-dark-green) 0%, #062b1a 100%); min-height: 600px; display: flex; align-items: center; border-radius: 0 0 50px 50px; margin-bottom: -50px; z-index: 5; overflow: hidden;">
+    <!-- Logo en filigrane pour le fond -->
+    <div class="position-absolute start-50 top-50 translate-middle opacity-10" style="width: 600px; height: 600px; background: url('{% static 'img/icon-512x512.png' %}') center/contain no-repeat; z-index: 1;"></div>
+    
     <div class="container position-relative" style="z-index: 2;">
         <div class="row justify-content-center">
             <div class="col-lg-10 text-center">
