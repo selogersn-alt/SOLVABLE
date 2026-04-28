@@ -428,3 +428,61 @@ def delete_application_view(request, application_id):
     messages.error(request, "Action non autorisée.")
     return redirect('dashboard')
 
+@login_required
+def create_filiation_pro_view(request):
+    from solvable.forms import ProRentalFiliationForm
+    from solvable.models import RentalFiliation
+    from users.models import User, NILS_Profile
+    import random, string
+
+    if request.method == 'POST':
+        form = ProRentalFiliationForm(request.POST, landlord=request.user)
+        if form.is_valid():
+            phone = form.cleaned_data['tenant_phone'].replace(" ", "")
+            name = form.cleaned_data['tenant_name']
+            prop = form.cleaned_data['property']
+            rent = form.cleaned_data['monthly_rent']
+            start_date = form.cleaned_data['start_date']
+
+            # 1. Chercher ou créer le locataire
+            tenant = User.objects.filter(phone_number=phone).first()
+            if not tenant:
+                # Création d'un compte invité/provisoire
+                first_name = name.split(' ')[0] if ' ' in name else name
+                last_name = ' '.join(name.split(' ')[1:]) if ' ' in name else ""
+                
+                # Mot de passe aléatoire
+                random_pwd = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+                tenant = User.objects.create_user(
+                    phone_number=phone,
+                    password=random_pwd,
+                    first_name=first_name,
+                    last_name=last_name,
+                    role='TENANT'
+                )
+                # Créer le profil NILS associé
+                from users.utils import generate_nils_number
+                NILS_Profile.objects.create(
+                    user=tenant,
+                    nils_number=generate_nils_number(),
+                    nils_type='TENANT'
+                )
+                messages.info(request, f"Nouveau profil locataire créé pour {phone}. Un SMS d'invitation sera bientôt envoyé.")
+
+            # 2. Créer le contrat (Directement ACTIF car initié par le Pro)
+            RentalFiliation.objects.create(
+                property=prop,
+                landlord=request.user,
+                tenant=tenant,
+                monthly_rent=rent,
+                start_date=start_date,
+                status=RentalFiliation.StatusEnum.ACTIVE
+            )
+            
+            messages.success(request, f"Contrat de confiance activé avec {tenant.get_full_name()} !")
+            return redirect('dashboard')
+    else:
+        form = ProRentalFiliationForm(landlord=request.user)
+
+    return render(request, 'create_filiation_pro.html', {'form': form})
+

@@ -514,7 +514,12 @@
                             <h4 class="fw-bold mb-4" style="color: var(--text-main);">Mes Baux & Locations</h4>
                             <p class="text-muted">Gérez vos contrats de location sécurisés par Solvable (Filiations).</p>
                             
-                            <h5 class="fw-bold mt-4" style="color: var(--color-dark-green);">Je suis Bailleur (Mes Locataires)</h5>
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <h5 class="fw-bold m-0" style="color: var(--color-dark-green);">Je suis Bailleur (Mes Locataires)</h5>
+                                <a href="{% url 'create_filiation_pro' %}" class="btn btn-sm btn-success rounded-pill px-3">
+                                    <i class="fa-solid fa-plus me-1"></i> Nouveau Contrat
+                                </a>
+                            </div>
                             {% if user.landlord_filiations.all %}
                             <div class="table-responsive">
                                 <table class="table table-hover mt-3" style="color: var(--text-main);">
@@ -562,7 +567,9 @@
                             {% else %}
                             <div class="alert alert-light border text-center" style="background-color: var(--bg-body); border-color: var(--border-color) !important;">
                                 <p class="text-muted mb-2">Vous n'avez aucun contrat actif en tant que bailleur.</p>
-                                <a href="{% url 'nils_search' %}" class="btn btn-sm btn-outline-success">Ajouter un locataire</a>
+                                <a href="{% url 'create_filiation_pro' %}" class="btn btn-sm btn-outline-success">
+                                    <i class="fa-solid fa-plus me-1"></i> Ajouter un locataire / Contrat
+                                </a>
                             </div>
                             {% endif %}
                             

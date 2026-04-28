@@ -24,7 +24,8 @@ from solvable.views import (
     filiation_details_view, report_incident_view, update_incident_status_view,
     record_payment_view, mediation_room_view, download_receipt_view,
     apply_to_property_view, start_filiation_view, approve_filiation_view,
-    terminate_filiation_view, update_application_status_view, delete_application_view
+    terminate_filiation_view, update_application_status_view, delete_application_view,
+    create_filiation_pro_view
 )
 from rest_framework.routers import DefaultRouter
 from logersn.api import PropertyViewSet, PropertyImageViewSet, ProfessionalsViewSet
@@ -59,7 +60,7 @@ from .views import (
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view,
-    increment_click_view, duplicate_property_view
+    increment_click_view, duplicate_property_view, seo_directory_view
 )
 from logersn.seo_views import seo_search_view
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
@@ -110,6 +111,7 @@ urlpatterns = [
     path('bailleur/incident/declarer/', report_incident_view, name='report_incident'),
     path('bailleur/paiements/nouveau/', record_payment_view, name='record_payment'),
     path('contrat/<uuid:filiation_id>/', filiation_details_view, name='filiation_details'),
+    path('contrat/nouveau-manuel/', create_filiation_pro_view, name='create_filiation_pro'),
     path('contrat/paiement/<uuid:payment_id>/quittance/', download_receipt_view, name='download_receipt'),
     path('contrat/contester/<str:item_type>/<uuid:item_id>/', contest_item_view, name='contest_item'),
     path('contrat/mediation/<str:item_type>/<uuid:item_id>/', mediation_room_view, name='mediation_room'),
@@ -178,7 +180,8 @@ urlpatterns = [
 
     # --- RECHERCHE SEO DYNAMIQUE ---
     path('recherche/<str:type_slug>/', seo_search_view, name='seo_search'),
-    path('recherche/<str:type_slug>/<str:city_slug>/', seo_search_view, name='seo_search_city'),
+    path('seo-directory/', seo_directory_view, name='seo_directory'),
+    path('recherche/<slug:type_slug>/<slug:ville_slug>/', seo_search_view, name='seo_search_city'),
     path('recherche/<str:type_slug>/<str:city_slug>/<str:neighborhood_slug>/', seo_search_view, name='seo_search_neighborhood'),
 ]
 from django.conf import settings

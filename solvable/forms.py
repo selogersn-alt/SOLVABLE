@@ -25,6 +25,18 @@ class RentalFiliationForm(forms.ModelForm):
             # Only show properties owned by the current landlord
             self.fields['property'].queryset = Property.objects.filter(owner=landlord)
 
+class ProRentalFiliationForm(forms.Form):
+    tenant_phone = forms.CharField(label="Téléphone du Locataire", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 77 000 00 00'}))
+    tenant_name = forms.CharField(label="Nom Complet", required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Si pas encore sur la plateforme'}))
+    property = forms.ModelChoiceField(queryset=Property.objects.none(), label="Bien concerné", widget=forms.Select(attrs={'class': 'form-select'}))
+    monthly_rent = forms.DecimalField(label="Loyer Mensuel", widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    start_date = forms.DateField(label="Date de début", widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+
+    def __init__(self, *args, landlord=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if landlord:
+            self.fields['property'].queryset = Property.objects.filter(owner=landlord)
+
 class IncidentReportForm(forms.ModelForm):
     landlord_nils_beneficiary = forms.CharField(
         required=False, 
