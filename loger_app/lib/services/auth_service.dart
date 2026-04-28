@@ -55,7 +55,7 @@ class AuthService {
       final response = await http.post(
         Uri.parse('$baseUrl/token/'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'username': identifier, 'password': password}),
+        body: json.encode({'phone_number': identifier, 'password': password}),
       );
 
       if (response.statusCode == 200) {
