@@ -505,20 +505,31 @@ def create_property_view(request):
             property_obj.is_paid = False
             property_obj.save()
             
-            # Gestion des images multiples
-            for i, image in enumerate(images):
-                PropertyImage.objects.create(
-                    property=property_obj,
-                    image_url=image,
-                    is_primary=(i == 0)
-                )
+            # Gestion des images multiples en arrière-plan (DigitalH Optimization)
+            # On utilise un thread pour ne pas bloquer l'utilisateur pendant la conversion WebP/Resizing
+            import threading
+            from logersn.models import PropertyImage
+
+            def process_property_images(prop, images_list):
+                try:
+                    for i, image in enumerate(images_list):
+                        PropertyImage.objects.create(
+                            property=prop,
+                            image_url=image,
+                            is_primary=(i == 0)
+                        )
+                except Exception as e:
+                    print(f"Error processing images in background: {e}")
+
+            image_thread = threading.Thread(target=process_property_images, args=(property_obj, images))
+            image_thread.start()
                 
             pricing = FedaPayBridge.get_pricing()
             fee = pricing['publication_rent']
             if property_obj.listing_category == 'SALE': fee = pricing['publication_sale']
             elif property_obj.listing_category == 'FURNISHED': fee = pricing['publication_furnished']
             
-            messages.info(request, f"Annonce enregistrée ! Veuillez procéder au paiement des frais de publication ({int(fee)}F) pour l'activer.")
+            messages.info(request, f"Annonce enregistrée ! Vos photos sont en cours de traitement. Veuillez procéder au paiement des frais de publication ({int(fee)}F) pour l'activer.")
             return redirect('initiate_payment', property_id=property_obj.id, payment_type='PUBLICATION')
     else:
         form = PropertyForm()
@@ -754,14 +765,23 @@ def edit_property_view(request, property_id):
             property_obj.is_published = False 
             property_obj.save()
             
-            # Ajout de nouvelles images si fournies
+            # Ajout de nouvelles images si fournies en arrière-plan
             images = request.FILES.getlist('images')
             if images:
-                for image in images:
-                    PropertyImage.objects.create(
-                        property=property_obj,
-                        image_url=image
-                    )
+                import threading
+                from logersn.models import PropertyImage
+
+                def process_edit_images(prop, images_list):
+                    try:
+                        for image in images_list:
+                            PropertyImage.objects.create(
+                                property=prop,
+                                image_url=image
+                            )
+                    except Exception as e:
+                        print(f"Error processing edit images: {e}")
+
+                threading.Thread(target=process_edit_images, args=(property_obj, images)).start()
             
             messages.success(request, "Votre annonce a été mise à jour ! Elle sera de nouveau visible après validation.")
             return redirect('dashboard')
