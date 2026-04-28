@@ -54,15 +54,15 @@ def call_gemini_api(prompt, history=None):
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=15)
         
-        # Log de debug rapide
+        # Log de debug détaillé pour comprendre l'erreur 400
         with open('nohan_debug.log', 'a') as f:
             import datetime
-            f.write(f"[{datetime.datetime.now()}] GROQ Status: {response.status_code}\n")
+            f.write(f"[{datetime.datetime.now()}] GROQ Status: {response.status_code} - Error: {response.text}\n")
 
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']['content']
         else:
-            return "Je suis en train de synchroniser mes données. Posez-moi votre question à nouveau dans 5 secondes !"
+            return "Je règle les derniers détails de ma configuration. Un instant s'il vous plaît !"
     except Exception as e:
         return "Petit souci de connexion, je reviens vers vous immédiatement !"
