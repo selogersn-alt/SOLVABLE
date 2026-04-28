@@ -32,9 +32,10 @@
                     </div>
                 </div>
                 <div id="nohan-quick-replies" class="d-flex flex-wrap gap-2 mt-2 px-1">
-                    <button class="btn btn-sm nohan-quick-btn" data-query="🏠 Je cherche un appartement">🏠 Louer un bien</button>
+                    <button class="btn btn-sm nohan-quick-btn" data-query="🏠 Je cherche à louer un appartement">🏠 Louer</button>
+                    <button class="btn btn-sm nohan-quick-btn" data-query="💰 Je cherche un terrain ou une maison à acheter">💰 Acheter</button>
+                    <button class="btn btn-sm nohan-quick-btn" data-query="🛋️ Je cherche un appartement meublé">🛋️ Meublé</button>
                     <button class="btn btn-sm nohan-quick-btn" data-query="🛡️ Comment obtenir le Badge Solvable ?">🛡️ Badge Solvable</button>
-                    <button class="btn btn-sm nohan-quick-btn" data-query="📈 Je veux booster mon annonce">📈 Booster mon annonce</button>
                 </div>
             </div>
             
@@ -102,9 +103,23 @@
     }
     .nohan-typing {
         font-style: italic;
-        font-size: 0.7rem;
-        color: #999;
+        font-size: 0.75rem;
+        color: #DAA520;
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .nohan-typing::after {
+        content: "...";
+        animation: typing 1.5s infinite;
+        width: 15px;
+        display: inline-block;
+    }
+    @keyframes typing {
+        0% { opacity: 0.2; }
+        50% { opacity: 1; }
+        100% { opacity: 0.2; }
     }
     .nohan-quick-btn {
         border-radius: 15px;

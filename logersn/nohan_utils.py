@@ -8,48 +8,74 @@ from django.db.models import Q
 
 def search_matching_properties(query):
     """
-    Recherche avancée des biens immobiliers.
-    Détecte les budgets (ex: 200 000) et les types de biens (ex: F3).
+    Moteur de recherche Nohan v3 - Détection sémantique avancée.
     """
     query = query.lower()
     search_query = Q(is_published=True, is_active=True)
     
-    # 1. Détection du budget (ex: "moins de 200 000" ou "budget 300k")
+    # 1. Transaction (Louer vs Vendre)
+    if any(word in query for word in ["vendre", "achat", "acheter", "vente"]):
+        search_query &= Q(listing_category=Property.CategoryEnum.SALE)
+    elif any(word in query for word in ["meublé", "nuit", "court séjour"]):
+        search_query &= Q(listing_category=Property.CategoryEnum.FURNISHED)
+    else:
+        # Par défaut on cherche en location si rien n'est précisé
+        search_query &= Q(listing_category=Property.CategoryEnum.RENT)
+
+    # 2. Budget
     price_match = re.search(r'(\d+)\s*(?:000|k|fr|fcfa)', query)
     if price_match:
         price_val = int(price_match.group(1))
         if '000' not in price_match.group(0) and 'k' in query:
             price_val = price_val * 1000
-        # On cherche des biens jusqu'à 20% au-dessus du budget pour plus de flexibilité
-        search_query &= Q(price__lte=price_val * 1.20)
+        search_query &= Q(price__lte=price_val * 1.25)
 
-    # 2. Détection du type de bien / chambres (ex: F3, 3 chambres, studio)
+    # 3. Chambres / Type
     room_match = re.search(r'f(\d+)|(\d+)\s*chambre', query)
     if room_match:
         rooms = room_match.group(1) or room_match.group(2)
-        search_query &= (Q(title__icontains=f"F{rooms}") | Q(description__icontains=f"F{rooms}") | Q(bedrooms=rooms))
+        search_query &= (Q(title__icontains=f"F{rooms}") | Q(bedrooms=rooms))
     elif "studio" in query:
-        search_query &= (Q(title__icontains="studio") | Q(description__icontains="studio"))
+        search_query &= Q(title__icontains="studio")
 
-    # 3. Mots-clés généraux (quartiers, ville) - Recherche OR plus souple pour les quartiers
-    keywords = query.split()
+    # 4. Quartiers (Mapping sémantique pour Dakar)
+    neighborhoods = {
+        "almadies": "Almadies",
+        "plateau": "Dakar Plateau",
+        "ngor": "Ngor",
+        "ouakam": "Ouakam",
+        "mermoz": "Mermoz",
+        "sacré coeur": "Sacré-Cœur",
+        "vdn": "VDN",
+        "guédiawaye": "Guédiawaye",
+        "pikine": "Pikine",
+        "rufisque": "Rufisque"
+    }
+    
     geo_query = Q()
     has_geo = False
-    for word in keywords:
-        if len(word) > 3 and word not in ["louer", "cherche", "appartement", "maison", "chambre", "vendre", "location"]:
-            geo_query |= (Q(title__icontains=word) | Q(city__icontains=word) | Q(neighborhood__icontains=word) | Q(description__icontains=word))
+    for key, val in neighborhoods.items():
+        if key in query:
+            geo_query |= Q(neighborhood__icontains=val) | Q(neighborhood__icontains=key)
             has_geo = True
+    
+    if not has_geo:
+        # Si pas de quartier connu, on cherche les mots-clés libres
+        keywords = query.split()
+        for word in keywords:
+            if len(word) > 3 and word not in ["louer", "cherche", "appartement", "maison", "chambre", "vendre", "location"]:
+                geo_query |= (Q(title__icontains=word) | Q(neighborhood__icontains=word))
+                has_geo = True
     
     if has_geo:
         search_query &= geo_query
     
     properties = Property.objects.filter(search_query).order_by('-is_boosted', '-created_at')[:3]
     
-    # Si aucun résultat avec les critères stricts, on prend les derniers biens publiés du même type
     if not properties.exists():
+        # Fallback intelligent : derniers biens de la même catégorie
         fallback_query = Q(is_published=True, is_active=True)
-        if "studio" in query:
-            fallback_query &= Q(title__icontains="studio")
+        if any(word in query for word in ["vendre", "achat"]): fallback_query &= Q(listing_category=Property.CategoryEnum.SALE)
         properties = Property.objects.filter(fallback_query).order_by('-created_at')[:2]
 
     results = []
@@ -60,71 +86,47 @@ def search_matching_properties(query):
             img_url = "https://logersenegal.com/static/images/placeholder-property.jpg"
             if primary_img and primary_img.image_url:
                 img_url = primary_img.image_url.url
-                if not img_url.startswith('http'):
-                    img_url = f"https://logersenegal.com{img_url}"
+                if not img_url.startswith('http'): img_url = f"https://logersenegal.com{img_url}"
 
-            card_data = {
-                "title": p.title,
-                "price": f"{p.price:,}".replace(",", " "),
-                "url": url,
-                "image": img_url
-            }
-            json_data = json.dumps(card_data).replace('"', '&quot;')
-            results.append(f"[PROPERTY_CARD:{json_data}]")
-        except:
-            continue
+            card_data = {"title": p.title, "price": f"{p.price:,}".replace(",", " "), "url": url, "image": img_url}
+            results.append(f"[PROPERTY_CARD:{json.dumps(card_data).replace('\"', '&quot;')}]")
+        except: continue
     
     return results
 
 def call_gemini_api(prompt, history=None):
-    """
-    Version optimisée pour éviter les hallucinations et garantir des liens réels.
-    """
     api_key = getattr(settings, 'GROQ_API_KEY', None)
-    if not api_key:
-        return "Nohan est en maintenance technique."
+    if not api_key: return "Désolé, je suis en pleine mise à jour."
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    
     matches = search_matching_properties(prompt)
     match_context = ""
     if matches:
-        match_context = "\nANNONCES RÉELLES DISPONIBLES (Utilise uniquement celles-ci) : \n" + "\n".join(matches)
+        match_context = "\nANNONCES RÉELLES : \n" + "\n".join(matches)
     else:
-        match_context = "\nAUCUNE ANNONCE CORRESPONDANTE TROUVÉE. Ne propose pas de liens ou de prix fictifs. Demande plus de précisions ou suggère de regarder nos nouveautés."
+        match_context = "\nAUCUN BIEN TROUVÉ. Sois honnête et demande plus de détails (quartier, budget)."
 
     system_instruction = (
-        "NOM : Nohan. RÔLE : Expert Immobilier n°1 chez Loger Sénégal. "
-        "TON : Chaleureux (Teranga), professionnel, réactif. "
-        "EXPERTISE : Maîtrise parfaite des quartiers de Dakar (Almadies, Plateau, Ngor, Ouakam, Mermoz, VDN). "
-        "LÉGISLATION : Maîtrise du Badge Solvable, caution, frais d'agence. "
-        "CONTACT OFFICIEL : Indique toujours le 76 444 33 13 pour toute assistance. "
-        "RÈGLES ABSOLUES : "
-        "1. Ne jamais inventer d'annonces, de prix ou de liens. "
-        "2. Si le contexte contient des annonces, présente-les avec les tags [PROPERTY_CARD:...]. "
-        "3. Encourage l'obtention du 'Badge Solvable'. "
-        "4. Capture le numéro de téléphone de l'utilisateur pour les visites. "
+        "TU ES NOHAN. Expert Immobilier n°1 de Loger Sénégal. "
+        "MISSION : Accompagner, conseiller et vendre. "
+        "TON : Chaleureux, expert, avec une touche de Teranga (hospitalité sénégalaise). "
+        "LANGUE : Français impeccable. Tu peux utiliser quelques mots de Wolof chaleureux comme 'Salaam Aleikum', 'Jerejef', 'Ba beneen yoon'. "
+        "INFOS CLÉS : Numéro officiel 76 444 33 13. Pousse le Badge Solvable pour les locataires. "
+        "RÈGLES : Ne JAMAIS inventer d'annonces. Utilise uniquement le CONTEXTE. "
         f"{match_context}"
     )
 
     messages = [{"role": "system", "content": system_instruction}]
     if history:
-        for msg in history[-5:]:
+        for msg in history[-4:]:
             messages.append({"role": "user" if msg['role'] == 'user' else "assistant", "content": msg['content']})
-            
     messages.append({"role": "user", "content": prompt})
 
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": messages,
-        "temperature": 0.2, 
-        "max_tokens": 800,
-    }
-
     try:
-        response = requests.post(url, json=payload, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, timeout=12)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content']
-        return "Désolé, je rencontre une petite perturbation technique."
-    except Exception:
-        return "Un instant, je synchronise mes données immobilières..."
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            json={"model": "llama-3.1-8b-instant", "messages": messages, "temperature": 0.1, "max_tokens": 800},
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            timeout=10
+        )
+        return response.json()['choices'][0]['message']['content'] if response.status_code == 200 else "Comment puis-je vous aider aujourd'hui ?"
+    except: return "Je suis à votre écoute. Quelle est votre recherche ?"
