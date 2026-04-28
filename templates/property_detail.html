@@ -384,15 +384,78 @@
                 
                 <span class="price-tag">
                     {% if property.listing_category == 'FURNISHED' %}
-                        {{ property.price_per_night|clean_price }} <small>FCFA / Nuit</small>
+                        {% if property.is_on_promotion and property.promo_price %}
+                            <div class="d-flex flex-column">
+                                <span class="text-decoration-line-through text-muted small" style="font-size: 1.2rem;">{{ property.price_per_night|clean_price }} FCFA</span>
+                                <span class="text-danger fw-bold">{{ property.promo_price|clean_price }} <small>FCFA / Nuit</small></span>
+                                <span class="badge bg-danger mt-1" style="font-size: 0.7rem; width: fit-content;">{{ property.promo_description }}</span>
+                            </div>
+                        {% else %}
+                            {{ property.price_per_night|clean_price }} <small>FCFA / Nuit</small>
+                        {% endif %}
                     {% else %}
-                        {{ property.price|clean_price }} <small>FCFA / Mois</small>
+                        {% if property.is_on_promotion and property.promo_price %}
+                            <div class="d-flex flex-column">
+                                <span class="text-decoration-line-through text-muted small" style="font-size: 1.2rem;">{{ property.price|clean_price }} FCFA</span>
+                                <span class="text-danger fw-bold">{{ property.promo_price|clean_price }} <small>FCFA / Mois</small></span>
+                                <span class="badge bg-danger mt-1" style="font-size: 0.7rem; width: fit-content;">{{ property.promo_description }}</span>
+                            </div>
+                        {% else %}
+                            {{ property.price|clean_price }} <small>FCFA / Mois</small>
+                        {% endif %}
                     {% endif %}
                 </span>
                 
                 <a href="{% url 'apply_to_property' property_id=property.id %}" class="btn btn-primary-custom w-100 mb-3 py-3 fs-5">
                     <i class="fa-solid fa-key me-2"></i> Postuler pour ce bien
                 </a>
+
+                {% if property.listing_category == 'FURNISHED' %}
+                <!-- Bloc Réservation Meublé -->
+                <div class="p-3 border rounded-4 mb-4" style="background-color: #fff9e6; border-color: #f5c42f !important;">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-calendar-check text-warning me-2"></i>Réserver ce meublé</h6>
+                    <form action="{% url 'create_booking' property.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="small fw-bold">Arrivée</label>
+                                <input type="date" name="start_date" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Départ</label>
+                                <input type="date" name="end_date" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                        <textarea name="message" class="form-control form-control-sm mb-3" placeholder="Message optionnel..." rows="2"></textarea>
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">Demander la réservation</button>
+                    </form>
+                </div>
+                {% else %}
+                <!-- Bloc Demande de Visite (72h avance) -->
+                <div class="p-3 border rounded-4 mb-4" style="background-color: #e9f7ef; border-color: #27ae60 !important;">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-clock text-success me-2"></i>Planifier une visite</h6>
+                    <form action="{% url 'schedule_visit' property.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="row g-2 mb-3">
+                            <div class="col-7">
+                                <label class="small fw-bold">Date souhaitée</label>
+                                <input type="date" name="visit_date" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-5">
+                                <label class="small fw-bold">Heure</label>
+                                <select name="visit_time" class="form-select form-select-sm" required>
+                                    <option value="09:00">09h00</option>
+                                    <option value="11:00">11h00</option>
+                                    <option value="15:00">15h00</option>
+                                    <option value="17:00">17h00</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-3" style="font-size: 0.75rem;"><i class="fa-solid fa-info-circle me-1"></i> Préavis minimum de 72h requis.</p>
+                        <button type="submit" class="btn btn-success w-100 fw-bold">Confirmer mon créneau</button>
+                    </form>
+                </div>
+                {% endif %}
 
                 <!-- Boutons d'Action Principaux -->
                 <div class="d-grid gap-2">

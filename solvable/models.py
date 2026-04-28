@@ -200,3 +200,37 @@ class SystemAlert(models.Model):
     class Meta:
         verbose_name = "Alerte Système"
         verbose_name_plural = "Alertes Système"
+class PropertyBooking(models.Model):
+    class StatusEnum(models.TextChoices):
+        PENDING = 'PENDING', 'En attente'
+        CONFIRMED = 'CONFIRMED', 'Confirmée'
+        CANCELLED = 'CANCELLED', 'Annulée'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='bookings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_bookings')
+    start_date = models.DateField(verbose_name="Date d'arrivée")
+    end_date = models.DateField(verbose_name="Date de départ")
+    message = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=StatusEnum.choices, default=StatusEnum.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Booking {self.property.title} by {self.user.phone_number}"
+
+class PropertyVisitRequest(models.Model):
+    class StatusEnum(models.TextChoices):
+        PENDING = 'PENDING', 'En attente'
+        SCHEDULED = 'SCHEDULED', 'Planifiée'
+        CANCELLED = 'CANCELLED', 'Annulée'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='visit_requests')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_visits')
+    preferred_date = models.DateField(verbose_name="Date souhaitée")
+    preferred_time = models.TimeField(verbose_name="Heure souhaitée")
+    status = models.CharField(max_length=20, choices=StatusEnum.choices, default=StatusEnum.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Visit {self.property.title} by {self.user.phone_number}"

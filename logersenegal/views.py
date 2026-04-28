@@ -111,7 +111,8 @@ def about_view(request):
 def verified_professionals_view(request):
     # Les pros vérifiés par l'admin (badge is_verified_pro=True) et qui sont Agency, Broker, Agent, Landlord
     try:
-        pros = User.objects.filter(is_verified_pro=True).exclude(role='TENANT').order_by('role', 'company_name', 'phone_number')
+        # DigitalH Update : On inclut les admins/staff s'ils sont vérifiés et actifs
+        pros = User.objects.filter(is_verified_pro=True, is_active=True).exclude(role='TENANT').order_by('role', 'company_name', 'phone_number')
     except Exception:
         pros = User.objects.none()
     
@@ -758,9 +759,21 @@ def edit_property_view(request, property_id):
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES, instance=property_obj)
         if form.is_valid():
+            # DigitalH Pro Flexibility : On détecte si ce sont des changements mineurs (Prix/Promo)
+            minor_fields = ['price', 'promo_price', 'promo_description', 'is_on_promotion', 'price_per_night']
+            changed_fields = form.changed_data
+            is_minor_update = all(f in minor_fields for f in changed_fields)
+            
+            was_published = property_obj.is_published
             property_obj = form.save(commit=False)
-            # On repasse en attente de validation si modif importante (optionnel)
-            property_obj.is_published = False 
+            
+            if was_published and is_minor_update:
+                property_obj.is_published = True
+                success_msg = "Votre prix/promotion a été mis à jour instantanément !"
+            else:
+                property_obj.is_published = False
+                success_msg = "Votre annonce a été mise à jour ! Elle sera de nouveau visible après validation."
+            
             property_obj.save()
             
             # Ajout de nouvelles images (Synchronous)
@@ -776,8 +789,7 @@ def edit_property_view(request, property_id):
                     except Exception as e:
                         print(f"Error processing edit image: {e}")
 
-            
-            messages.success(request, "Votre annonce a été mise à jour ! Elle sera de nouveau visible après validation.")
+            messages.success(request, success_msg)
             return redirect('dashboard')
     else:
         form = PropertyForm(instance=property_obj)
@@ -1412,6 +1424,81 @@ def seo_directory_view(request):
                     })
 
     return render(request, 'seo_directory.html', {'links': links})
+@login_required
+def create_booking_view(request, property_id):
+    from logersn.models import Property
+    from solvable.models import PropertyBooking
+    from django.contrib import messages
+    
+    property_obj = get_object_or_404(Property, id=property_id)
+    
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        message = request.POST.get('message', '')
+        
+        try:
+            booking = PropertyBooking.objects.create(
+                property=property_obj,
+                user=request.user,
+                start_date=start_date,
+                end_date=end_date,
+                message=message
+            )
+            
+            # Notification Pro
+            from logersenegal.emails import send_booking_notification
+            try:
+                send_booking_notification(booking)
+            except:
+                pass
+            
+            messages.success(request, "🎉 Votre demande de réservation a été envoyée au propriétaire !")
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la réservation : {e}")
+            
+    return redirect(property_obj.get_absolute_url())
+
+@login_required
+def schedule_visit_view(request, property_id):
+    from logersn.models import Property
+    from solvable.models import PropertyVisitRequest
+    from datetime import datetime, timedelta
+    
+    property_obj = get_object_or_404(Property, id=property_id)
+    
+    if request.method == 'POST':
+        date_str = request.POST.get('visit_date')
+        time_str = request.POST.get('visit_time')
+        
+        try:
+            visit_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            
+            # Contrainte 72h (3 jours)
+            min_date = (datetime.now() + timedelta(days=3)).date()
+            if visit_date < min_date:
+                messages.error(request, "⚠️ Désolé, les visites doivent être planifiées au moins 72h à l'avance.")
+                return redirect(property_obj.get_absolute_url())
+            
+            visit = PropertyVisitRequest.objects.create(
+                property=property_obj,
+                user=request.user,
+                preferred_date=visit_date,
+                preferred_time=time_str
+            )
+            
+            # Notification Pro
+            from logersenegal.emails import send_visit_notification
+            try:
+                send_visit_notification(visit)
+            except:
+                pass
+            
+            messages.success(request, "📅 Demande de visite confirmée ! Le propriétaire vous contactera.")
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la planification : {e}")
+            
+    return redirect(property_obj.get_absolute_url())
 
 
 

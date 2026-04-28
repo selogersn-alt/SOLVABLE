@@ -37,6 +37,12 @@ class Property(models.Model):
     document_type = models.CharField(max_length=50, choices=DocumentTypeEnum.choices, null=True, blank=True, verbose_name="Type de document")
     price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name="Prix (CFA)")
     
+    # Promotions DigitalH
+    promo_price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True, verbose_name="Prix Promotionnel (CFA)")
+    promo_description = models.CharField(max_length=255, null=True, blank=True, verbose_name="Texte de promotion (ex: -10% ce weekend)")
+    is_on_promotion = models.BooleanField(default=False, verbose_name="Afficher en promotion")
+
+    
     # Pour les meublés uniquement
     price_per_night = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True, verbose_name="Prix par nuitée (Meublé)")
     surface = models.IntegerField(default=0, blank=True, verbose_name="Surface (m2)")

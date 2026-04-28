@@ -55,6 +55,7 @@ from .views import (
     generate_lease_pdf_view,
     public_profile_view, update_profile_view,
     edit_property_view, delete_property_view,  # Gestion pro
+    create_booking_view, schedule_visit_view, # Réservations & Visites
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
@@ -177,6 +178,9 @@ urlpatterns = [
         template_name='pwa/sw.js',
         content_type='application/javascript'
     ), name='pwa-sw'),
+
+    path('annonces/<uuid:property_id>/reserver/', create_booking_view, name='create_booking'),
+    path('annonces/<uuid:property_id>/visiter/', schedule_visit_view, name='schedule_visit'),
 
     # --- RECHERCHE SEO DYNAMIQUE ---
     path('recherche/<str:type_slug>/', seo_search_view, name='seo_search'),

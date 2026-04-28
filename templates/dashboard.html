@@ -169,8 +169,19 @@
                         <a href="{% url 'public_profile_slug' user.slug %}" target="_blank" class="btn btn-sm btn-light rounded-pill fw-bold border">
                             <i class="fa-solid fa-eye me-1"></i> Voir mon profil public
                         </a>
+                        {% else %}
+                        <a href="{% url 'public_profile' user.id %}" target="_blank" class="btn btn-sm btn-light rounded-pill fw-bold border">
+                            <i class="fa-solid fa-eye me-1"></i> Voir mon profil public
+                        </a>
                         {% endif %}
                     </div>
+
+                    {% if user.role != 'TENANT' %}
+                    <div class="alert alert-info mt-3 py-2 px-3 border-0 shadow-sm" style="border-radius: 12px; font-size: 0.8rem; background-color: #f0f7ff;">
+                        <i class="fa-solid fa-bell text-primary me-2"></i>
+                        <strong>Conseil Pro :</strong> N'oubliez pas de mettre à jour la disponibilité de vos biens <strong>meublés</strong> chaque semaine.
+                    </div>
+                    {% endif %}
                     <div class="mt-3 text-warning d-flex align-items-center justify-content-center">
                         {% for i in "1234567891"|make_list %}{# Workaround for range 10 #}
                             {% if forloop.counter <= user.nils_profile.average_rating %}

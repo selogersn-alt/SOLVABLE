@@ -218,12 +218,14 @@ def admin_marketing_email_view(request):
         count = 0
         for user in users:
             if user.email:
-                # On remplace les tags [NOM], [PRENOM] si présents
-                personalized_message = message_content.replace('[PRENOM]', user.first_name).replace('[NOM]', user.last_name)
+                # Correction DigitalH : Gérer les valeurs None pour éviter l'erreur 500
+                first = user.first_name or ""
+                last = user.last_name or ""
+                personalized_message = message_content.replace('[PRENOM]', first).replace('[NOM]', last)
                 
                 msg = EmailMultiAlternatives(
                     subject,
-                    personalized_message if not is_html else "Contenu HTML : veuillez utiliser un client mail moderne.",
+                    strip_tags(personalized_message) if is_html else personalized_message,
                     settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     bcc=['solvable@logersenegal.com']
@@ -234,8 +236,9 @@ def admin_marketing_email_view(request):
                 try:
                     msg.send()
                     count += 1
-                except:
-                    pass
+                except Exception as e:
+                    import logging
+                    logging.error(f"Marketing Email Error for {user.email}: {e}")
         
         messages.success(request, f"🚀 Campagne terminée : {count} e-mails envoyés avec succès.")
         if 'marketing_user_ids' in request.session:

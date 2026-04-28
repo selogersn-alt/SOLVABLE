@@ -104,6 +104,30 @@
                                     <span class="input-group-text border-0" style="background-color: var(--color-yellow); color: var(--color-dark-green); font-weight: bold; border-radius: 0 10px 10px 0;">/ Nuitée</span>
                                 </div>
                             </div>
+
+                            <!-- Section Promotion DigitalH -->
+                            <div class="col-12 mt-2">
+                                <div class="p-3 rounded border" style="background-color: #f8fff8; border-color: #d1ead1 !important;">
+                                    <div class="form-check form-switch mb-2">
+                                        {{ form.is_on_promotion }}
+                                        <label class="form-check-label fw-bold" for="{{ form.is_on_promotion.id_for_label }}">
+                                            <i class="fa-solid fa-tag text-success me-2"></i>Activer une offre promotionnelle sur cette annonce
+                                        </label>
+                                    </div>
+                                    <div id="promo_fields" style="display: none;">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">Prix Promotionnel (CFA)</label>
+                                                {{ form.promo_price }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">Libellé de l'offre (ex: -10% ce mois-ci)</label>
+                                                {{ form.promo_description }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="col-md-6">
                                 <label class="form-label fw-bold" style="color: var(--text-main);">{{ form.property_type.label }}</label>
@@ -564,6 +588,16 @@
                 };
                 reader.onerror = reject;
             });
+        }
+        // Toggle Promo Fields
+        const promoSwitch = document.querySelector('input[name="is_on_promotion"]');
+        const promoFields = document.getElementById('promo_fields');
+        if (promoSwitch && promoFields) {
+            const togglePromo = () => {
+                promoFields.style.display = promoSwitch.checked ? 'block' : 'none';
+            };
+            promoSwitch.addEventListener('change', togglePromo);
+            togglePromo(); // Initial state
         }
     });
 </script>

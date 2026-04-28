@@ -18,7 +18,8 @@
     .preset-btns { margin-bottom: 15px; }
     .btn-preset { background: #f8f9fa; border: 1px solid #ddd; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-right: 10px; transition: all 0.2s; }
     .btn-preset:hover { background: #e9ecef; border-color: #bbb; }
-    .help-text { font-size: 12px; color: #666; margin-top: 5px; }
+    .preview-card { background: #fdfdfd; border: 2px dashed #ddd; border-radius: 8px; padding: 20px; margin-top: 20px; min-height: 200px; }
+    .preview-header { font-size: 14px; color: #999; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
 </style>
 {% endblock %}
 
@@ -41,66 +42,106 @@
             <strong>Modèles rapides :</strong>
             <button type="button" class="btn-preset" onclick="applyPreset('publication')">📢 Invitation à Publier</button>
             <button type="button" class="btn-preset" onclick="applyPreset('promotion')">🎁 Offre Promotionnelle</button>
+            <button type="button" class="btn-preset" onclick="applyPreset('empty')">📝 Code HTML Vide</button>
         </div>
 
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="subject">Sujet de l'E-mail</label>
-                <input type="text" name="subject" id="subject" class="form-control" placeholder="Entrez le sujet ici..." required>
-            </div>
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="subject">Sujet de l'E-mail</label>
+                        <input type="text" name="subject" id="subject" class="form-control" placeholder="Entrez le sujet ici..." required>
+                    </div>
 
-            <div class="form-group">
-                <label for="message">Contenu du Message</label>
-                <textarea name="message" id="message" class="form-control" required></textarea>
-                <div class="help-text">
-                    Astuce : Utilisez <strong>[PRENOM]</strong> ou <strong>[NOM]</strong> pour personnaliser le message.
+                    <div class="form-group">
+                        <label for="message">Contenu du Message (HTML ou Texte)</label>
+                        <textarea name="message" id="message" class="form-control" required oninput="updatePreview()"></textarea>
+                        <div class="help-text">
+                            Astuce : Utilisez <strong>[PRENOM]</strong> ou <strong>[NOM]</strong> pour personnaliser le message.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                            <input type="checkbox" name="is_html" id="is_html_cb" style="width: auto; margin-right: 10px;" checked onchange="updatePreview()"> 
+                            Envoyer en tant que contenu HTML
+                        </label>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <a href="{% url 'admin:users_user_changelist' %}" class="button cancel-link" style="margin-right: 15px; padding: 10px 20px; display: inline-block; vertical-align: middle;">Annuler</a>
+                        <button type="submit" class="btn-send" onclick="return confirm('🚀 Lancer l\'envoi à {{ count }} personnes ?')">
+                            Lancer l'Envoi <i class="fa-solid fa-rocket ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div style="flex: 1;">
+                <div class="preview-header">Prévisualisation du rendu</div>
+                <div id="email-preview" class="preview-card">
+                    <em>Tapez votre message pour voir le rendu ici...</em>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
-                    <input type="checkbox" name="is_html" style="width: auto; margin-right: 10px;"> 
-                    Envoyer en tant que contenu HTML (Permet d'utiliser des balises &lt;b&gt;, &lt;h2&gt;, &lt;a&gt;, etc.)
-                </label>
-            </div>
-
-            <div style="text-align: right;">
-                <a href="{% url 'admin:users_user_changelist' %}" class="button cancel-link" style="margin-right: 15px; padding: 10px 20px; display: inline-block; vertical-align: middle;">Annuler</a>
-                <button type="submit" class="btn-send" onclick="return confirm('Êtes-vous sûr de vouloir envoyer cet e-mail à {{ count }} personnes ?')">
-                    Lancer l'Envoi <i class="fa-solid fa-rocket ms-2"></i>
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <script>
+    function updatePreview() {
+        const message = document.getElementById('message').value;
+        const preview = document.getElementById('email-preview');
+        const isHtml = document.getElementById('is_html_cb').checked;
+        
+        let content = message.replace(/\[PRENOM\]/g, '<b>Jean</b>').replace(/\[NOM\]/g, '<b>DURAND</b>');
+        
+        if (isHtml) {
+            preview.innerHTML = content;
+        } else {
+            preview.innerText = content;
+        }
+    }
+
     function applyPreset(type) {
         const subject = document.getElementById('subject');
         const message = document.getElementById('message');
-        const isHtml = document.querySelector('input[name="is_html"]');
+        const isHtml = document.getElementById('is_html_cb');
 
         if (type === 'publication') {
             subject.value = "🚀 Boostez la visibilité de votre bien sur Loger Sénégal !";
-            message.value = `<h2>Bonjour [PRENOM],</h2>
-<p>Nous avons remarqué que vous n'avez pas encore publié d'annonce cette semaine sur <b>Loger Sénégal</b>.</p>
-<p>Dakar est en pleine effervescence et des dizaines de locataires vérifiés (Profils NILS) recherchent activement un bien comme le vôtre.</p>
-<p>Prenez 2 minutes pour publier votre bien et profitez de notre visibilité exceptionnelle :</p>
-<p><a href="https://logersenegal.com/propriete/creer/" style="background: #0b4629; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Publier mon annonce maintenant</a></p>
-<p>À très bientôt,<br>L'équipe Solvable - Loger Sénégal</p>`;
+            message.value = `<div style="font-family: sans-serif; color: #333;">
+    <h2 style="color: #0b4629;">Bonjour [PRENOM],</h2>
+    <p>Nous avons remarqué que vous n'avez pas encore publié d'annonce cette semaine sur <b>Loger Sénégal</b>.</p>
+    <p>Dakar est en pleine effervescence et des dizaines de locataires vérifiés recherchent activement un bien comme le vôtre.</p>
+    <p style="margin: 30px 0;">
+        <a href="https://logersenegal.com/annonces/nouvelle/" style="background: #0b4629; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Publier mon annonce maintenant</a>
+    </p>
+    <p>À très bientôt,<br>L'équipe Solvable - Loger Sénégal</p>
+</div>`;
             isHtml.checked = true;
         } else if (type === 'promotion') {
             subject.value = "🎁 Offre Spéciale : 1 mois de visibilité Premium offert !";
-            message.value = `<h2>Félicitations [PRENOM] !</h2>
-<p>En tant qu'utilisateur fidèle de <b>Loger Sénégal</b>, nous avons le plaisir de vous offrir un code promotionnel pour booster votre prochaine annonce.</p>
-<p>Utilisez le code <b>SOLVABLE2024</b> lors de votre prochain paiement pour obtenir une mise en avant "Top Liste" gratuite pendant 30 jours.</p>
-<p>C'est le moment idéal pour conclure vos transactions immobilières en toute sécurité.</p>
-<p><a href="https://logersenegal.com/dashboard/" style="background: #f5c42f; color: #0b4629; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Accéder à mon tableau de bord</a></p>
-<p>L'équipe DigitalH pour Loger Sénégal</p>`;
+            message.value = `<div style="font-family: sans-serif; border: 2px solid #f5c42f; padding: 20px; border-radius: 10px;">
+    <h2 style="color: #f5c42f; margin-top: 0;">Félicitations [PRENOM] !</h2>
+    <p>En tant qu'utilisateur fidèle de <b>Loger Sénégal</b>, nous avons le plaisir de vous offrir un code promotionnel.</p>
+    <div style="background: #fff9e6; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; color: #0b4629; border: 1px dashed #0b4629;">
+        CODE : LOGERPRO2024
+    </div>
+    <p>Utilisez ce code lors de votre prochain paiement pour obtenir une mise en avant gratuite.</p>
+    <p><a href="https://logersenegal.com/mon-compte/" style="color: #0b4629; font-weight: bold;">Accéder à mon compte</a></p>
+</div>`;
+            isHtml.checked = true;
+        } else if (type === 'empty') {
+            subject.value = "";
+            message.value = `<!-- Insérez votre code HTML ici -->\n<div style="padding: 20px;">\n\n</div>`;
             isHtml.checked = true;
         }
+        updatePreview();
     }
+    
+    // Init preview if content exists
+    window.onload = updatePreview;
 </script>
 {% endblock %}

@@ -65,6 +65,7 @@ class PropertyForm(forms.ModelForm):
         model = Property
         fields = [
             'title', 'listing_category', 'property_type', 'document_type', 'city', 'neighborhood', 'price', 
+            'promo_price', 'promo_description', 'is_on_promotion',
             'price_per_night', 'surface', 'bedrooms', 'toilets', 'total_rooms', 'floor_level', 'salons', 'kitchens',
             'has_garage', 'has_balcony', 'has_terrace', 'has_courtyard', 'has_garden',
             'description', 'wifi', 'swimming_pool', 'gym', 'air_conditioning',
@@ -81,6 +82,10 @@ class PropertyForm(forms.ModelForm):
             'city': forms.Select(attrs={'class': 'form-select'}),
             'neighborhood': forms.TextInput(attrs={'class': 'form-control', 'list': 'neighborhood_list', 'placeholder': 'Tapez ou choisissez le quartier...'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 350000'}),
+            'promo_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 300000'}),
+            'promo_description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: -15% Promo Fin d\'Année'}),
+            'is_on_promotion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+
             'price_per_night': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 45000'}),
             'surface': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'm2'}),
             'bedrooms': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -114,6 +119,10 @@ class PropertyForm(forms.ModelForm):
             'neighborhood': 'Quartier',
             'document_type': 'Type de document (Vente uniquement)',
             'price': 'Prix / Loyer mensuel (FCFA)',
+            'promo_price': 'Prix Promotionnel (Si applicable)',
+            'promo_description': 'Texte de la promotion',
+            'is_on_promotion': 'Activer la promotion sur l\'annonce',
+
             'price_per_night': 'Prix par nuitée (Meublé)',
             'total_rooms': 'Nombre total de pièces',
             'floor_level': 'Niveau d\'étage',

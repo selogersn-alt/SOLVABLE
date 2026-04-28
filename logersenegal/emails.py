@@ -89,3 +89,33 @@ def send_property_update_notification(property, message):
         user.email
     )
 
+def send_booking_notification(booking):
+    """Alerte au propriétaire pour une nouvelle demande de réservation."""
+    user = booking.property.owner
+    return send_html_email(
+        f"Nouvelle demande de réservation : {booking.property.title}",
+        "emails/booking_notification.html",
+        {'user': user, 'booking': booking, 'applicant': booking.user},
+        user.email
+    )
+
+def send_visit_notification(visit):
+    """Alerte au propriétaire pour une nouvelle demande de visite."""
+    user = visit.property.owner
+    return send_html_email(
+        f"Nouvelle demande de visite : {visit.property.title}",
+        "emails/visit_notification.html",
+        {'user': user, 'visit': visit, 'applicant': visit.user},
+        user.email
+    )
+
+def send_admin_alert(subject, message):
+    """Alerte générale à l'administrateur."""
+    return send_html_email(
+        subject,
+        "emails/admin_alert.html",
+        {'message': message},
+        settings.DEFAULT_FROM_EMAIL,
+        bcc_admin=False
+    )
+
