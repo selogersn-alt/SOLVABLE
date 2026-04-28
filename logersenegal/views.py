@@ -1617,6 +1617,35 @@ def schedule_visit_view(request, property_id):
             
     return redirect(property_obj.get_absolute_url())
 
+@login_required
+def nohan_chat_view(request):
+    """
+    Endpoint AJAX pour discuter avec NOHAN (Assistant IA).
+    """
+    if request.method == 'POST':
+        import json
+        from logersn.nohan_utils import call_gemini_api
+        
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+            history = data.get('history', [])
+            
+            if not user_message:
+                return JsonResponse({'error': 'Message vide'}, status=400)
+                
+            # Appel à Gemini
+            ai_response = call_gemini_api(user_message, history)
+            
+            return JsonResponse({
+                'response': ai_response,
+                'role': 'model'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        
+    return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
+
 
 
 def custom_404_view(request, exception=None):

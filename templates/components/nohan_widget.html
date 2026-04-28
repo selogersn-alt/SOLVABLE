@@ -1,0 +1,168 @@
+<!-- Widget NOHAN - Assistant IA -->
+<div id="nohan-wrapper" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050; font-family: 'Inter', sans-serif;">
+    <!-- Bouton d'activation -->
+    <button id="nohan-toggle" class="btn btn-success rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border: 2px solid #DAA520; transition: all 0.3s ease;">
+        <i class="fa-solid fa-robot fs-3 text-white"></i>
+    </button>
+
+    <!-- Fenêtre de Chat -->
+    <div id="nohan-chat" class="card shadow-lg d-none" style="width: 350px; border-radius: 20px; overflow: hidden; border: none; transform: translateY(10px); transition: all 0.3s ease;">
+        <div class="card-header d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, var(--color-dark-green), #084d2a); color: white;">
+            <div class="d-flex align-items-center">
+                <div class="bg-white rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-robot text-success"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold">NOHAN</h6>
+                    <small class="opacity-75" style="font-size: 0.7rem;">Assistant Intelligent</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" id="nohan-close" style="font-size: 0.8rem;"></button>
+        </div>
+        
+        <div class="card-body p-0 d-flex flex-column" style="height: 400px; background-color: #f8f9fa;">
+            <div id="nohan-messages" class="flex-grow-1 p-3 overflow-auto" style="scrollbar-width: thin;">
+                <!-- Message d'accueil -->
+                <div class="d-flex mb-3">
+                    <div class="bg-white p-2 rounded-3 shadow-sm small border" style="max-width: 85%;">
+                        Bonjour ! Je suis <strong>NOHAN</strong>. Je suis là pour vous aider à naviguer sur Loger Sénégal. Comment puis-je vous assister aujourd'hui ?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-3 bg-white border-top">
+                <div class="input-group">
+                    <input type="text" id="nohan-input" class="form-control border-0 bg-light small" placeholder="Posez votre question..." style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
+                    <button class="btn btn-success" id="nohan-send" style="border-radius: 0 20px 20px 0;">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #nohan-toggle:hover {
+        transform: scale(1.1);
+        background-color: var(--color-dark-green);
+    }
+    .nohan-msg-user {
+        background-color: var(--color-light-green);
+        color: var(--color-dark-green);
+        border-radius: 15px 15px 2px 15px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        align-self: flex-end;
+        max-width: 85%;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .nohan-msg-ai {
+        background-color: white;
+        color: #333;
+        border-radius: 15px 15px 15px 2px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        align-self: flex-start;
+        max-width: 85%;
+        font-size: 0.85rem;
+        border: 1px solid #eee;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    #nohan-messages {
+        display: flex;
+        flex-direction: column;
+    }
+    .nohan-typing {
+        font-style: italic;
+        font-size: 0.7rem;
+        color: #999;
+        margin-bottom: 10px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('nohan-toggle');
+        const close = document.getElementById('nohan-close');
+        const chat = document.getElementById('nohan-chat');
+        const input = document.getElementById('nohan-input');
+        const sendBtn = document.getElementById('nohan-send');
+        const messagesContainer = document.getElementById('nohan-messages');
+        
+        let history = [];
+
+        toggle.onclick = () => {
+            chat.classList.toggle('d-none');
+            if (!chat.classList.contains('d-none')) {
+                input.focus();
+            }
+        };
+
+        close.onclick = () => chat.classList.add('d-none');
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Ajouter le message utilisateur à l'UI
+            const userDiv = document.createElement('div');
+            userDiv.className = 'nohan-msg-user';
+            userDiv.textContent = text;
+            messagesContainer.appendChild(userDiv);
+            
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Effet "En train d'écrire"
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'nohan-typing';
+            typingDiv.textContent = 'Nohan est en train de réfléchir...';
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch('{% url "nohan_chat" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        history: history
+                    })
+                });
+
+                const data = await response.json();
+                typingDiv.remove();
+
+                if (data.response) {
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = 'nohan-msg-ai';
+                    aiDiv.innerHTML = data.response.replace(/\n/g, '<br>');
+                    messagesContainer.appendChild(aiDiv);
+                    
+                    // Mettre à jour l'historique
+                    history.push({role: 'user', content: text});
+                    history.push({role: 'model', content: data.response});
+                    if (history.length > 10) history = history.slice(-10);
+                } else {
+                    throw new Error(data.error || 'Erreur inconnue');
+                }
+            } catch (error) {
+                typingDiv.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'text-danger small mb-2';
+                errorDiv.textContent = "Désolé, j'ai eu un souci technique : " + error.message;
+                messagesContainer.appendChild(errorDiv);
+            }
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        sendBtn.onclick = sendMessage;
+        input.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+    });
+</script>
