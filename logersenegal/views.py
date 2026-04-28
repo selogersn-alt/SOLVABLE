@@ -14,6 +14,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.views.decorators.cache import cache_page
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from logersn.models import Property, Favorite
 from logersn.forms import PropertyForm
@@ -205,6 +207,7 @@ def properties_list_view(request):
     seo_description = "Retrouvez les meilleures annonces d'appartements, villas et terrains au Sénégal sur Loger Sénégal."
     
     # Optimisation spécifique pour les "Chambres" et "Studios" (Intentions de recherche fortes)
+    type_label = "Annonce immobilière"
     if property_type == 'CHAMBRE_SDB_INTERNE':
         type_label = "Chambre à louer avec salle de bain interne"
     elif property_type == 'CHAMBRE_SIMPLE':
@@ -213,6 +216,9 @@ def properties_list_view(request):
         type_label = "Mini Studio à louer"
     elif property_type == 'STUDIO_SEPARE':
         type_label = "Studio séparé à louer"
+    elif property_type and property_type != 'ALL':
+        from logersn.constants import PROPERTY_TYPE_CHOICES
+        type_label = dict(PROPERTY_TYPE_CHOICES).get(property_type, property_type)
     
     if neighborhood and neighborhood != 'ALL':
         n_name = dict(NEIGHBORHOOD_CHOICES).get(neighborhood, neighborhood)
@@ -254,7 +260,10 @@ def property_detail_view(request, property_id=None, slug=None):
             raise Http404("Cette annonce est en attente de validation par l'administrateur.")
     
     # Incrémentation des statistiques de vue (Analytics) avec F() pour la performance
-    Property.objects.filter(id=property_obj.id).update(views_count=F('views_count') + 1)
+    update_kwargs = {'views_count': F('views_count') + 1}
+    if property_obj.is_boosted:
+        update_kwargs['boosted_views_count'] = F('boosted_views_count') + 1
+    Property.objects.filter(id=property_obj.id).update(**update_kwargs)
     
     # Biens similaires (même ville ou même type) - Optimisé avec select_related/prefetch_related
     related_properties = Property.objects.filter(
@@ -441,6 +450,13 @@ def create_property_view(request):
     if request.method == 'POST':
         form = PropertyForm(request.POST, request.FILES)
         if form.is_valid():
+            # Vérification des images obligatoires pour une nouvelle annonce
+            images = request.FILES.getlist('images')
+            if not images:
+                messages.error(request, "Veuillez uploader au moins une photo pour valider votre annonce.")
+                from logersn.constants import RAW_NEIGHBORHOODS
+                return render(request, 'property_form.html', {'form': form, 'neighborhoods': sorted(RAW_NEIGHBORHOODS)})
+
             property_obj = form.save(commit=False)
             property_obj.owner = request.user
             property_obj.is_published = False 
@@ -448,7 +464,6 @@ def create_property_view(request):
             property_obj.save()
             
             # Gestion des images multiples
-            images = request.FILES.getlist('images')
             for i, image in enumerate(images):
                 PropertyImage.objects.create(
                     property=property_obj,
@@ -1256,6 +1271,18 @@ def guide_agences_view(request):
 
 def guide_courtiers_view(request):
     return render(request, 'guides/courtiers.html')
+@require_POST
+@csrf_exempt
+def increment_click_view(request, property_id):
+    """
+    Incrémente le compteur de clics (WhatsApp, Phone, Chat) pour une annonce.
+    """
+    try:
+        # On utilise F() pour éviter les race conditions
+        Property.objects.filter(id=property_id).update(clicks_count=F('clicks_count') + 1)
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
 def custom_404_view(request, exception=None):

@@ -256,6 +256,13 @@
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="p-3 text-center border rounded-3 bg-white shadow-sm h-100">
+                        <i class="fa-solid fa-stairs text-success mb-2 fs-4"></i>
+                        <div class="small text-muted">Étage</div>
+                        <div class="fw-bold">{% if property.floor_level == 0 %}RDC{% else %}{{ property.floor_level }}{% endif %}</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 text-center border rounded-3 bg-white shadow-sm h-100">
                         <i class="fa-solid fa-couch text-success mb-2 fs-4"></i>
                         <div class="small text-muted">Salons</div>
                         <div class="fw-bold">{{ property.salons }}</div>
@@ -292,6 +299,15 @@
                     {% endif %}
                     {% if property.water_tank %}
                     <div class="col-6 col-md-4"><i class="fa-solid fa-faucet text-success me-2"></i> Réservoir d'eau</div>
+                    {% endif %}
+                    {% if property.has_elevator %}
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-elevator text-success me-2"></i> Ascenseur</div>
+                    {% endif %}
+                    {% if property.has_security %}
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-user-shield text-success me-2"></i> Sécurité 24/7</div>
+                    {% endif %}
+                    {% if property.has_concierge %}
+                    <div class="col-6 col-md-4"><i class="fa-solid fa-bell text-success me-2"></i> Conciergerie</div>
                     {% endif %}
                 </div>
             </div>
@@ -496,6 +512,20 @@
             } else {
                 icon.classList.replace('fa-solid', 'fa-regular');
             }
+        });
+
+        // Click Tracking Logic (WhatsApp, Phone, Chat)
+        const contactButtons = document.querySelectorAll('a[href^="https://wa.me/"], a[href^="tel:"], a[href*="initiate-chat"]');
+        contactButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                fetch("{% url 'increment_click' property.id %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(err => console.error("Tracking error:", err));
+            });
         });
     });
 </script>

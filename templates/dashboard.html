@@ -597,6 +597,7 @@
                                             <th>Bien</th>
                                             <th>Prix</th>
                                             <th class="text-center">Vues 👁️</th>
+                                            <th class="text-center" title="Vues obtenues grâce au Boost">Boost ⚡</th>
                                             <th class="text-center">Clics 🖱️</th>
                                             <th>Statut</th>
                                             <th class="text-end">Actions</th>
@@ -627,8 +628,9 @@
                                                 </div>
                                             </td>
                                             <td>{{ prop.price|floatformat:0 }} <small>FCFA</small></td>
-                                            <td class="text-center fw-bold"><span class="badge bg-light text-dark border">{{ prop.views_count }}</span></td>
-                                            <td class="text-center fw-bold"><span class="badge bg-light text-success border">{{ prop.clicks_count }}</span></td>
+                                            <td class="text-center fw-bold"><span class="badge bg-light text-dark border" title="Vues totales">{{ prop.views_count }}</span></td>
+                                            <td class="text-center fw-bold"><span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" title="Vues Boostées">{{ prop.boosted_views_count }}</span></td>
+                                            <td class="text-center fw-bold"><span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" title="Clics d'action">{{ prop.clicks_count }}</span></td>
                                             <td>
                                                 {% if not prop.is_paid %}
                                                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25"><i class="fa-solid fa-circle-exclamation me-1"></i>Non Payée</span>

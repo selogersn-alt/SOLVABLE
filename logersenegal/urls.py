@@ -58,7 +58,8 @@ from .views import (
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
-    guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view
+    guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view,
+    increment_click_view
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ads.views import ads_txt_view  # Certification Google
@@ -88,6 +89,7 @@ urlpatterns = [
     path('annonces/', properties_list_view, name='properties_list'),
     path('annonces/<uuid:property_id>/', property_detail_view, name='property_detail'),
     path('annonces/<slug:slug>/', property_detail_view, name='property_detail_slug'),
+    path('annonces/<uuid:property_id>/click/', increment_click_view, name='increment_click'),
     path('annonces/<uuid:property_id>/modifier/', edit_property_view, name='edit_property'),
     path('annonces/<uuid:property_id>/supprimer/', delete_property_view, name='delete_property'),
     

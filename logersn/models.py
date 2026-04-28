@@ -43,6 +43,7 @@ class Property(models.Model):
     bedrooms = models.IntegerField(default=0, blank=True, verbose_name="Nombre de chambres")
     toilets = models.IntegerField(default=0, blank=True, verbose_name="Nombre de toilettes")
     total_rooms = models.IntegerField(default=1, blank=True, verbose_name="Nombre total de pièces")
+    floor_level = models.IntegerField(default=0, blank=True, verbose_name="Niveau d'étage")
     has_garage = models.BooleanField(default=False, blank=True, verbose_name="Garage disponible")
     # Nouvelles pièces
     salons = models.IntegerField(default=0, blank=True, verbose_name="Nombre de salons")
@@ -72,6 +73,9 @@ class Property(models.Model):
     tv_cable = models.BooleanField(default=False, verbose_name="TV par câble")
     generator = models.BooleanField(default=False, verbose_name="Groupe électrogène")
     water_tank = models.BooleanField(default=False, verbose_name="Réservoir d'eau")
+    has_elevator = models.BooleanField(default=False, verbose_name="Ascenseur")
+    has_security = models.BooleanField(default=False, verbose_name="Sécurité 24/7")
+    has_concierge = models.BooleanField(default=False, verbose_name="Service de conciergerie")
     
     # Géolocalisation
     latitude = models.DecimalField(max_digits=15, decimal_places=10, null=True, blank=True)
@@ -82,6 +86,7 @@ class Property(models.Model):
 
     # Statistiques et Performance
     views_count = models.PositiveIntegerField(default=0, verbose_name="Nombre de vues")
+    boosted_views_count = models.PositiveIntegerField(default=0, verbose_name="Nombre de vues (Boost)")
     clicks_count = models.PositiveIntegerField(default=0, verbose_name="Nombre de clics d'action")
 
     # Options de Monétisation DigitalH

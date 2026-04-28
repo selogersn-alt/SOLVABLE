@@ -6,7 +6,37 @@
 {% block meta_description %}{{ seo_description }}{% endblock %}
 
 {% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Geosearch CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.css" />
 <style>
+    #properties-map {
+        height: 450px;
+        width: 100%;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 20px;
+        z-index: 10;
+        box-shadow: 0 10px 30px var(--shadow-color);
+    }
+    .map-search-container {
+        margin-bottom: 15px;
+    }
+    .map-search-container .input-group {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--bg-card);
+    }
+    .map-search-container input {
+        background: transparent !important;
+        color: var(--text-main);
+    }
+    .map-search-container .input-group-text {
+        background: transparent !important;
+        border: none;
+    }
     .property-card {
         background: var(--bg-card);
         border-radius: 15px;
@@ -378,6 +408,26 @@
         </div>
     </div>
 
+    <!-- CARTE DES ANNONCES (Nouveau Point 5) -->
+    <div class="container mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0" style="color: var(--text-main);"><i class="fa-solid fa-map-location-dot me-2 text-success"></i>Carte des Annonces</h4>
+            <button class="btn btn-sm btn-outline-success rounded-pill fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#mapCollapse">
+                <i class="fa-solid fa-layer-group me-1"></i> Afficher/Masquer la carte
+            </button>
+        </div>
+        <div class="collapse show" id="mapCollapse">
+            <div class="map-search-container">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass-location text-success"></i></span>
+                    <input type="text" id="map-search-input" class="form-control py-2" placeholder="Tapez une ville ou un quartier pour centrer la carte (ex: Plateau, Dakar)...">
+                </div>
+                <small class="text-muted mt-1 d-block"><i class="fa-solid fa-circle-info me-1"></i> Appuyez sur Entrée pour rechercher un lieu.</small>
+            </div>
+            <div id="properties-map"></div>
+        </div>
+    </div>
+
     <!-- Grille des propriétés -->
     <div class="row g-4">
         {% for property in properties %}
@@ -443,4 +493,98 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Geosearch JS -->
+<script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Données des propriétés injectées depuis Django
+        const propertiesData = [
+            {% for prop in properties %}
+            {
+                "id": "{{ prop.id }}",
+                "title": "{{ prop.title|escapejs }}",
+                "lat": {{ prop.latitude|default:"null" }},
+                "lng": {{ prop.longitude|default:"null" }},
+                "price": "{% if prop.listing_category == 'SALE' %}{{ prop.price|floatformat:0 }} F{% elif prop.listing_category == 'FURNISHED' %}{{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit{% else %}{{ prop.price|floatformat:0 }} F/Mois{% endif %}",
+                "url": "{% url 'property_detail' prop.id %}",
+                "img": "{% if prop.images.first %}{{ prop.images.first.image_url.url }}{% endif %}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Initialisation de la carte (Centrée sur Dakar par défaut)
+        const map = L.map('properties-map', {
+            scrollWheelZoom: false
+        }).setView([14.7167, -17.4677], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        const markers = [];
+        propertiesData.forEach(prop => {
+            if (prop.lat && prop.lng) {
+                const marker = L.marker([prop.lat, prop.lng]).addTo(map);
+                const popupContent = `
+                    <div style="width: 180px; font-family: 'Inter', sans-serif;">
+                        ${prop.img ? `<img src="${prop.img}" style="width: 100%; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">` : ''}
+                        <h6 style="margin: 0 0 5px 0; font-weight: 700; font-size: 0.9rem;">${prop.title}</h6>
+                        <p style="margin: 0 0 10px 0; color: #28a745; font-weight: 800; font-size: 0.85rem;">${prop.price}</p>
+                        <a href="${prop.url}" class="btn btn-sm btn-success w-100 text-white fw-bold" style="font-size: 0.75rem; border-radius: 6px;">Voir l'annonce</a>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            }
+        });
+
+        // Ajuster la vue pour englober tous les marqueurs
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.2));
+        }
+
+        // Fonctionnalité de recherche de localisation
+        const searchInput = document.getElementById('map-search-input');
+        const provider = new window.GeoSearch.OpenStreetMapProvider();
+
+        searchInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = searchInput.value;
+                if (!query) return;
+
+                try {
+                    const results = await provider.search({ query: query });
+                    if (results && results.length > 0) {
+                        const { x, y, label } = results[0];
+                        map.setView([y, x], 14);
+                        L.popup()
+                            .setLatLng([y, x])
+                            .setContent(`<div class="p-2 fw-bold text-success"><i class="fa-solid fa-location-dot me-1"></i> ${label}</div>`)
+                            .openOn(map);
+                    } else {
+                        alert("Lieu non trouvé. Essayez d'être plus précis (ex: Plateau, Dakar).");
+                    }
+                } catch (error) {
+                    console.error("Erreur Geosearch:", error);
+                }
+            }
+        });
+        
+        // Activer le zoom au clic pour éviter le défilement accidentel
+        map.on('click', function() {
+            if (map.scrollWheelZoom.enabled()) {
+                map.scrollWheelZoom.disable();
+            } else {
+                map.scrollWheelZoom.enable();
+            }
+        });
+    });
+</script>
 {% endblock %}

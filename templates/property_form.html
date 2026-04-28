@@ -130,6 +130,10 @@
                                         {{ form.kitchens }}
                                     </div>
                                     <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-bold">Étage</label>
+                                        {{ form.floor_level }}
+                                    </div>
+                                    <div class="col-md-3">
                                         <label class="form-label text-muted small fw-bold">Pièces totales</label>
                                         {{ form.total_rooms }}
                                     </div>
@@ -159,6 +163,24 @@
                                             <label class="form-check-label fw-bold small ms-2" for="{{ form.has_garden.id_for_label }}">Jardin</label>
                                         </div>
                                     </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mt-3">
+                                            {{ form.has_elevator }}
+                                            <label class="form-check-label fw-bold small ms-2" for="{{ form.has_elevator.id_for_label }}">Ascenseur</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mt-3">
+                                            {{ form.has_security }}
+                                            <label class="form-check-label fw-bold small ms-2" for="{{ form.has_security.id_for_label }}">Sécurité</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check mt-3">
+                                            {{ form.has_concierge }}
+                                            <label class="form-check-label fw-bold small ms-2" for="{{ form.has_concierge.id_for_label }}">Conciergerie</label>
+                                        </div>
+                                    </div>
                                     <div class="col-12 mt-3">
                                         <div class="form-check form-switch border p-3 rounded" style="background-color: var(--bg-card);">
                                             {{ form.has_garage }}
@@ -170,6 +192,18 @@
                             
                             <div class="col-12">
                                 <label class="form-label fw-bold text-success"><i class="fa-solid fa-camera me-2"></i>{{ form.images.label }}</label>
+                                {% if form.instance.pk and form.instance.images.all %}
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        {% for img in form.instance.images.all %}
+                                            <div class="position-relative">
+                                                <img src="{{ img.image_url.url }}" class="rounded shadow-sm border" style="width: 80px; height: 80px; object-fit: cover;">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="alert alert-info py-2" style="font-size: 0.85rem; border-radius: 10px;">
+                                        <i class="fa-solid fa-circle-info me-2"></i><strong>Images actuelles conservées :</strong> Laissez ce champ vide si vous ne souhaitez pas modifier les photos.
+                                    </div>
+                                {% endif %}
                                 {{ form.images }}
                             </div>
 
