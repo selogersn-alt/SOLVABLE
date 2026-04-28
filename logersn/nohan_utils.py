@@ -14,7 +14,7 @@ def call_gemini_api(prompt, history=None):
     
     # Payload le plus simple possible
     payload = {
-        "model": "llama3-8b-8192",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {
                 "role": "system", 
