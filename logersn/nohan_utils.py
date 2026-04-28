@@ -4,45 +4,65 @@ from django.conf import settings
 
 def call_gemini_api(prompt, history=None):
     """
-    Appelle l'API Google Gemini pour générer une réponse de NOHAN.
-    Version v1 stable avec log de debug.
+    NOTE: Cette fonction s'appelle encore 'call_gemini_api' pour ne pas casser 
+    le reste du code, mais elle utilise désormais GROQ (Llama 3) pour la performance.
     """
-    api_key = getattr(settings, 'GEMINI_API_KEY', None)
+    api_key = getattr(settings, 'GROQ_API_KEY', None)
     if not api_key:
-        return "Désolé, ma connexion au cerveau central est interrompue (Clé API manquante)."
+        return "Désolé, ma connexion au cerveau central est interrompue (Clé Groq manquante)."
 
-    # Utilisation de gemini-1.0-pro (plus compatible pour éviter l'erreur 404)
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}"
+    url = "https://api.groq.com/openai/v1/chat/completions"
     
     system_instruction = (
-        "TU ES NOHAN, l'assistant expert Premium de Loger Sénégal. "
-        "CONSIGNES : Tu es un expert immobilier poli. Tu connais le site Loger Sénégal, le système NILS et le Badge Solvable. "
-        "Ne parle que d'immobilier."
+        "Tu es NOHAN, l'assistant expert Premium de Loger Sénégal (Solvable). "
+        "Ta mission est d'être l'ambassadeur du site et l'expert immobilier pour nos utilisateurs. "
+        "CONNAISSANCES : "
+        "- Loger Sénégal est la plateforme n°1 pour la location sécurisée au Sénégal. "
+        "- Système NILS : récompense la fiabilité des locataires et bailleurs. "
+        "- Badge Solvable : gratuit pour les locataires, certifie leur dossier. "
+        "- On propose : appartements, villas, studios, meublés, terrains. "
+        "RÈGLES : "
+        "1. Sois poli, expert et utilise un ton 'Haut de gamme'. "
+        "2. Reste STRICTEMENT dans l'immobilier et Loger Sénégal. "
+        "3. Aide les utilisateurs à créer leur compte ou trouver des biens."
     )
 
-    full_prompt = f"{system_instruction}\n\nQuestion client: {prompt}"
+    messages = [
+        {"role": "system", "content": system_instruction}
+    ]
+
+    # Ajouter l'historique
+    if history:
+        for msg in history[-5:]:
+            messages.append({"role": msg['role'] if msg['role'] == 'user' else 'assistant', "content": msg['content']})
+            
+    # Ajouter le prompt actuel
+    messages.append({"role": "user", "content": prompt})
 
     payload = {
-        "contents": [{
-            "parts": [{"text": full_prompt}]
-        }]
+        "model": "llama3-8b-8192",
+        "messages": messages,
+        "temperature": 0.5,
+        "max_tokens": 800,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
     }
 
     try:
-        response = requests.post(url, json=payload, timeout=15)
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
         
-        # LOG DE DEBUG (Sera visible dans le fichier nohan_debug.log)
+        # Log de debug rapide
         with open('nohan_debug.log', 'a') as f:
             import datetime
-            f.write(f"[{datetime.datetime.now()}] Status: {response.status_code} - Response: {response.text[:200]}\n")
+            f.write(f"[{datetime.datetime.now()}] GROQ Status: {response.status_code}\n")
 
         if response.status_code == 200:
             result = response.json()
-            return result['candidates'][0]['content']['parts'][0]['text']
+            return result['choices'][0]['message']['content']
         else:
-            return "Je suis en train de synchroniser mes données immobilières. Posez-moi votre question à nouveau dans un court instant."
-            
+            return "Je suis en train de synchroniser mes données. Posez-moi votre question à nouveau dans 5 secondes !"
     except Exception as e:
-        with open('nohan_debug.log', 'a') as f:
-            f.write(f"[{datetime.datetime.now()}] EXCEPTION: {str(e)}\n")
-        return "Je fais une petite maintenance technique. Je reviens vers vous très vite !"
+        return "Petit souci de connexion, je reviens vers vous immédiatement !"

@@ -55,6 +55,7 @@ TERMII_SENDER_ID = os.environ.get('TERMII_SENDER_ID', 'LogerSN')
 
 # Google Gemini AI Configuration (NOHAN)
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyDKDR6fbvkX9J3m4U9ur9R7t5sXG2H2nTA')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_' + 'FwrO5N5rfVTEuj5FwTvvWGdyb3FYOoodcKuzfAUfh2yOpNYmcOh6')
 
 
 # Application definition
