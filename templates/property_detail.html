@@ -431,20 +431,17 @@
                 <!-- Owner Mini Profile -->
                 <div class="d-flex align-items-center mb-4">
                     <div class="flex-shrink-0">
-                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: bold;">
-                            {{ property.owner.first_name|first }}{{ property.owner.last_name|first }}
-                        </div>
+                        {% if property.owner.profile_picture %}
+                            <img src="{{ property.owner.profile_picture.url }}" class="rounded-circle shadow-sm" style="width: 55px; height: 55px; object-fit: cover; border: 2px solid var(--color-light-green);">
+                        {% else %}
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 55px; height: 55px; font-weight: bold; font-size: 1.2rem;">
+                                {{ property.owner.first_name|first|default:"P" }}{{ property.owner.last_name|first|default:"" }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="mb-0 fw-bold">{% if property.owner.company_name %}{{ property.owner.company_name }}{% else %}{{ property.owner.get_full_name }}{% endif %}</h6>
-                        <small class="text-muted">{{ property.owner.get_role_display }} vérifié</small>
-                        {% if property.owner.website %}
-                            <div class="mt-1">
-                                <a href="{{ property.owner.website }}" target="_blank" class="text-success small text-decoration-none">
-                                    <i class="fa-solid fa-globe me-1"></i> Site Internet
-                                </a>
-                            </div>
-                        {% endif %}
+                        <small class="text-muted"><i class="fa-solid fa-circle-check text-success me-1"></i> {{ property.owner.get_role_display }} vérifié</small>
                     </div>
                 </div>
 

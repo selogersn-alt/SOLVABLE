@@ -57,7 +57,16 @@
                         <label class="small text-muted text-uppercase fw-bold mb-1">Inscrit depuis</label>
                         <p class="fs-5 fw-600"><i class="fa-solid fa-calendar-check me-2 text-success"></i> {{ viewed_user.date_joined|date:"M Y" }}</p>
                     </div>
-                    <div class="col-12 py-2">
+                    {% if viewed_user.website %}
+                    <div class="col-md-12">
+                        <label class="small text-muted text-uppercase fw-bold mb-1">Site Internet / Portfolio</label>
+                        <p class="fs-5 fw-600">
+                            <i class="fa-solid fa-globe me-2 text-success"></i> 
+                            <a href="{{ viewed_user.website }}" target="_blank" class="text-dark text-decoration-none hover-success">{{ viewed_user.website|cut:"https://"|cut:"http://" }}</a>
+                        </p>
+                    </div>
+                    {% endif %}
+                    <div class="col-12 py-1">
                         <hr class="opacity-10">
                     </div>
                     <div class="col-md-4">
