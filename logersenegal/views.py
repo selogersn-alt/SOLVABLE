@@ -19,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from logersn.models import Property, Favorite
 from logersn.forms import PropertyForm
+from logersn.constants import CITY_CHOICES, PROPERTY_TYPE_CHOICES, LISTING_CATEGORY_CHOICES
 from users.models import User, NILS_Profile, SearchLog
 from chat.models import Conversation, Message
 from solvable.models import PropertyApplication, RentalFiliation, PaymentHistory, IncidentReport
@@ -98,7 +99,10 @@ def home_view(request):
         'recent_incidents': recent_incidents,
         'results': results,
         'query': query_str,
-        'countries': COUNTRY_CHOICES
+        'countries': COUNTRY_CHOICES,
+        'cities': CITY_CHOICES,
+        'property_types': PROPERTY_TYPE_CHOICES,
+        'listing_categories': LISTING_CATEGORY_CHOICES
     })
 
 def about_view(request):

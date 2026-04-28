@@ -260,146 +260,110 @@
     </div>
 </div>
 
-<section class="hero-section py-5 position-relative" style="background: url('{% static 'img/og_banner.png' %}') center/cover no-repeat; min-height: 500px; display: flex; align-items: center;">
-    <!-- Overlay pour lisibilité -->
-    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8));"></div>
-    
+<!-- HERO SECTION : MOTEUR DE RECHERCHE IMMOBILIER (Priorité #1) -->
+<section class="hero-section py-5 position-relative" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; min-height: 600px; display: flex; align-items: center; border-radius: 0 0 50px 50px; margin-bottom: -50px; z-index: 5;">
     <div class="container position-relative" style="z-index: 2;">
-        <div class="row align-items-center mb-5">
-            <div class="col-lg-12 text-center text-lg-start">
-                <div class="hero-content">
-                    <span class="badge bg-danger rounded-pill px-3 py-2 mb-3 shadow-sm animate__animated animate__fadeInDown">
-                        <i class="fa-solid fa-shield-halved me-1"></i> Système National de Solvabilité
-                    </span>
-                    <h1 class="hero-title text-white">Vérifiez la <span>Solvabilité</span> de vos futurs locataires.</h1>
-                    <p class="hero-subtitle text-white opacity-75 mb-4">Recherchez instantanément dans la base NILS par Nom, Téléphone, CNI ou Passeport pour sécuriser vos revenus locatifs.</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-12">
-                <div class="position-relative">
-                <!-- LE MOTEUR NILS -->
-                <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: 30px; background-color: var(--bg-card); border: 1px solid var(--border-color) !important;">
-                    <form method="get" action="{% url 'home' %}">
-                        <div class="row g-2">
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label fw-bold small text-uppercase text-muted">Nom ou Prénoms</label>
-                                <input type="text" name="name_query" class="form-control py-2 shadow-sm" placeholder="Ex: Mamadou Diop" value="{{ request.GET.name_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label fw-bold small text-uppercase text-muted">Téléphone</label>
-                                <input type="text" name="phone_query" class="form-control py-2 shadow-sm" placeholder="Ex: 77123..." value="{{ request.GET.phone_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
-                            </div>
-                            <div class="col-md-5 mb-2">
-                                <label class="form-label fw-bold small text-uppercase text-muted">CNI / Passeport</label>
-                                <input type="text" name="doc_query" class="form-control py-2 shadow-sm" placeholder="N° de document" value="{{ request.GET.doc_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label fw-bold small text-uppercase text-muted">Pays du document</label>
-                                <select name="country_query" class="form-select py-2 shadow-sm" style="border-radius:10px; border: 1px solid var(--border-color);">
-                                    <option value="">Tous les pays</option>
-                                    {% for code, name in countries %}
-                                        <option value="{{ code }}" {% if request.GET.country_query == code %}selected{% endif %}>{{ name }}</option>
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 fw-bold text-white mb-3 animate__animated animate__fadeInDown">Trouvez votre <span style="color: var(--color-yellow);">logement idéal</span> au Sénégal</h1>
+                <p class="lead text-white opacity-90 mb-5 animate__animated animate__fadeInUp">La plateforme immobilière la plus sécurisée pour louer ou acheter en toute sérénité.</p>
+                
+                <!-- LE MOTEUR DE RECHERCHE IMMOBILIER -->
+                <div class="card border-0 shadow-lg p-3" style="border-radius: 30px; background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2) !important;">
+                    <form method="get" action="{% url 'properties_list' %}" class="row g-2">
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select name="listing_category" class="form-select border-0" style="border-radius: 20px;">
+                                    <option value="ALL">Toutes catégories</option>
+                                    {% for val, label in listing_categories %}
+                                        <option value="{{ val }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
+                                <label class="small fw-bold">Je cherche...</label>
                             </div>
-                            <div class="col-md-3 mb-2 d-flex align-items-end">
-                                <button class="btn btn-primary w-100 py-2 fw-bold shadow" type="submit" style="border-radius:10px;">
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select name="property_type" class="form-select border-0" style="border-radius: 20px;">
+                                    <option value="ALL">Tous les types</option>
+                                    {% for val, label in property_types %}
+                                        <option value="{{ val }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label class="small fw-bold">Type de bien</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <select name="city" class="form-select border-0" style="border-radius: 20px;">
+                                    <option value="ALL">Tout le Sénégal</option>
+                                    {% for val, label in cities %}
+                                        <option value="{{ val }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label class="small fw-bold">Où ? (Ville)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-grid">
+                            <button type="submit" class="btn btn-warning fw-bold shadow" style="border-radius: 20px; font-size: 1.1rem;">
+                                <i class="fa-solid fa-magnifying-glass me-2"></i> RECHERCHER
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="mt-4 d-flex justify-content-center gap-3 animate__animated animate__fadeInUp">
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill small"><i class="fa-solid fa-check-circle me-1"></i> +15 000 Annonces</span>
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill small"><i class="fa-solid fa-check-circle me-1"></i> Pros Vérifiés</span>
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill small"><i class="fa-solid fa-check-circle me-1"></i> Protection NILS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION NILS DÉPLACÉE -->
+<section class="py-5" style="margin-top: 50px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-12">
+                <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: 30px; background-color: var(--bg-card); border: 1px solid var(--border-color) !important;">
+                    <h3 class="fw-bold mb-4"><i class="fa-solid fa-shield-halved text-danger me-2"></i> Système National de Solvabilité (NILS)</h3>
+                    <form method="get" action="{% url 'home' %}">
+                        <div class="row g-2">
+                            <div class="col-md-3 mb-2">
+                                <input type="text" name="name_query" class="form-control py-2 shadow-sm" placeholder="Nom ou Prénoms" value="{{ request.GET.name_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <input type="text" name="phone_query" class="form-control py-2 shadow-sm" placeholder="Téléphone" value="{{ request.GET.phone_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <input type="text" name="doc_query" class="form-control py-2 shadow-sm" placeholder="CNI / Passeport" value="{{ request.GET.doc_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
+                            </div>
+                            <div class="col-md-3 mb-2 d-grid">
+                                <button class="btn btn-dark py-2 fw-bold shadow" type="submit" style="border-radius:10px;">
                                     <i class="fa-solid fa-bolt me-1"></i> ANALYSER
                                 </button>
                             </div>
                         </div>
                     </form>
-
-                    <!-- STATS DASHBOARD -->
-                    <div class="row g-2">
-                        <div class="col-6 col-md-3">
-                            <div class="stat-card shadow-sm">
-                                <div class="stat-value text-danger">{{ stats.total_unpaid|floatformat:0 }}</div>
-                                <div class="stat-label">Dettes (CFA)</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="stat-card shadow-sm">
-                                <div class="stat-value text-primary">{{ stats.profiles_flagged }}</div>
-                                <div class="stat-label">Signalés</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="stat-card shadow-sm">
-                                <div class="stat-value text-success">{{ stats.resolved_cases }}</div>
-                                <div class="stat-label">Clos</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="stat-card shadow-sm">
-                                <div class="stat-value text-warning">{{ stats.active_mediation }}</div>
-                                <div class="stat-label">En cours</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- RÉSULTATS DE RECHERCHE NILS (INLINE) -->
         {% if results is not None %}
-        <div id="nils_results_anchor" class="mt-4 mb-5 pt-4">
-            <div class="card border-0 shadow-lg" style="border-radius: 20px; background: var(--bg-card); overflow: hidden; border: 1px solid var(--border-color) !important;">
-                <div class="card-header bg-dark text-white p-4 border-0">
-                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clipboard-list me-2"></i> Audit de Solvabilité pour : 🖋️ {{ request.GET.name_query }} {{ request.GET.phone_query }}</h5>
-                </div>
-                <div class="card-body p-4 p-md-5">
+        <div id="nils_results_anchor" class="mt-4">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4">
                     {% if results %}
-                        <div class="row g-4">
-                            {% for profile in results %}
-                            <div class="col-md-6">
-                                <div class="p-4 border rounded-4 bg-light bg-opacity-10 h-100" style="border-color: var(--border-color) !important;">
-                                    <div class="d-flex align-items-center mb-4">
-                                        <div class="avatar me-3 shadow-sm" style="width: 65px; height: 65px; background: #000; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem;">
-                                            {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
-                                        </div>
-                                        <div>
-                                            <h5 class="mb-1 fw-bold" style="color: var(--text-main);">{{ profile.user.get_full_name }}</h5>
-                                            <div class="d-flex gap-2 align-items-center">
-                                                <span class="badge bg-dark">NILS: {{ profile.nils_number }}</span>
-                                                <span class="small text-muted"><i class="fa-solid fa-location-dot me-1"></i> {{ profile.user.document_country|default:"Sénégal" }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row g-2 text-center mb-4">
-                                        <div class="col-4">
-                                            <div class="p-2 border rounded-3" style="border-color: var(--border-color) !important;">
-                                                <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Score Global</div>
-                                                <div class="fw-bold fs-5 {% if profile.score >= 80 %}text-success{% elif profile.score >= 50 %}text-warning{% else %}text-danger{% endif %}">{{ profile.score }}%</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="p-2 border rounded-3" style="border-color: var(--border-color) !important;">
-                                                <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Incidents</div>
-                                                <div class="fw-bold fs-5 text-dark" style="color: var(--text-main) !important;">{{ profile.total_incidents }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="p-2 border rounded-3" style="border-color: var(--border-color) !important;">
-                                                <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Dette Totale</div>
-                                                <div class="fw-bold fs-5 text-danger">{{ profile.amount_unpaid|floatformat:0 }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="d-grid">
-                                        <a href="{% url 'public_profile' profile.user.id %}" class="btn btn-dark rounded-pill py-2 fw-bold">Détails de l'Investigation</a>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
+                        {% for profile in results %}
+                        <div class="d-flex align-items-center mb-3 p-3 border rounded-3">
+                            <div class="me-3 fw-bold">{{ profile.user.get_full_name }}</div>
+                            <div class="ms-auto badge bg-{% if profile.score >= 80 %}success{% else %}danger{% endif %}">{{ profile.score }}% Solvabilité</div>
                         </div>
+                        {% endfor %}
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="fa-solid fa-user-xmark text-muted mb-4" style="font-size: 4rem;"></i>
-                            <h4 class="fw-bold" style="color: var(--text-main);">Aucun profil correspondant</h4>
-                            <p class="text-muted mx-auto" style="max-width: 400px;">Aucun incident n'est rattaché à ce critère dans le réseau NILS actuel. Cela ne garantit pas l'absence d'antécédents hors réseau.</p>
-                        </div>
+                        <p class="text-center text-muted">Aucun profil correspondant.</p>
                     {% endif %}
                 </div>
             </div>
@@ -651,6 +615,7 @@
         .pro-avatar-wrapper { width: 60px; height: 60px; }
     }
 </style>
+</section>
 
 <section id="annonces" class="py-5" style="background-color: var(--bg-body);">
     <div class="container py-4">
@@ -707,6 +672,121 @@
                 </li>
             </ul>
         </nav>
+        {% endif %}
+    </div>
+</section>
+
+<!-- SECTION NILS : VÉRIFICATION DE SOLVABILITÉ (Second Plan) -->
+<section id="nils-section" class="py-5" style="background-color: #f8f9fa;">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-5 mb-5 mb-lg-0">
+                <span class="badge bg-danger rounded-pill px-3 py-2 mb-3">
+                    <i class="fa-solid fa-shield-halved me-1"></i> Réseau de Confiance National
+                </span>
+                <h2 class="fw-bold display-6 mb-4" style="color: var(--text-main);">Vérifiez la solvabilité de vos futurs locataires.</h2>
+                <p class="text-muted fs-5 mb-4">Ne prenez plus de risques. Interrogez instantanément la base NILS pour connaître l'historique de paiement d'un candidat avant de signer.</p>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="p-3 border rounded-3 bg-white shadow-sm">
+                            <div class="fw-bold text-danger fs-4">{{ stats.total_unpaid|floatformat:0 }}</div>
+                            <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Dettes cumulées (CFA)</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 border rounded-3 bg-white shadow-sm">
+                            <div class="fw-bold text-primary fs-4">{{ stats.profiles_flagged }}</div>
+                            <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Profils répertoriés</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 offset-lg-1">
+                <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: 30px; background-color: var(--bg-card); border: 1px solid var(--border-color) !important;">
+                    <h4 class="fw-bold mb-4">Lancer une recherche NILS</h4>
+                    <form method="get" action="{% url 'home' %}">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Nom complet</label>
+                            <input type="text" name="name_query" class="form-control py-3" placeholder="Ex: Mamadou Diop" value="{{ request.GET.name_query }}" style="border-radius:15px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Téléphone</label>
+                            <input type="text" name="phone_query" class="form-control py-3" placeholder="Ex: 77 123 45 67" value="{{ request.GET.phone_query }}" style="border-radius:15px;">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">CNI / Passeport (Recommandé)</label>
+                            <input type="text" name="doc_query" class="form-control py-3" placeholder="Numéro de document" value="{{ request.GET.doc_query }}" style="border-radius:15px;">
+                        </div>
+                        <button class="btn btn-dark w-100 py-3 fw-bold fs-5 shadow" type="submit" style="border-radius:15px;">
+                            <i class="fa-solid fa-bolt me-2 text-warning"></i> ANALYSER LE PROFIL
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- RÉSULTATS NILS DÉTAILLÉS (Si recherche effectuée) -->
+        {% if results is not None %}
+        <div id="nils_results_anchor" class="mt-5 pt-4">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; background: var(--bg-card); overflow: hidden; border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-dark text-white p-4 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clipboard-list me-2"></i> Résultats de l'Audit : {{ request.GET.name_query|default:request.GET.phone_query }}</h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    {% if results %}
+                        <div class="row g-4">
+                            {% for profile in results %}
+                            <div class="col-md-6">
+                                <div class="p-4 border rounded-4 bg-light bg-opacity-10 h-100" style="border-color: var(--border-color) !important;">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="avatar me-3 shadow-sm" style="width: 60px; height: 60px; background: #000; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                            {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1 fw-bold">{{ profile.user.get_full_name }}</h5>
+                                            <span class="badge bg-dark">NILS: {{ profile.nils_number }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 text-center mb-4">
+                                        <div class="col-4">
+                                            <div class="p-2 border rounded-3 bg-white">
+                                                <div class="small text-muted" style="font-size: 0.6rem;">Score</div>
+                                                <div class="fw-bold fs-5 {% if profile.score >= 80 %}text-success{% elif profile.score >= 50 %}text-warning{% else %}text-danger{% endif %}">{{ profile.score }}%</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="p-2 border rounded-3 bg-white">
+                                                <div class="small text-muted" style="font-size: 0.6rem;">Dette</div>
+                                                <div class="fw-bold fs-5 text-danger">{{ profile.amount_unpaid|floatformat:0 }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="p-2 border rounded-3 bg-white">
+                                                <div class="small text-muted" style="font-size: 0.6rem;">Statut</div>
+                                                <div class="small fw-bold pt-1">{{ profile.total_incidents }} Inc.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'public_profile' profile.user.id %}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">Voir le profil complet</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fa-solid fa-user-check text-success mb-3" style="font-size: 3rem;"></i>
+                            <h4 class="fw-bold">Aucun incident trouvé</h4>
+                            <p class="text-muted">Ce profil ne présente aucun incident de paiement répertorié dans le réseau NILS.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <script>
+            document.getElementById('nils_results_anchor').scrollIntoView({ behavior: 'smooth' });
+        </script>
         {% endif %}
     </div>
 </section>
