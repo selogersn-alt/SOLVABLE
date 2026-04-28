@@ -362,23 +362,33 @@ def register_view(request):
             messages.error(request, "Ce numéro de téléphone est déjà utilisé.")
             return render(request, 'register.html', {'ref': ref_by})
             
-        # Création de l'utilisateur
-        user = User.objects.create_user(phone_number=phone, email=email if email else None, password=password, role=role)
-        user.company_name = company_name
-        user.coverage_area = coverage_area
-        
-        # Gestion du parrainage
-        if ref_by:
-            referrer = User.objects.filter(username=ref_by).first()
-            if referrer:
-                user.referred_by = referrer
-        
-        user.save()
-        
-        login(request, user)
-        messages.success(request, "Votre compte a été créé avec succès !")
-        return redirect('dashboard')
-        
+        try:
+            # Création de l'utilisateur
+            user = User.objects.create_user(phone_number=phone, email=email if email else None, password=password, role=role)
+            user.company_name = company_name
+            user.coverage_area = coverage_area
+            
+            # Gestion du parrainage (Correction DigitalH : On cherche par phone_number)
+            if ref_by:
+                referrer = User.objects.filter(phone_number=ref_by).first()
+                if referrer:
+                    user.referred_by = referrer
+            
+            user.save()
+            
+            # Tentative d'envoi OTP (Silencieux pour éviter 500)
+            try:
+                user.send_otp()
+            except:
+                pass
+            
+            login(request, user)
+            messages.success(request, "Votre compte a été créé avec succès !")
+            return redirect('dashboard')
+        except Exception as e:
+            messages.error(request, f"Une erreur est survenue lors de la création du compte : {str(e)}")
+            return render(request, 'register.html', {'ref': ref_by})
+            
     return render(request, 'register.html', {'ref': ref_username})
 
 def logout_view(request):
