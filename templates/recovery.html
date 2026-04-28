@@ -2,6 +2,15 @@
 
 {% block title %}Récupération Assistée | Logersenegal{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.10/build/css/intlTelInput.css">
+<style>
+    .iti { width: 100%; }
+    .iti__country-list { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); }
+    #recovery_phone { padding-left: 52px !important; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5 mt-5">
     <div class="row justify-content-center">
@@ -19,10 +28,10 @@
                     <form id="recovery_form" method="POST">
                         {% csrf_token %}
                         <div id="check_area" class="mb-4">
-                            <label for="recovery_phone" class="form-label fw-bold small text-uppercase mb-2">Votre numéro au Sénégal</label>
+                            <label for="recovery_phone" class="form-label fw-bold small text-uppercase mb-2">Votre numéro de téléphone</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light border-2 border-end-0 px-3" style="border-radius: 12px 0 0 12px; border-color: var(--border-color);"><i class="fa-solid fa-phone"></i></span>
-                                <input type="tel" id="recovery_phone" name="phone" class="form-control py-3 border-2" placeholder="77XXXXXXX" required style="border-radius: 0 12px 12px 0; border-color: var(--border-color); background-color: var(--bg-body); color: var(--text-main);">
+                                <input type="tel" id="recovery_phone" name="phone_input" class="form-control py-3 border-2" required style="border-radius: 12px; border-color: var(--border-color); background-color: var(--bg-body); color: var(--text-main);">
+                                <input type="hidden" id="full_phone" name="phone">
                             </div>
                             <div id="phone_feedback" class="mt-2 small text-center"></div>
                         </div>
@@ -74,8 +83,11 @@
     </div>
 </div>
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.10/build/js/intlTelInput.min.js"></script>
 <script>
     const phoneInput = document.getElementById('recovery_phone');
+    const fullPhoneInput = document.getElementById('full_phone');
     const phoneFeedback = document.getElementById('phone_feedback');
     const actionArea = document.getElementById('action_area');
     const errorArea = document.getElementById('error_area');
@@ -83,10 +95,16 @@
     const maskedEmailSpan = document.getElementById('masked_email');
     const waSentArea = document.getElementById('wa_sent_area');
 
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "sn",
+        preferredCountries: ["sn", "fr", "us", "ci", "gn", "ml"],
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.10/build/js/utils.js",
+    });
+
     phoneInput.addEventListener('input', function() {
-        const val = this.value.replace(/\s/g, '');
-        if (val.length >= 7) {
-            validatePhone(val);
+        const fullPhone = iti.getNumber();
+        if (iti.isValidNumber()) {
+            validatePhone(fullPhone);
         } else {
             resetUI();
         }
@@ -101,12 +119,13 @@
     }
 
     function validatePhone(phone) {
-        fetch(`?phone=${phone}`, {
+        fetch(`?phone=${encodeURIComponent(phone)}`, {
             headers: {'X-Requested-With': 'XMLHttpRequest'}
         })
         .then(res => res.json())
         .then(data => {
             if (data.exists) {
+                fullPhoneInput.value = phone;
                 actionArea.classList.remove('d-none');
                 errorArea.classList.add('d-none');
                 phoneInput.style.borderColor = '#28a745';
@@ -128,9 +147,8 @@
     }
 
     function startRecovery() {
-        const phone = phoneInput.value.trim();
+        const phone = iti.getNumber();
         const siteUrl = window.location.origin;
-        // Si on a déjà un reset_url généré par le backend au refresh
         let resetUrl = "{{ reset_url|default:'' }}";
         
         const message = `SOLVABLE RECOVERY REQUEST\n------------------------\nNuméro : ${phone}\nAction : Mot de passe oublié\nSource : ${siteUrl}\n\nMerci de m'envoyer un lien de connexion.`;
@@ -139,7 +157,6 @@
         const waUrl = `https://wa.me/${supportWhatsApp}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
         
-        // Optionnel: montrer le bouton final si refresh
         if(waSentArea) waSentArea.classList.remove('d-none');
     }
 </script>
