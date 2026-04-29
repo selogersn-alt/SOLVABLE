@@ -1,11 +1,6 @@
-import os
-import sys
-
-# Ajouter le chemin de l'application
-path = os.path.dirname(__file__)
-if path not in sys.path:
-    sys.path.insert(0, path)
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
-
-from logersenegal.wsgi import application
+def application(environ, start_response):
+    status = '200 OK'
+    output = b'HELLO TEST - LE SERVEUR REAGIT. SI VOUS VOYEZ CE MESSAGE, LE PROBLEME EST DANS DJANGO (DB OU SETTINGS).'
+    response_headers = [('Content-type', 'text/plain; charset=utf-8'), ('Content-Length', str(len(output)))]
+    start_response(status, response_headers)
+    return [output]
