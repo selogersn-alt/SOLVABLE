@@ -47,7 +47,6 @@ sitemaps = {
 }
 from .views import (
     home_view, properties_list_view, property_detail_view, 
-    login_view, register_view, logout_view, 
     dashboard_view, create_property_view, send_message_view,
     initiate_chat_view, start_support_view, verify_phone_view,
     kyc_submit_view, nils_search_view, create_filiation_view,
@@ -57,15 +56,17 @@ from .views import (
     edit_property_view, delete_property_view,  # Gestion pro
     create_booking_view, schedule_visit_view, # Réservations & Visites
     initiate_payment_view, checkout_payment_view, payment_callback_view, payment_success_view, 
-    password_recovery_view, password_reset_confirm_view, admin_generate_reset_link, # DigitalH Recovery
     cgu_view, privacy_view, toggle_favorite_view, chat_poll_view, initiate_direct_chat_view,
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view,
     increment_click_view, duplicate_property_view, seo_directory_view,
     switch_to_pro_view, nohan_chat_view
 )
+from users.views import (
+    login_view, register_view, logout_view, 
+    password_recovery_view, password_reset_confirm_view, admin_generate_reset_link
+)
 from logersn.seo_views import seo_search_view
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ads.views import ads_txt_view  # Certification Google
 from .admin_views import admin_statistics_view, admin_marketing_email_view
 from django.conf.urls import handler404, handler500
@@ -162,11 +163,6 @@ urlpatterns = [
     path('guide/bailleurs/', guide_bailleurs_view, name='guide_bailleurs'),
     path('guide/agences/', guide_agences_view, name='guide_agences'),
     path('guide/courtiers/', guide_courtiers_view, name='guide_courtiers'),
-    
-    # API Documentation (Point 8)
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
     # Sitemap & SEO
     path('blog/', include('articles.urls')),
