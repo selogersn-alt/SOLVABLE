@@ -28,16 +28,10 @@ def login_view(request):
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password')
         
-        # Tentative 1 : Format exact envoyé (généralement +221...)
-        user = authenticate(request, phone_number=phone, password=password)
-        
-        # Tentative 2 : Si échec et commence par +, essayer sans le +
-        if user is None and phone.startswith('+'):
-            user = authenticate(request, phone_number=phone[1:], password=password)
-            
-        # Tentative 3 : Si échec et format Sénégalais (+2217...), essayer juste le 7...
-        if user is None and phone.startswith('+221'):
-            user = authenticate(request, phone_number=phone[4:], password=password)
+        # Le formatage intelligent (+221, sans +, etc.) est désormais géré
+        # globalement par users.backends.EmailOrPhoneModelBackend
+        # On utilise username au lieu de phone_number pour que le backend le reçoive correctement
+        user = authenticate(request, username=phone, password=password)
         
         if user is not None:
             login(request, user)
