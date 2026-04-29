@@ -71,7 +71,6 @@ from users.views import (
     password_recovery_view, password_reset_confirm_view, admin_generate_reset_link
 )
 from logersn.seo_views import seo_search_view
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from ads.views import ads_txt_view  # Certification Google
 from .admin_views import admin_statistics_view, admin_marketing_email_view
 from django.conf.urls import handler404, handler500
@@ -168,11 +167,6 @@ urlpatterns = [
     path('guide/bailleurs/', guide_bailleurs_view, name='guide_bailleurs'),
     path('guide/agences/', guide_agences_view, name='guide_agences'),
     path('guide/courtiers/', guide_courtiers_view, name='guide_courtiers'),
-    
-    # API Documentation (Point 8)
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
     # Sitemap & SEO
     path('blog/', include('articles.urls')),
