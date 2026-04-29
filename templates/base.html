@@ -310,25 +310,40 @@
             display: none; /* Hidden by default */
         }
 
+        /* Large Screen Optimizations (Wider Page) */
         @media (min-width: 1400px) {
-            .side-skin {
-                display: block;
+            .container {
+                max-width: 1550px !important;
+                transition: max-width 0.3s ease-in-out;
             }
-            .side-skin-left {
-                left: calc(50% - 780px);
+            .side-skin { display: block; }
+            .side-skin-left { left: calc(50% - 960px); }
+            .side-skin-right { right: calc(50% - 960px); }
+        }
+
+        /* Automatic adaptation if side-ads are present */
+        @media (min-width: 1400px) {
+            body.has-left-skin .container, 
+            body.has-right-skin .container {
+                max-width: 1250px !important;
             }
-            .side-skin-right {
-                right: calc(50% - 780px);
-            }
+            body.has-left-skin .side-skin-left,
+            body.has-right-skin .side-skin-left { left: calc(50% - 810px); }
+            
+            body.has-left-skin .side-skin-right,
+            body.has-right-skin .side-skin-right { right: calc(50% - 810px); }
         }
         
-        @media (min-width: 1600px) {
-            .side-skin-left {
-                left: calc(50% - 880px);
+        @media (min-width: 1800px) {
+            body.has-left-skin .container, 
+            body.has-right-skin .container {
+                max-width: 1450px !important;
             }
-            .side-skin-right {
-                right: calc(50% - 880px);
-            }
+            body.has-left-skin .side-skin-left,
+            body.has-right-skin .side-skin-left { left: calc(50% - 920px); }
+            
+            body.has-left-skin .side-skin-right,
+            body.has-right-skin .side-skin-right { right: calc(50% - 920px); }
         }
 
         /* Toast / Notification "Push" Style */
@@ -341,7 +356,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{% if dark_mode %}dark-theme{% endif %} {% if ad_left_skin %}has-left-skin{% endif %} {% if ad_right_skin %}has-right-skin{% endif %}">
     <!-- Side Banners (Skins) -->
     {% if ad_left_skin %}
     <div class="side-skin side-skin-left">
