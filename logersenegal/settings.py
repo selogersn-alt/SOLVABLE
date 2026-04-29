@@ -154,6 +154,9 @@ TEMPLATES = [
                 'solvable.context_processors.fraud_alerts_processor',
                 'solvable.context_processors.system_alerts_processor',
             ],
+            'builtins': [
+                'django.templatetags.static',
+            ],
         },
     },
 ]
