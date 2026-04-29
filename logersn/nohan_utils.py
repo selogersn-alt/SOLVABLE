@@ -88,7 +88,7 @@ def search_matching_properties(query):
                 img_url = primary_img.image_url.url
                 if not img_url.startswith('http'): img_url = f"https://logersenegal.com{img_url}"
 
-            card_data = {"title": p.title, "price": f"{p.price:,}".replace(",", " "), "url": url, "image": img_url}
+            card_data = {"id": p.id, "title": p.title, "price": f"{p.price:,}".replace(",", " "), "url": url, "image": img_url}
             results.append(f"[PROPERTY_CARD:{json.dumps(card_data).replace('\"', '&quot;')}]")
         except: continue
     
