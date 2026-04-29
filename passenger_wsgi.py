@@ -8,14 +8,14 @@ if path not in sys.path:
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'logersenegal.settings')
 
-# Mode debug forcé pour voir l'erreur
+# Mode debug forcé pour voir l'erreur avec un code 200 (pour tromper Cloudflare)
 try:
     from logersenegal.wsgi import application
 except Exception as e:
     import traceback
     def application(environ, start_response):
-        status = '500 Internal Server Error'
-        output = f"ERREUR DE DEMARRAGE DJANGO :\n\n{str(e)}\n\n{traceback.format_exc()}".encode('utf-8')
+        status = '200 OK'
+        output = f"DEBUG LOGER - ERREUR CRITIQUE DETECTEE :\n\n{str(e)}\n\n{traceback.format_exc()}".encode('utf-8')
         response_headers = [('Content-type', 'text/plain; charset=utf-8'), ('Content-Length', str(len(output)))]
         start_response(status, response_headers)
         return [output]
