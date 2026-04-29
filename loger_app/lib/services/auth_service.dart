@@ -112,4 +112,24 @@ class AuthService {
   Future<bool> loadUser() async {
     return await isLoggedIn();
   }
+
+  Future<bool> deleteAccount() async {
+    final token = await _storage.read(key: 'access_token');
+    if (token == null) return false;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/delete-account/'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        await logout();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 }

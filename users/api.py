@@ -63,3 +63,16 @@ class SolvencyDocumentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+class DeleteAccountView(APIView):
+    """
+    Endpoint pour la suppression de compte (Exigence Google Play Store).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        # Pour une vraie application, on pourrait désactiver au lieu de supprimer
+        # mais Google demande que l'utilisateur puisse supprimer ses données.
+        user.delete()
+        return Response({'message': 'Compte supprimé avec succès.'}, status=status.HTTP_200_OK)

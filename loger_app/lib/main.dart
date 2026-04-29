@@ -57,13 +57,23 @@ class LogerApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF004D40),
-          primary: const Color(0xFF004D40),
-          secondary: const Color(0xFF1A237E),
+          seedColor: const Color(0xFF0B4629),
+          primary: const Color(0xFF0B4629),
+          secondary: const Color(0xFFDAA520),
           surface: Colors.white,
         ),
         textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
-        scaffoldBackgroundColor: const Color(0xFFF0F2F5),
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            color: Color(0xFF0B4629),
+            fontWeight: FontWeight.w900,
+            fontSize: 20,
+          ),
+        ),
       ),
       home: const SplashScreen(),
     );
@@ -133,22 +143,21 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FadeInDown(
-              // Taille réduite pour éviter l'overflow
-              child: Image.asset('assets/img/logo.png', width: 180),
+              child: Image.asset('assets/img/logo.png', width: 220),
             ),
             const SizedBox(height: 20),
             FadeInUp(
               child: const Text(
                 "L'immobilier en toute confiance",
                 style: TextStyle(
-                  color: Color(0xFF004D40),
+                  color: Color(0xFF0B4629),
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
-            const SizedBox(height: 40),
-            const SpinKitFadingCube(color: Color(0xFF004D40), size: 30.0),
+            const SizedBox(height: 60),
+            const SpinKitWave(color: Color(0xFFDAA520), size: 30.0),
           ],
         ),
       ),
@@ -165,6 +174,7 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
+  final AuthService _auth = AuthService();
 
   void _onTabTapped(int index) {
     setState(() => _selectedIndex = index);
@@ -173,29 +183,38 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: [
-                PropertyListScreen(
-                  onPropertyTap: (property) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PropertyDetailScreen(property: property),
-                      ),
-                    );
-                  },
-                ),
-                const ExploreProfessionalsScreen(),
-                const FavoritesScreen(),
-                const DashboardScreen(),
-                const SettingsScreen(),
-              ],
-            ),
+      appBar: AppBar(
+        title: Image.asset('assets/img/logo.png', height: 40),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded, color: Color(0xFF0B4629)),
+            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF0B4629)),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      drawer: _buildDrawer(),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          PropertyListScreen(
+            onPropertyTap: (property) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PropertyDetailScreen(property: property),
+                ),
+              );
+            },
+          ),
+          const NohanChatScreen(),
+          const FavoritesScreen(),
+          const DashboardScreen(),
+          const SettingsScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -205,22 +224,17 @@ class _MainNavigationState extends State<MainNavigation> {
             MaterialPageRoute(builder: (context) => const AddPropertyScreen()),
           );
         },
-        backgroundColor: const Color(0xFF0B4629),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        backgroundColor: const Color(0xFFDAA520),
+        elevation: 4,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 35),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        padding: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onTabTapped,
@@ -236,14 +250,14 @@ class _MainNavigationState extends State<MainNavigation> {
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900),
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded, size: 22),
-              activeIcon: Icon(Icons.grid_view_rounded, size: 26),
+              icon: Icon(Icons.home_outlined, size: 22),
+              activeIcon: Icon(Icons.home_rounded, size: 26),
               label: 'Accueil',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.explore_outlined, size: 22),
-              activeIcon: Icon(Icons.explore_rounded, size: 26),
-              label: 'Pros',
+              icon: Icon(Icons.psychology_outlined, size: 22),
+              activeIcon: Icon(Icons.psychology_rounded, size: 26),
+              label: 'Nohan AI',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite_outline_rounded, size: 22),
@@ -256,12 +270,81 @@ class _MainNavigationState extends State<MainNavigation> {
               label: 'Dashboard',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.tune_rounded, size: 22),
-              activeIcon: Icon(Icons.tune_rounded, size: 26),
-              label: 'Paramètres',
+              icon: Icon(Icons.person_outline_rounded, size: 22),
+              activeIcon: Icon(Icons.person_rounded, size: 26),
+              label: 'Compte',
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    final user = _auth.currentUser;
+    return Drawer(
+      backgroundColor: Colors.white,
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            decoration: const BoxDecoration(color: Color(0xFF0B4629)),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: const Color(0xFFDAA520),
+              child: Text(
+                user?.firstName.substring(0, 1).toUpperCase() ?? 'L',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+            accountName: Text(user != null ? '${user.firstName} ${user.lastName}' : 'Visiteur', style: const TextStyle(fontWeight: FontWeight.bold)),
+            accountEmail: Text(user?.phoneNumber ?? 'Loger Sénégal'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.article_outlined, color: Color(0xFF0B4629)),
+            title: const Text('Blog Immobilier'),
+            onTap: () {
+              Navigator.pop(context);
+              // Navigation vers Blog
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.shield_outlined, color: Color(0xFF0B4629)),
+            title: const Text('Liste Noire (Sécurité)'),
+            onTap: () {
+              Navigator.pop(context);
+              // Navigation vers Blacklist
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.people_outline, color: Color(0xFF0B4629)),
+            title: const Text('Annuaire des Pros'),
+            onTap: () {
+              Navigator.pop(context);
+              _onTabTapped(1); // Nohan ou autre
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.help_outline_rounded, color: Color(0xFF0B4629)),
+            title: const Text('Aide & Support'),
+            onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline_rounded, color: Color(0xFF0B4629)),
+            title: const Text('À propos'),
+            onTap: () => Navigator.pop(context),
+          ),
+          const Spacer(),
+          if (user != null)
+            ListTile(
+              leading: const Icon(Icons.logout_rounded, color: Colors.red),
+              title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                await _auth.logout();
+                if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SplashScreen()));
+              },
+            ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

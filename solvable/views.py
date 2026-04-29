@@ -23,6 +23,13 @@ class PaymentHistoryViewSet(viewsets.ModelViewSet):
     queryset = PaymentHistory.objects.all()
     serializer_class = PaymentHistorySerializer
 
+from .models import ProfessionalFraudReport
+from .serializers import ProfessionalFraudReportSerializer
+
+class ProfessionalFraudReportViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ProfessionalFraudReport.objects.filter(is_validated=True).order_by('-created_at')
+    serializer_class = ProfessionalFraudReportSerializer
+
 
 @login_required
 def report_incident_view(request):

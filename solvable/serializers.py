@@ -27,3 +27,10 @@ class PropertyVisitRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyVisitRequest
         fields = '__all__'
+
+from .models import ProfessionalFraudReport
+
+class ProfessionalFraudReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfessionalFraudReport
+        fields = ['id', 'reported_pro_name', 'reported_pro_phone', 'fraud_description', 'is_critical_alert', 'created_at']

@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/api_service.dart';
+import 'property_detail_screen.dart';
 
 class NohanChatScreen extends StatefulWidget {
   const NohanChatScreen({super.key});
@@ -106,11 +108,53 @@ class _NohanChatScreenState extends State<NohanChatScreen> {
 
   Widget _buildBubble(Map<String, dynamic> msg) {
     bool isAi = msg['role'] == 'assistant';
+    String content = msg['content'];
+    
+    // Parse property cards if present
+    List<Widget> children = [];
+    
+    if (isAi) {
+      final regExp = RegExp(r'\[PROPERTY_CARD:(.*?)\]');
+      final matches = regExp.allMatches(content);
+      
+      if (matches.isNotEmpty) {
+        // Text before cards
+        String textPart = content.split('[PROPERTY_CARD:').first.trim();
+        if (textPart.isNotEmpty) {
+          children.add(_buildTextBubble(textPart, isAi));
+        }
+        
+        // The cards
+        for (final match in matches) {
+          try {
+            final jsonStr = match.group(1)?.replaceAll('&quot;', '"');
+            if (jsonStr != null) {
+              final cardData = json.decode(jsonStr);
+              children.add(_buildPropertyCard(cardData));
+            }
+          } catch (e) {
+            debugPrint('Error parsing property card: $e');
+          }
+        }
+      } else {
+        children.add(_buildTextBubble(content, isAi));
+      }
+    } else {
+      children.add(_buildTextBubble(content, isAi));
+    }
+
+    return Column(
+      crossAxisAlignment: isAi ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      children: children,
+    );
+  }
+
+  Widget _buildTextBubble(String text, bool isAi) {
     return Align(
       alignment: isAi ? Alignment.centerLeft : Alignment.centerRight,
       child: FadeInUp(
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
           decoration: BoxDecoration(
@@ -123,9 +167,80 @@ class _NohanChatScreenState extends State<NohanChatScreen> {
             ),
           ),
           child: Text(
-            msg['content'],
-            style: TextStyle(color: isAi ? Colors.black87 : Colors.white, fontSize: 15, height: 1.4),
+            text,
+            style: TextStyle(
+              color: isAi ? Colors.black87 : Colors.white,
+              fontSize: 15,
+              height: 1.4,
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPropertyCard(Map<String, dynamic> data) {
+    return FadeInRight(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16, left: 10),
+        width: MediaQuery.of(context).size.width * 0.75,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          border: Border.all(color: Colors.grey.shade100),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Image.network(
+                data['image'] ?? '',
+                height: 140,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade200, height: 140, child: const Icon(Icons.image_not_supported)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(data['title'] ?? 'Sans titre', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Text('${data['price']} F', style: const TextStyle(color: Color(0xFF0B4629), fontWeight: FontWeight.w900, fontSize: 16)),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final propertyId = data['id'];
+                        if (propertyId != null) {
+                          // Afficher un loader
+                          showDialog(context: context, builder: (c) => const Center(child: CircularProgressIndicator(color: Color(0xFFDAA520))));
+                          final p = await _apiService.fetchProperty(propertyId.toString());
+                          if (mounted) Navigator.pop(context); // Fermer loader
+                          
+                          if (p != null && mounted) {
+                            Navigator.push(context, MaterialPageRoute(builder: (c) => PropertyDetailScreen(property: p)));
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0B4629),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      child: const Text('Voir le bien', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -158,8 +273,8 @@ class _NohanChatScreenState extends State<NohanChatScreen> {
             onTap: _sendMessage,
             child: Container(
               padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(color: Color(0xFFF5C42F), shape: BoxShape.circle),
-              child: const Icon(Icons.send_rounded, color: Color(0xFF0B4629)),
+              decoration: const BoxDecoration(color: Color(0xFFDAA520), shape: BoxShape.circle),
+              child: const Icon(Icons.send_rounded, color: Colors.white),
             ),
           ),
         ],

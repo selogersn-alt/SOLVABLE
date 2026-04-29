@@ -22,3 +22,11 @@ def blog_detail(request, slug):
         'seo_title': post.title,
         'seo_description': post.meta_description or post.content[:160]
     })
+
+from rest_framework import viewsets
+from .serializers import BlogPostSerializer
+
+class BlogPostViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BlogPost.objects.filter(is_published=True).order_by('-created_at')
+    serializer_class = BlogPostSerializer
+    lookup_field = 'slug'

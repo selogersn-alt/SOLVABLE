@@ -32,8 +32,14 @@ from rest_framework.routers import DefaultRouter
 # from chat.api import ConversationViewSet
 # from users.api import SolvencyDocumentViewSet
 
+from articles.views import BlogPostViewSet
+
+from solvable.views import ProfessionalFraudReportViewSet
+
 # API Router configuration
 router = DefaultRouter()
+router.register(r'blog', BlogPostViewSet, basename='api-blog')
+router.register(r'blacklist', ProfessionalFraudReportViewSet, basename='api-blacklist')
 # router.register(r'properties', PropertyViewSet, basename='api-property')
 # router.register(r'property-images', PropertyImageViewSet, basename='api-property-image')
 # router.register(r'professionals', ProfessionalsViewSet, basename='api-professional')

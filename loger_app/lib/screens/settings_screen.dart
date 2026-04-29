@@ -162,26 +162,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const SizedBox(height: 48),
-          if (user != null)
+          if (user != null) ...[
             FadeInUp(
+              child: ElevatedButton(
+                onPressed: () async {
+                  bool confirm = await _showConfirmDialog(
+                    'Supprimer mon compte ?',
+                    'Cette action est irréversible. Toutes vos annonces et données seront supprimées définitivement conformément aux règles de protection des données.',
+                    'SUPPRIMER',
+                    Colors.red,
+                  );
+                  if (confirm) {
+                    final success = await AuthService().deleteAccount();
+                    if (success && mounted) {
+                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (c) => const LoginScreen()), (r) => false);
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.red,
+                  elevation: 0,
+                  side: BorderSide(color: Colors.red.shade100),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('SUPPRIMER MON COMPTE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FadeInUp(
+              delay: const Duration(milliseconds: 100),
               child: ElevatedButton(
                 onPressed: () async {
                   await AuthService().logout();
                   setState(() {});
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade50,
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  backgroundColor: const Color(0xFF0B4629),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 5,
+                  shadowColor: const Color(0xFF0B4629).withValues(alpha: 0.3),
                 ),
                 child: const Text('DÉCONNEXION', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2)),
               ),
             ),
+          ],
           const SizedBox(height: 60),
         ],
       ),
     );
+  }
+
+  Future<bool> _showConfirmDialog(String title, String content, String btnText, Color btnColor) async {
+    return await showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(content),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('ANNULER', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(c, true),
+            style: ElevatedButton.styleFrom(backgroundColor: btnColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            child: Text(btnText),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 
   Widget _buildProfile(AppUser user) {

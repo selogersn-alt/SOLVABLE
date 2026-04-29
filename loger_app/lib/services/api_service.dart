@@ -361,8 +361,9 @@ class ApiService {
 
   Future<Map<String, dynamic>?> chatWithNohan(String message, List<dynamic> history) async {
     try {
+      // Note: On utilise le domaine de base car nohan-chat est à la racine sur ce repo
       final response = await http.post(
-        Uri.parse('$baseUrl/nohan/chat/'),
+        Uri.parse('https://logersenegal.com/nohan-chat/'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'message': message, 'history': history}),
       );
@@ -388,6 +389,34 @@ class ApiService {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  // --- Sécurité & Liste Noire ---
+
+  Future<List<dynamic>> fetchBlacklist() async {
+    try {
+      final response = await http.get(Uri.parse('https://logersenegal.com/api/blacklist/'));
+      if (response.statusCode == 200) {
+        return json.decode(utf8.decode(response.bodyBytes));
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // --- Utilitaires ---
+
+  Future<Property?> fetchProperty(String id) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/logersn/properties/$id/'));
+      if (response.statusCode == 200) {
+        return Property.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 }

@@ -107,7 +107,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                 expandedHeight: 400,
                 pinned: true,
                 stretch: true,
-                backgroundColor: const Color(0xFF004D40),
+                backgroundColor: const Color(0xFF0B4629),
                 leading: Padding(
                   padding: const EdgeInsets.only(left: 16),
                   child: IconButton(
@@ -192,7 +192,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                               width: _currentImageIndex == index ? 24 : 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: _currentImageIndex == index ? Colors.white : Colors.white54,
+                                color: _currentImageIndex == index ? const Color(0xFFDAA520) : Colors.white54,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -221,12 +221,12 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)),
-                              child: Text(property.listingCategoryDisplay, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 10)),
+                              decoration: BoxDecoration(color: const Color(0xFFDAA520).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                              child: Text(property.listingCategoryDisplay, style: const TextStyle(color: Color(0xFFDAA520), fontWeight: FontWeight.bold, fontSize: 10)),
                             ),
                             Text(
                               "${currencyFormatter.format(property.price)} F",
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF004D40)),
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF0B4629)),
                             ),
                           ],
                         ),
@@ -235,7 +235,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF004D40)),
+                            const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF0B4629)),
                             const SizedBox(width: 4),
                             Text('${property.neighborhood}, ${property.city}', style: TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.w500)),
                           ],
@@ -304,7 +304,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     const SizedBox(width: 12),
                     
                     // Phone Button
-                    _actionBtn(Icons.phone_rounded, _launchCall, color: const Color(0xFF004D40)),
+                    _actionBtn(Icons.phone_rounded, _launchCall, color: const Color(0xFF0B4629)),
                   ],
                 ),
               ),
@@ -368,7 +368,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text('${NumberFormat.compact().format(p.price)} F', style: const TextStyle(color: Color(0xFF004D40), fontWeight: FontWeight.bold, fontSize: 11)),
+                        child: Text('${NumberFormat.compact().format(p.price)} F', style: const TextStyle(color: Color(0xFF0B4629), fontWeight: FontWeight.bold, fontSize: 11)),
                       ),
                     ],
                   ),
@@ -387,7 +387,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: const Color(0xFF004D40), size: 20),
+          child: Icon(icon, color: const Color(0xFF0B4629), size: 20),
         ),
         const SizedBox(height: 8),
         Text(val, style: const TextStyle(fontWeight: FontWeight.bold)),
