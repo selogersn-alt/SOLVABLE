@@ -10,13 +10,13 @@
     PassengerBaseURI /
 </IfModule>
 
-# Forcer le bon handler pour passenger_wsgi.py (Evite la fuite de code source)
+# Forcer le bon handler pour passenger_wsgi.py (Eviter la fuite de code source)
 <Files "passenger_wsgi.py">
     SetHandler application/x-httpd-wsgi
 </Files>
 
 # Redirection SEO : logersn.com -> logersenegal.com
-RewriteEngine On
+RewriteEngine on
 RewriteBase /
 RewriteCond %{HTTP_HOST} ^logersn\.com$ [NC,OR]
 RewriteCond %{HTTP_HOST} ^www\.logersn\.com$ [NC]

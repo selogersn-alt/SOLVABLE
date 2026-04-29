@@ -61,7 +61,7 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_' + 'FwrO5N5rfVTEuj5FwTvvWGdy
 # Application definition
 
 INSTALLED_APPS = [
-# 'jazzmin',
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -165,24 +165,18 @@ WSGI_APPLICATION = 'logersenegal.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'gaak4328_loger_app'),
+        'USER': os.environ.get('DB_USER', 'gaak4328_loger_app'), 
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''), 
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES', NAMES 'utf8mb4'",
+            'charset': 'utf8mb4',
+        }
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.environ.get('DB_NAME', 'gaak4328_loger_app'),
-#         'USER': os.environ.get('DB_USER', 'gaak4328_loger_app'), 
-#         'PASSWORD': os.environ.get('DB_PASSWORD', ''), 
-#         'HOST': os.environ.get('DB_HOST', 'localhost'),
-#         'PORT': os.environ.get('DB_PORT', '3306'),
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES', NAMES 'utf8mb4'",
-#             'charset': 'utf8mb4',
-#         }
-#     }
-# }
 
 
 # Password validation
