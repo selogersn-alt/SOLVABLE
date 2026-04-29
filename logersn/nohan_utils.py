@@ -70,7 +70,7 @@ def search_matching_properties(query):
     if has_geo:
         search_query &= geo_query
     
-    properties = Property.objects.filter(search_query).order_by('-is_boosted', '-created_at')[:3]
+    properties = Property.objects.filter(search_query).order_by('-created_at')[:3]
     
     if not properties.exists():
         # Fallback intelligent : derniers biens de la même catégorie

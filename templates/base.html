@@ -459,7 +459,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg bg-transparent">
                 <div class="modal-body p-0 position-relative text-center">
-                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 shadow-lg" data-bs-dismiss="modal" aria-label="Close" style="background-color: var(--color-dark-green); padding: 10px; border-radius: 50%;"></button>
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 shadow-lg" data-bs-dismiss="modal" aria-label="Close" style="background-color: red !important; opacity: 1; padding: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></button>
                     {% if ad_popup.ad_type == 'BANNER' %}
                         <a href="{{ ad_popup.target_url }}" target="_blank">
                             {% if ad_popup.image %}
@@ -486,7 +486,7 @@
                     {% if property_popup.images.first %}
                         <img src="{{ property_popup.images.first.image_url.url }}" class="img-fluid w-100" style="height: 250px; object-fit: cover;">
                     {% endif %}
-                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 p-2 bg-dark rounded-circle" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 p-2 rounded-circle shadow-lg" style="background-color: red !important; opacity: 1; border: 2px solid white;" data-bs-dismiss="modal" aria-label="Close"></button>
                     <div class="position-absolute bottom-0 start-0 p-3 w-100" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
                         <span class="badge bg-yellow text-dark mb-1">OFFRE PREMIUM</span>
                         <h4 class="text-white fw-bold mb-0">{{ property_popup.title }}</h4>
