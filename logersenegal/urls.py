@@ -28,17 +28,17 @@ from solvable.views import (
     create_filiation_pro_view
 )
 from rest_framework.routers import DefaultRouter
-from logersn.api import PropertyViewSet, PropertyImageViewSet, ProfessionalsViewSet
-from chat.api import ConversationViewSet
-from users.api import SolvencyDocumentViewSet
+# from logersn.api import PropertyViewSet, PropertyImageViewSet, ProfessionalsViewSet
+# from chat.api import ConversationViewSet
+# from users.api import SolvencyDocumentViewSet
 
 # API Router configuration
 router = DefaultRouter()
-router.register(r'properties', PropertyViewSet, basename='api-property')
-router.register(r'property-images', PropertyImageViewSet, basename='api-property-image')
-router.register(r'professionals', ProfessionalsViewSet, basename='api-professional')
-router.register(r'conversations', ConversationViewSet, basename='api-conversation')
-router.register(r'solvency-documents', SolvencyDocumentViewSet, basename='api-solvency-doc')
+# router.register(r'properties', PropertyViewSet, basename='api-property')
+# router.register(r'property-images', PropertyImageViewSet, basename='api-property-image')
+# router.register(r'professionals', ProfessionalsViewSet, basename='api-professional')
+# router.register(r'conversations', ConversationViewSet, basename='api-conversation')
+# router.register(r'solvency-documents', SolvencyDocumentViewSet, basename='api-solvency-doc')
 
 
 sitemaps = {
