@@ -13,6 +13,8 @@ class Advertisement(models.Model):
         ('POPUP', 'Pop-up (Surcouche)'),
         ('POPUNDER', 'Pop-under (Arrière-plan)'),
         ('SIDEBAR', 'Barre latérale (Sidebar)'),
+        ('LEFT_SKIN', 'Habillage Gauche (PC uniquement)'),
+        ('RIGHT_SKIN', 'Habillage Droit (PC uniquement)'),
     ]
 
     title = models.CharField(max_length=255, verbose_name="Titre de la publicité")

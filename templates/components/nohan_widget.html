@@ -3,15 +3,15 @@
 <div id="nohan-wrapper" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050; font-family: 'Inter', sans-serif;">
     <!-- Bouton d'activation -->
     <button id="nohan-toggle" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0 overflow-hidden" style="width: 65px; height: 65px; border: 3px solid #DAA520; transition: all 0.3s ease; background: white;">
-        <img src="{% static 'img/nohan_avatar.png' %}?v=4" alt="NOHAN Avatar" class="w-100 h-100 object-fit-cover">
+        <img src="{% static 'img/nohan_avatar_v2.png' %}" alt="NOHAN Avatar" class="w-100 h-100 object-fit-cover">
     </button>
 
     <!-- Fenêtre de Chat -->
-    <div id="nohan-chat" class="card shadow-lg d-none" style="width: 380px; max-width: 90vw; border-radius: 25px; overflow: hidden; border: none; transform: translateY(10px); transition: all 0.3s ease;">
+    <div id="nohan-chat" class="card shadow-lg d-none" style="position: absolute; bottom: 80px; right: 0; width: 380px; max-width: 90vw; border-radius: 25px; overflow: hidden; border: none; transform: translateY(10px); transition: all 0.3s ease;">
         <div class="card-header d-flex align-items-center justify-content-between p-3" style="background: linear-gradient(135deg, var(--color-dark-green), #062c1a); color: white; border-bottom: 2px solid #DAA520;">
             <div class="d-flex align-items-center">
                 <div class="rounded-circle bg-white p-1 me-2" style="width: 45px; height: 45px; overflow: hidden; border: 2px solid #DAA520;">
-                    <img src="{% static 'img/nohan_avatar.png' %}?v=4" alt="NOHAN Avatar" class="w-100 h-100 object-fit-cover">
+                    <img src="{% static 'img/nohan_avatar_v2.png' %}" alt="NOHAN Avatar" class="w-100 h-100 object-fit-cover">
                 </div>
                 <div>
                     <h6 class="mb-0 fw-bold" style="letter-spacing: 1px;">NOHAN</h6>

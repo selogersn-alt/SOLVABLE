@@ -300,6 +300,37 @@
             100% { transform: translate(-100%, 0); }
         }
 
+        /* PC Skins (Side Banners) */
+        .side-skin {
+            position: fixed;
+            top: 100px;
+            width: 160px;
+            height: 600px;
+            z-index: 900;
+            display: none; /* Hidden by default */
+        }
+
+        @media (min-width: 1400px) {
+            .side-skin {
+                display: block;
+            }
+            .side-skin-left {
+                left: calc(50% - 780px);
+            }
+            .side-skin-right {
+                right: calc(50% - 780px);
+            }
+        }
+        
+        @media (min-width: 1600px) {
+            .side-skin-left {
+                left: calc(50% - 880px);
+            }
+            .side-skin-right {
+                right: calc(50% - 880px);
+            }
+        }
+
         /* Toast / Notification "Push" Style */
         #system-toast-container {
             position: fixed;
@@ -311,6 +342,31 @@
     </style>
 </head>
 <body>
+    <!-- Side Banners (Skins) -->
+    {% if ad_left_skin %}
+    <div class="side-skin side-skin-left">
+        {% if ad_left_skin.ad_type == 'BANNER' %}
+            <a href="{{ ad_left_skin.target_url }}" target="_blank">
+                <img src="{{ ad_left_skin.image.url }}" class="img-fluid rounded-2 shadow-sm" alt="{{ ad_left_skin.title }}">
+            </a>
+        {% else %}
+            {{ ad_left_skin.script_content|safe }}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if ad_right_skin %}
+    <div class="side-skin side-skin-right">
+        {% if ad_right_skin.ad_type == 'BANNER' %}
+            <a href="{{ ad_right_skin.target_url }}" target="_blank">
+                <img src="{{ ad_right_skin.image.url }}" class="img-fluid rounded-2 shadow-sm" alt="{{ ad_right_skin.title }}">
+            </a>
+        {% else %}
+            {{ ad_right_skin.script_content|safe }}
+        {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Alertes Système DigitalH -->
     {% if active_system_alerts %}
         {% for alert in active_system_alerts %}
