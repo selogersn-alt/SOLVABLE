@@ -21,13 +21,23 @@ class EmailOrPhoneModelBackend(ModelBackend):
         if identifier is None:
             return None
 
+        identifier = identifier.strip()
+
         try:
-            # Try to fetch user by phone_number OR email
+            # 1. Exact match (Phone or Email)
             user = User.objects.filter(Q(phone_number=identifier) | Q(email=identifier)).first()
+            
+            # 2. Match without '+'
+            if not user and identifier.startswith('+'):
+                user = User.objects.filter(phone_number=identifier[1:]).first()
+                
+            # 3. Match without '+221' (Senegal prefix)
+            if not user and identifier.startswith('+221'):
+                user = User.objects.filter(phone_number=identifier[4:]).first()
+                
             if user and user.check_password(password) and self.user_can_authenticate(user):
                 return user
         except Exception as e:
-            # Shield against BDD errors during login (e.g. missing columns on server)
             import logging
             logging.error(f"Auth Backend Error: {e}")
             return None

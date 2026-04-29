@@ -19,6 +19,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   final PageController _pageController = PageController();
   late Future<Map<String, dynamic>> _similarPropertiesFuture;
   final ApiService _apiService = ApiService();
+  late bool _isFavorite;
 
   @override
   void initState() {
@@ -27,6 +28,16 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       propertyType: widget.property.propertyType,
       city: widget.property.city,
     );
+    _isFavorite = widget.property.isFavorite;
+  }
+
+  Future<void> _toggleFavorite() async {
+    final success = await _apiService.toggleFavorite(widget.property.id);
+    if (success) {
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+    }
   }
 
   void _openGallery(int initialIndex) {
@@ -109,6 +120,18 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                   ),
                 ),
                 actions: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      child: Icon(
+                        _isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                        color: _isFavorite ? Colors.red : Colors.black,
+                        size: 20,
+                      ),
+                    ),
+                    onPressed: _toggleFavorite,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(right: 16),
                     child: IconButton(
@@ -118,7 +141,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                         child: const Icon(Icons.share_rounded, color: Colors.black, size: 20),
                       ),
                       onPressed: () {
-                        Share.share(
+                        SharePlus.instance.share(
                           'Découvrez ce bien sur Loger Sénégal : ${property.title}\nLien : https://logersenegal.com/annonces/${property.id}/',
                         );
                       },

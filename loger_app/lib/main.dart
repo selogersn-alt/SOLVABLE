@@ -11,6 +11,8 @@ import 'screens/property_detail_screen.dart';
 import 'screens/professionals_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/add_property_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/nohan_chat_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -189,6 +191,7 @@ class _MainNavigationState extends State<MainNavigation> {
                 ),
                 const ExploreProfessionalsScreen(),
                 const FavoritesScreen(),
+                const DashboardScreen(),
                 const SettingsScreen(),
               ],
             ),
@@ -248,6 +251,11 @@ class _MainNavigationState extends State<MainNavigation> {
               label: 'Favoris',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined, size: 22),
+              activeIcon: Icon(Icons.dashboard_rounded, size: 26),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.tune_rounded, size: 22),
               activeIcon: Icon(Icons.tune_rounded, size: 26),
               label: 'Paramètres',
@@ -267,36 +275,87 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  // Favorites implementation dummy (shared_prefs linked)
+  final ApiService _apiService = ApiService();
+  List<Property> _favorites = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    setState(() => _isLoading = true);
+    try {
+      final list = await _apiService.fetchFavorites();
+      setState(() {
+        _favorites = list;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'Favoris',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
+        title: const Text('Favoris', style: TextStyle(fontWeight: FontWeight.w900)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.favorite_border_rounded,
-              size: 80,
-              color: Colors.blueGrey.shade100,
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : _favorites.isEmpty 
+          ? _buildEmptyState()
+          : ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: _favorites.length,
+              itemBuilder: (context, index) {
+                final p = _favorites[index];
+                return _buildFavoriteCard(p);
+              },
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Vos coups de coeur s\'afficheront ici',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
+    );
+  }
+
+  Widget _buildFavoriteCard(Property p) {
+    return Card(
+      margin: const EdgeInsets.bottom(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(12),
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(p.images.isNotEmpty ? p.images.first.imageUrl : '', width: 70, height: 70, fit: BoxFit.cover),
         ),
+        title: Text(p.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text('${p.price} F'),
+        trailing: IconButton(
+          icon: const Icon(Icons.favorite, color: Colors.red),
+          onPressed: () async {
+            await _apiService.toggleFavorite(p.id);
+            _loadFavorites();
+          },
+        ),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PropertyDetailScreen(property: p))),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.favorite_border_rounded, size: 80, color: Colors.blueGrey.shade100),
+          const SizedBox(height: 16),
+          const Text('Vos coups de coeur s\'afficheront ici', style: TextStyle(color: Colors.grey)),
+        ],
       ),
     );
   }

@@ -21,7 +21,6 @@ class PropertyListScreen extends StatefulWidget {
 
 class _PropertyListScreenState extends State<PropertyListScreen> {
   final ApiService _apiService = ApiService();
-  static const _pageSize = 10;
   final PagingController<int, Property> _pagingController = PagingController(
     firstPageKey: 1,
   );
@@ -31,7 +30,6 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
   String _selectedType = 'TOUT';
   String _selectedCategory = 'TOUT';
   String _selectedNeighborhood = 'TOUT';
-  Timer? _refreshTimer;
 
   final Map<String, String> _categoryMap = {
     'TOUT': 'TOUT',
@@ -45,43 +43,21 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     'DAKAR': 'DAKAR',
     'THIES': 'THIES',
     'MBOUR': 'MBOUR',
-    'SALY': 'SALY',
-    'TOUBA': 'TOUBA',
-    'RUFISQUE': 'RUFISQUE',
     'SAINT-LOUIS': 'SAINT_LOUIS',
-    'SOMONE': 'SOMONE',
-    'NGAPAROU': 'NGAPAROU',
+    'ZIGUINCHOR': 'ZIGUINCHOR',
   };
 
   final Map<String, String> _typeMap = {
     'TOUT': 'TOUT',
     'APPARTEMENT': 'APARTMENT',
     'VILLA': 'VILLA',
-    'MAISON': 'MAISON',
     'STUDIO': 'STUDIO',
+    'CHAMBRE': 'CHAMBRE',
     'TERRAIN': 'TERRAIN',
-    'BUREAU': 'BUREAU',
-    'COMMERCIAL': 'COMMERCIAL',
-    'IMMEUBLE': 'IMMEUBLE',
   };
 
   late final List<String> _cities = _cityMap.keys.toList();
   late final List<String> _types = _typeMap.keys.toList();
-  final List<String> _neighborhoods = [
-    'TOUT',
-    'Almadies',
-    'Plateau',
-    'Mermoz',
-    'Ngor',
-    'Ouakam',
-    'Point E',
-    'Fann',
-    'Liberté 6',
-    'Sacré Coeur',
-    'Keur Massar',
-    'Guediawaye',
-    'Pikine',
-  ];
 
   @override
   void initState() {
@@ -103,6 +79,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         page: pageKey,
         city: _selectedCity == 'TOUT' ? null : _cityMap[_selectedCity],
         propertyType: _selectedType == 'TOUT' ? null : _typeMap[_selectedType],
+        listingCategory: _selectedCategory == 'TOUT' ? null : _categoryMap[_selectedCategory],
         neighborhood: _selectedNeighborhood == 'TOUT'
             ? null
             : _selectedNeighborhood,
@@ -196,7 +173,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0B4629).withValues(alpha: 0.3),
+                          color: const Color(0xFF0B4629).withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -282,14 +259,14 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.95),
+                          color: Colors.white.withOpacity(0.95),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity(0.2),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.12),
+                              color: Colors.black.withOpacity(0.12),
                               blurRadius: 40,
                               offset: const Offset(0, 15),
                             ),
@@ -312,10 +289,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                                     builder: (context) => SearchResultsScreen(
                                       city: _selectedCity == 'TOUT'
                                           ? null
-                                          : _cityMap[_selectedCity],
+                                          : _selectedCity,
                                       type: _selectedType == 'TOUT'
                                           ? null
-                                          : _typeMap[_selectedType],
+                                          : _selectedType,
                                       category: _selectedCategory == 'TOUT'
                                           ? null
                                           : _selectedCategory,
@@ -369,7 +346,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   border: Border.all(color: const Color(0xFFF1F5F9)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withOpacity(0.05),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -380,10 +357,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.shield_outlined,
-                          color: Colors.redAccent,
-                          size: 28,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: const Color(0xFFF5C42F).withOpacity(0.2), shape: BoxShape.circle),
+                          child: const Icon(Icons.psychology_outlined, color: Color(0xFF0B4629), size: 20),
                         ),
                         const SizedBox(width: 12),
                         const Text(
@@ -603,36 +580,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                     setState(() {
                       _selectedCategory = newValue;
                     });
+                    _refresh();
                   }
                 },
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchInput() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          const Icon(Icons.search_rounded, color: Color(0xFF27C66E), size: 22),
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Mots-clés (Villa, piscine...)',
-                hintStyle: TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                border: InputBorder.none,
-              ),
-              onSubmitted: (_) => _refresh(),
             ),
           ),
         ],
@@ -745,61 +696,6 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       ),
     );
   }
-
-  Widget _buildNeighborhoodSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.location_on_outlined,
-            color: Color(0xFF27C66E),
-            size: 22,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedNeighborhood,
-                isExpanded: true,
-                dropdownColor: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                hint: const Text(
-                  'Quartier',
-                  style: TextStyle(color: Colors.blueGrey),
-                ),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Colors.blueGrey,
-                ),
-                items: _neighborhoods.map((String neighborhood) {
-                  return DropdownMenuItem<String>(
-                    value: neighborhood,
-                    child: Text(
-                      neighborhood,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedNeighborhood = newValue;
-                    });
-                  }
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPropertyCard(Property p) {
     return GestureDetector(
       onTap: () => widget.onPropertyTap(p),
@@ -809,7 +705,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20),
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20),
           ],
         ),
         child: Column(

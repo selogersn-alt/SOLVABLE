@@ -1,8 +1,12 @@
 from django.db.models import Q
 from rest_framework import viewsets, permissions, filters
-from .models import Property, PropertyImage, Favorite
+from .models import Property, PropertyImage, Favorite, NohanMessage
 from users.models import User
-from .serializers import PropertySerializer, PropertyImageSerializer, ProfessionalSerializer
+from .serializers import PropertySerializer, PropertyImageSerializer, ProfessionalSerializer, NohanMessageSerializer
+from solvable.models import PropertyBooking, PropertyVisitRequest
+from solvable.serializers import PropertyBookingSerializer, PropertyVisitRequestSerializer
+from articles.models import BlogPost
+from articles.serializers import BlogPostSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -65,6 +69,88 @@ class PropertyViewSet(viewsets.ModelViewSet):
         favorites = Property.objects.filter(favorited_by__user=request.user)
         serializer = self.get_serializer(favorites, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='my-properties')
+    def my_properties(self, request):
+        properties = Property.objects.filter(owner=request.user).order_by('-created_at')
+        serializer = self.get_serializer(properties, many=True)
+        return Response(serializer.data)
+
+class BookingViewSet(viewsets.ModelViewSet):
+    serializer_class = PropertyBookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # On voit les réservations faites ET reçues
+        return PropertyBooking.objects.filter(
+            Q(user=self.request.user) | Q(property__owner=self.request.user)
+        ).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class VisitViewSet(viewsets.ModelViewSet):
+    serializer_class = PropertyVisitRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return PropertyVisitRequest.objects.filter(
+            Q(user=self.request.user) | Q(property__owner=self.request.user)
+        ).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class NohanViewSet(viewsets.ViewSet):
+    """
+    API pour discuter avec NOHAN.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=['post'])
+    def chat(self, request):
+        from .nohan_utils import call_gemini_api
+        
+        user_message = request.data.get('message', '')
+        history = request.data.get('history', [])
+        
+        if not user_message:
+            return Response({'error': 'Message vide'}, status=400)
+            
+        # 1. Enregistrer le message de l'utilisateur
+        NohanMessage.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            session_key=request.session.session_key,
+            role='user',
+            content=user_message
+        )
+
+        # 2. Appel à l'IA
+        try:
+            ai_response = call_gemini_api(user_message, history)
+            
+            # 3. Enregistrer la réponse de l'IA
+            NohanMessage.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key,
+                role='assistant',
+                content=ai_response
+            )
+
+            return Response({
+                'response': ai_response,
+                'role': 'model'
+            })
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+class BlogPostViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API pour lire les guides et articles de blog.
+    """
+    queryset = BlogPost.objects.filter(is_published=True).order_by('-created_at')
+    serializer_class = BlogPostSerializer
+    permission_classes = [permissions.AllowAny]
 
 class PropertyImageViewSet(viewsets.ModelViewSet):
     """

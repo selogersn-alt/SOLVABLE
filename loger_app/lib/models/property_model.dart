@@ -28,6 +28,7 @@ class Property {
   final double surface;
   final double latitude;
   final double longitude;
+  final bool isFavorite;
 
   Property({
     required this.id,
@@ -59,6 +60,7 @@ class Property {
     required this.absoluteUrl,
     this.latitude = 0.0,
     this.longitude = 0.0,
+    this.isFavorite = false,
   });
 
   factory Property.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,7 @@ class Property {
       absoluteUrl: json['absolute_url'] ?? '',
       latitude: double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
       longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
+      isFavorite: json['is_favorite'] ?? false,
     );
   }
 }

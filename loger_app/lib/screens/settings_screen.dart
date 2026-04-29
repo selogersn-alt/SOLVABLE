@@ -9,6 +9,8 @@ import 'help_screen.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'add_property_screen.dart';
+import 'blog_screen.dart';
+import 'nohan_chat_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -124,6 +126,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.psychology_outlined, color: Color(0xFFF5C42F)),
+                  title: const Text('Assistant Nohan AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  subtitle: const Text('Discutez avec notre IA immobilière', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NohanChatScreen())),
+                ),
+                const Divider(height: 1, indent: 60),
+                ListTile(
+                  leading: const Icon(Icons.article_outlined, color: Color(0xFF0B4629)),
+                  title: const Text('Guides & Articles', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  subtitle: const Text('Conseils immobiliers au Sénégal', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BlogScreen())),
+                ),
+                const Divider(height: 1, indent: 60),
                 ListTile(
                   leading: const Icon(Icons.help_outline_rounded, color: Color(0xFF0B4629)),
                   title: const Text('Centre d\'aide & FAQ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),

@@ -299,4 +299,95 @@ class ApiService {
       return false;
     }
   }
+
+  // --- Dashboard & My Items ---
+
+  Future<List<Property>> fetchMyProperties() async {
+    final token = await _storage.read(key: 'access_token');
+    if (token == null) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/properties/my-properties/'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+        return list.map((json) => Property.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> fetchMyBookings() async {
+    final token = await _storage.read(key: 'access_token');
+    if (token == null) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/bookings/'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        return json.decode(utf8.decode(response.bodyBytes));
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> fetchMyVisits() async {
+    final token = await _storage.read(key: 'access_token');
+    if (token == null) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/visits/'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        return json.decode(utf8.decode(response.bodyBytes));
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // --- Nohan AI ---
+
+  Future<Map<String, dynamic>?> chatWithNohan(String message, List<dynamic> history) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/nohan/chat/'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'message': message, 'history': history}),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(utf8.decode(response.bodyBytes));
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // --- Blog & Articles ---
+
+  Future<List<dynamic>> fetchBlogPosts() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/blog/'));
+      if (response.statusCode == 200) {
+        final List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+        return list;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
 }
