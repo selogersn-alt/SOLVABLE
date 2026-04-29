@@ -1439,61 +1439,51 @@ def nohan_chat_view(request):
     Endpoint AJAX pour discuter avec NOHAN (Assistant IA).
     Ouvert aux visiteurs et enregistre les conversations pour l'IA.
     """
-    if request.method == 'POST':
+    import json
+    from django.http import JsonResponse
+    from logersn.nohan_utils import call_gemini_api
+    from logersn.models import NohanMessage
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée. Veuillez utiliser POST.'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message', '')
+        history = data.get('history', [])
+        
+        if not user_message:
+            return JsonResponse({'error': 'Message vide'}, status=400)
+            
+        # 1. Enregistrer le message de l'utilisateur
         try:
-            import json
-            from logersn.nohan_utils import call_gemini_api
-            from logersn.models import NohanMessage
+            NohanMessage.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key,
+                role='user',
+                content=user_message
+            )
+        except: pass
             
-            data = json.loads(request.body)
-            user_message = data.get('message', '')
-            history = data.get('history', [])
-            
-            if not user_message:
-                return JsonResponse({'error': 'Message vide'}, status=400)
-                
-            # 1. Enregistrer le message de l'utilisateur (Optionnel : ne bloque pas si échec)
-            try:
-                NohanMessage.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
-                    session_key=request.session.session_key,
-                    role='user',
-                    content=user_message
-                )
-            except Exception:
-                pass
-
-            # 2. Appel à l'IA (Groq/Llama)
-            ai_response = call_gemini_api(user_message, history)
-            
-            # 3. Enregistrer la réponse de l'IA (Optionnel)
-            try:
-                NohanMessage.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
-                    session_key=request.session.session_key,
-                    role='assistant',
-                    content=ai_response
-                )
-            except Exception:
-                pass
-
-            return JsonResponse({
-                'response': ai_response,
-                'role': 'model'
-            })
-        except Exception as e:
-            # En production, on renvoie une réponse polie même en cas d'erreur technique
-            return JsonResponse({
-                'response': "Je suis désolé, j'ai une petite hésitation technique. Pouvez-vous reformuler ?",
-                'role': 'model',
-                'error': str(e)
-            })
-            
-    # Si la méthode n'est pas POST (ex: redirection .htaccess qui transforme POST en GET)
-    return JsonResponse({
-        'error': 'Méthode non autorisée. Utilisez POST.',
-        'response': "Désolé, une erreur réseau est survenue. Veuillez réessayer."
-    }, status=405)
+        # 2. Appeler l'IA (Groq / Llama) via nohan_utils
+        ai_response = call_gemini_api(user_message, history)
+        
+        # 3. Enregistrer la réponse de l'IA
+        try:
+            NohanMessage.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                session_key=request.session.session_key,
+                role='assistant',
+                content=ai_response
+            )
+        except: pass
+        
+        return JsonResponse({'response': ai_response})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Format JSON invalide'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f"Une erreur interne est survenue : {str(e)}"}, status=500)
         
     return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
 
