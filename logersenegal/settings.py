@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'solvable',
     'chat',
     'ads',
+    'drf_spectacular',
     'articles',
 ]
 
@@ -95,6 +96,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
@@ -325,7 +327,13 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success"
     }
 }
-# SPECTACULAR_SETTINGS removed temporarily
+# Spectacular Settings (Point 8)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Solvable Loger Sénégal API',
+    'DESCRIPTION': 'Documentation technique des services immobiliers de prestige par DigitalH.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 # --- CONFIGURATION LOCALE (ZÉRO CONFLIT) ---
 # Ce bloc permet de surcharger les réglages (comme la BDD) sur le serveur
