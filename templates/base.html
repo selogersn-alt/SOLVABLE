@@ -766,6 +766,8 @@
     {% endif %}
     
     <!-- Assistant IA NOHAN -->
-    {% include 'components/nohan_widget.html' %}
+    {% if nohan_active %}
+        {% include 'components/nohan_widget.html' %}
+    {% endif %}
 </body>
 </html>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Advertisement, AdsConfig, SEOSetting
+from .models import Advertisement, AdsConfig, SEOSetting, NohanSetting
 
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
@@ -19,3 +19,10 @@ class SEOSettingAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         # Only allow one instance
         return not SEOSetting.objects.exists()
+
+@admin.register(NohanSetting)
+class NohanSettingAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'is_active')
+    
+    def has_add_permission(self, request):
+        return not NohanSetting.objects.exists()

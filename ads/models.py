@@ -61,3 +61,13 @@ class SEOSetting(models.Model):
 
     def __str__(self):
         return self.title
+
+class NohanSetting(models.Model):
+    is_active = models.BooleanField(default=True, verbose_name="Activer l'assistant Nohan")
+    
+    class Meta:
+        verbose_name = "Paramètres Nohan"
+        verbose_name_plural = "Paramètres Nohan"
+        
+    def __str__(self):
+        return f"Nohan Assistant: {'Actif' if self.is_active else 'Inactif'}"

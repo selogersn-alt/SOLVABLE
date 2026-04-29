@@ -1,4 +1,4 @@
-from .models import Advertisement, SEOSetting
+from .models import Advertisement, SEOSetting, NohanSetting
 from logersn.models import Property
 
 def ads_processor(request):
@@ -14,9 +14,10 @@ def ads_processor(request):
         right_skin_ads = Advertisement.objects.filter(location='RIGHT_SKIN', is_active=True).first()
         property_popup = Property.objects.filter(is_featured_popup=True, is_published=True).order_by('-id').first()
         seo_settings = SEOSetting.objects.first()
+        nohan_setting = NohanSetting.objects.first()
     except Exception:
         top_ads = bottom_ads = sidebar_ads = in_feed_ads = []
-        popup_ads = pop_under_ads = property_popup = seo_settings = left_skin_ads = right_skin_ads = None
+        popup_ads = pop_under_ads = property_popup = seo_settings = left_skin_ads = right_skin_ads = nohan_setting = None
 
     return {
         'ads_top': top_ads,
@@ -29,4 +30,5 @@ def ads_processor(request):
         'ad_right_skin': right_skin_ads,
         'property_popup': property_popup,
         'seo_settings': seo_settings,
+        'nohan_active': nohan_setting.is_active if nohan_setting else False,
     }
