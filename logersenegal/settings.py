@@ -61,7 +61,7 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_' + 'FwrO5N5rfVTEuj5FwTvvWGdy
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
+# 'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
