@@ -1433,6 +1433,7 @@ def schedule_visit_view(request, property_id):
             
     return redirect(property_obj.get_absolute_url())
 
+@csrf_exempt
 def nohan_chat_view(request):
     """
     Endpoint AJAX pour discuter avec NOHAN (Assistant IA).
@@ -1451,31 +1452,42 @@ def nohan_chat_view(request):
             if not user_message:
                 return JsonResponse({'error': 'Message vide'}, status=400)
                 
-            # 1. Enregistrer le message de l'utilisateur
-            NohanMessage.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                session_key=request.session.session_key,
-                role='user',
-                content=user_message
-            )
+            # 1. Enregistrer le message de l'utilisateur (Optionnel : ne bloque pas si échec)
+            try:
+                NohanMessage.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    session_key=request.session.session_key,
+                    role='user',
+                    content=user_message
+                )
+            except Exception:
+                pass
 
             # 2. Appel à l'IA (Groq/Llama)
             ai_response = call_gemini_api(user_message, history)
             
-            # 3. Enregistrer la réponse de l'IA
-            NohanMessage.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                session_key=request.session.session_key,
-                role='assistant',
-                content=ai_response
-            )
+            # 3. Enregistrer la réponse de l'IA (Optionnel)
+            try:
+                NohanMessage.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    session_key=request.session.session_key,
+                    role='assistant',
+                    content=ai_response
+                )
+            except Exception:
+                pass
 
             return JsonResponse({
                 'response': ai_response,
                 'role': 'model'
             })
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            # En production, on renvoie une réponse polie même en cas d'erreur technique
+            return JsonResponse({
+                'response': "Je suis désolé, j'ai une petite hésitation technique. Pouvez-vous reformuler ?",
+                'role': 'model',
+                'error': str(e)
+            })
         
     return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
 
