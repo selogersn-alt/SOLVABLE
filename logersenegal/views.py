@@ -1440,11 +1440,11 @@ def nohan_chat_view(request):
     Ouvert aux visiteurs et enregistre les conversations pour l'IA.
     """
     if request.method == 'POST':
-        import json
-        from logersn.nohan_utils import call_gemini_api
-        from logersn.models import NohanMessage
-        
         try:
+            import json
+            from logersn.nohan_utils import call_gemini_api
+            from logersn.models import NohanMessage
+            
             data = json.loads(request.body)
             user_message = data.get('message', '')
             history = data.get('history', [])
@@ -1488,6 +1488,12 @@ def nohan_chat_view(request):
                 'role': 'model',
                 'error': str(e)
             })
+            
+    # Si la méthode n'est pas POST (ex: redirection .htaccess qui transforme POST en GET)
+    return JsonResponse({
+        'error': 'Méthode non autorisée. Utilisez POST.',
+        'response': "Désolé, une erreur réseau est survenue. Veuillez réessayer."
+    }, status=405)
         
     return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
 
