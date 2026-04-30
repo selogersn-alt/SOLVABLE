@@ -7,6 +7,7 @@ class AppUser {
   final String? companyName;
   final String role;
   final bool isVerified;
+  final String? profilePicture;
 
   AppUser({
     required this.id,
@@ -17,6 +18,7 @@ class AppUser {
     this.companyName,
     required this.role,
     required this.isVerified,
+    this.profilePicture,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class AppUser {
       companyName: json['company_name'],
       role: json['role'] ?? '',
       isVerified: json['is_verified_pro'] ?? false,
+      profilePicture: json['profile_picture']?.toString(),
     );
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -289,15 +288,20 @@ class _MainNavigationState extends State<MainNavigation> {
                 alignment: Alignment.centerRight,
               ),
             ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: const Color(0xFFDAA520),
-              child: Text(
-                (user?.firstName.isNotEmpty == true)
-                    ? user!.firstName[0].toUpperCase()
-                    : 'L',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
+            currentAccountPicture: (user?.profilePicture != null && user!.profilePicture!.isNotEmpty)
+                ? CircleAvatar(
+                    backgroundColor: const Color(0xFFDAA520),
+                    backgroundImage: NetworkImage(user.profilePicture!),
+                  )
+                : CircleAvatar(
+                    backgroundColor: const Color(0xFFDAA520),
+                    child: Text(
+                      (user?.firstName.isNotEmpty == true)
+                          ? user!.firstName[0].toUpperCase()
+                          : 'L',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
             accountName: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

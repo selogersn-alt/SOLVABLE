@@ -121,6 +121,8 @@ class Owner {
   final String lastName;
   final String? companyName;
   final String phoneNumber;
+  final bool isVerifiedPro;
+  final String? profilePicture;
 
   Owner({
     required this.id,
@@ -128,6 +130,8 @@ class Owner {
     required this.lastName,
     this.companyName,
     required this.phoneNumber,
+    this.isVerifiedPro = false,
+    this.profilePicture,
   });
 
   factory Owner.fromJson(Map<String, dynamic> json) {
@@ -137,6 +141,8 @@ class Owner {
       lastName: json['last_name'] ?? '',
       companyName: json['company_name'],
       phoneNumber: json['phone_number'] ?? '',
+      isVerifiedPro: json['is_verified_pro'] == true,
+      profilePicture: json['profile_picture']?.toString(),
     );
   }
 
