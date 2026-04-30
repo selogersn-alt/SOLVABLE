@@ -21,58 +21,53 @@ django.setup()
 from logersn.models import PropertyImage
 
 def restore_originals():
+    from django.conf import settings
     images = PropertyImage.objects.all()
     total = images.count()
 
-    print(f"\n🔄 Restauration des images originales...")
-    print(f"   {total} image(s) à vérifier...\n")
+    print(f"\n🔄 Nettoyage et Restauration des images...")
+    print(f"   {total} image(s) en base de données...\n")
 
     restored = 0
-    not_found = 0
+    cleaned_path = 0
 
     for i, prop_img in enumerate(images, start=1):
-        if not prop_img.image_url:
+        if not prop_img.image_url or not prop_img.image_url.name:
             continue
 
-        current_path = prop_img.image_url.path
-        current_name = prop_img.image_url.name
-
-        # On ne s'intéresse qu'aux fichiers .webp qui ont pu être filigranés
-        if current_name.lower().endswith('.webp'):
-            base_path = os.path.splitext(current_name)[0]
-            
-            # Extensions possibles pour l'original
-            possible_extensions = ['.jpg', '.jpeg', '.png', '.JPG', '.PNG']
-            found_original = None
-
-            for ext in possible_extensions:
-                test_path = base_path + ext
-                full_test_path = os.path.join(settings.MEDIA_ROOT, test_path)
-                
-                if os.path.exists(full_test_path):
-                    found_original = test_path
-                    break
-            
-            if found_original:
-                print(f"  [{i}/{total}] ✅ Restauration : {found_original}")
-                # Supprimer le webp "sale"
-                if os.path.exists(current_path):
-                    os.remove(current_path)
-                
-                # Mettre à jour la base de données vers l'original
-                prop_img.image_url.name = found_original
-                prop_img.save(update_fields=['image_url'])
+        # 1. Extraire uniquement le nom du fichier (nettoie les properties/properties/...)
+        filename = os.path.basename(prop_img.image_url.name)
+        base_name = os.path.splitext(filename)[0]
+        
+        # 2. Chercher l'original (jpg, png, etc.)
+        possible_exts = ['.jpg', '.jpeg', '.png', '.JPG', '.PNG']
+        found_original_filename = None
+        
+        for ext in possible_exts:
+            test_filename = base_name + ext
+            full_path = os.path.join(settings.MEDIA_ROOT, 'properties', test_filename)
+            if os.path.exists(full_path):
+                found_original_filename = test_filename
+                break
+        
+        if found_original_filename:
+            new_db_path = f"properties/{found_original_filename}"
+            if prop_img.image_url.name != new_db_path:
+                print(f"  [{i}/{total}] ✅ Restauration : {new_db_path}")
+                # On utilise .update() pour ne PAS déclencher le save() du modèle
+                PropertyImage.objects.filter(pk=prop_img.pk).update(image_url=new_db_path)
                 restored += 1
-            else:
-                print(f"  [{i}/{total}] ⚠️ Original introuvable pour {current_name}")
-                not_found += 1
         else:
-            # Déjà un JPG ou PNG
-            pass
+            # Si c'est un webp sans original, on nettoie au moins le chemin
+            new_db_path = f"properties/{filename}"
+            if prop_img.image_url.name != new_db_path:
+                print(f"  [{i}/{total}] 🧹 Nettoyage chemin : {new_db_path}")
+                PropertyImage.objects.filter(pk=prop_img.pk).update(image_url=new_db_path)
+                cleaned_path += 1
 
     print(f"\n{'─'*50}")
-    print(f"✅ Restaurées : {restored}")
-    print(f"⚠️  Inchangées : {not_found}")
+    print(f"✅ Restaurées (Originales) : {restored}")
+    print(f"🧹 Chemins nettoyés       : {cleaned_path}")
     print(f"{'─'*50}\n")
 
 if __name__ == '__main__':
