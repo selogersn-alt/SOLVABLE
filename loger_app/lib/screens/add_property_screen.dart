@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/api_service.dart';
+import '../config/app_constants.dart';
 
 class AddPropertyScreen extends StatefulWidget {
   const AddPropertyScreen({super.key});
@@ -19,14 +20,14 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
   final _cityController = TextEditingController();
 
   String _category = 'RENT';
-  String _type = 'APPARTEMENT';
+  String _type = 'APARTMENT';
   String _city = 'DAKAR';
   final List<XFile> _images = [];
   bool _isSubmitting = false;
 
-  final List<String> _categories = ['RENT', 'SALE', 'VACATION'];
-  List<String> _types = ['APPARTEMENT', 'VILLA', 'STUDIO'];
-  List<String> _cities = ['DAKAR', 'THIES', 'MBOUR', 'SAINT_LOUIS'];
+  final List<String> _categories = AppConstants.listingCategories.keys.where((k) => k != 'TOUT').toList();
+  List<String> _types = AppConstants.propertyTypes.keys.where((k) => k != 'TOUT').toList();
+  List<String> _cities = AppConstants.cities.keys.where((k) => k != 'TOUT').toList();
 
   @override
   void initState() {
@@ -374,16 +375,23 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
               isExpanded: true,
               items: items
                   .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        e,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                    (e) {
+                      String display = e;
+                      if (label == 'Ville') display = AppConstants.cities[e] ?? e;
+                      if (label == 'Type de bien') display = AppConstants.propertyTypes[e] ?? e;
+                      if (label == 'Catégorie') display = AppConstants.listingCategories[e] ?? e;
+                      
+                      return DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          display,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   )
                   .toList(),
               onChanged: onChanged,
