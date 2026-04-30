@@ -354,6 +354,38 @@
             z-index: 2000;
             max-width: 350px;
         }
+
+        /* Filigrane CSS non-destructif */
+        .watermark-container {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        .watermark-container::after {
+            content: "www.logersenegal.com";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 1.8rem;
+            font-weight: 800;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 5;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .watermark-sm::after {
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body class="{% if dark_mode %}dark-theme{% endif %} {% if ad_left_skin %}has-left-skin{% endif %} {% if ad_right_skin %}has-right-skin{% endif %}">

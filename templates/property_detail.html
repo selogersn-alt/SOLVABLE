@@ -215,7 +215,9 @@
             <div class="gallery-container">
                 <div class="main-img-wrapper">
                     {% if property.images.all %}
-                        <img src="{{ property.images.all.0.image_url.url }}" id="mainImage" class="main-img" alt="{{ property.title }}">
+                        <div class="watermark-container">
+                            <img src="{{ property.images.all.0.image_url.url }}" id="mainImage" class="main-img" alt="{{ property.title }}">
+                        </div>
                     {% else %}
                         <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
                             <i class="fa-solid fa-image text-muted" style="font-size: 5rem;"></i>
@@ -225,7 +227,9 @@
                 {% if property.images.count > 1 %}
                 <div class="thumbnails-row">
                     {% for image in property.images.all %}
-                        <img src="{{ image.image_url.url }}" class="thumbnail-img {% if forloop.first %}active{% endif %}" onclick="changeImage(this.src, this)">
+                        <div class="watermark-container watermark-sm" style="width: 100px; height: 70px;">
+                            <img src="{{ image.image_url.url }}" class="thumbnail-img {% if forloop.first %}active{% endif %}" onclick="changeImage(this.src, this)">
+                        </div>
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -527,7 +531,9 @@
                     <a href="{% url 'property_detail' rel.id %}" class="text-decoration-none">
                         <div style="height: 160px; position: relative;">
                             {% if rel.images.first %}
-                                <img src="{{ rel.images.first.image_url.url }}" class="w-100 h-100 object-fit-cover">
+                                <div class="watermark-container watermark-sm">
+                                    <img src="{{ rel.images.first.image_url.url }}" class="w-100 h-100 object-fit-cover">
+                                </div>
                             {% else %}
                                 <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"><i class="fa-solid fa-image text-muted"></i></div>
                             {% endif %}
