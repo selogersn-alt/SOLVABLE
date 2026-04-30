@@ -29,14 +29,13 @@ from logersn.models import PropertyImage
 # Configuration
 # ─────────────────────────────────────────
 WATERMARK_PATH = os.path.join(settings.BASE_DIR, 'static', 'img', 'icon-192x192.png')
-WATERMARK_OPACITY = 0.40   # 40% de transparence
-WATERMARK_SIZE_RATIO = 0.18  # 18% de la largeur de l'image
+WATERMARK_OPACITY = 0.55    # 55% — transparent mais bien remarquable
+WATERMARK_SIZE_RATIO = 0.35  # 35% de la largeur (centré, grand format)
 WEBP_QUALITY = 85
-MARGIN_PX = 15
 
 
 def apply_watermark(img: Image.Image) -> Image.Image:
-    """Applique le filigrane en bas à droite de l'image."""
+    """Applique le filigrane centré sur l'image."""
     watermark = Image.open(WATERMARK_PATH).convert("RGBA")
 
     # Redimensionnement proportionnel
@@ -50,10 +49,10 @@ def apply_watermark(img: Image.Image) -> Image.Image:
     a = a.point(lambda p: int(p * WATERMARK_OPACITY))
     watermark.putalpha(a)
 
-    # Fusion
+    # Fusion — position CENTRE
     img_rgba = img.convert("RGBA")
-    x = img_rgba.width - wm_width - MARGIN_PX
-    y = img_rgba.height - wm_height - MARGIN_PX
+    x = (img_rgba.width - wm_width) // 2
+    y = (img_rgba.height - wm_height) // 2
 
     overlay = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
     overlay.paste(watermark, (x, y))

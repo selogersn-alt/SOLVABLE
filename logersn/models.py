@@ -190,7 +190,7 @@ class PropertyImage(models.Model):
     is_primary = models.BooleanField(default=False)
 
     def _apply_watermark(self, img):
-        """Applique le filigrane Loger Sénégal en bas à droite de l'image."""
+        """Applique le filigrane Loger Sénégal AU CENTRE de l'image, bien visible."""
         try:
             watermark_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'icon-192x192.png')
             if not os.path.exists(watermark_path):
@@ -198,37 +198,34 @@ class PropertyImage(models.Model):
 
             watermark = Image.open(watermark_path).convert("RGBA")
 
-            # Taille du filigrane : 18% de la largeur de l'image principale
-            wm_width = int(img.width * 0.18)
+            # Taille : 35% de la largeur de l'image (bien visible)
+            wm_width = int(img.width * 0.35)
             wm_ratio = wm_width / watermark.width
             wm_height = int(watermark.height * wm_ratio)
             watermark = watermark.resize((wm_width, wm_height), Image.LANCZOS)
 
-            # Opacité à 40% (discret mais clairement visible)
+            # Opacité : 55% — transparent mais remarquable
             r, g, b, a = watermark.split()
-            a = a.point(lambda p: int(p * 0.40))
+            a = a.point(lambda p: int(p * 0.55))
             watermark.putalpha(a)
 
-            # Image en RGBA pour supporter la transparence
+            # Image en RGBA
             img_rgba = img.convert("RGBA")
 
-            # Position : bas à droite avec marge de 15px
-            margin = 15
-            x = img_rgba.width - wm_width - margin
-            y = img_rgba.height - wm_height - margin
+            # Position : CENTRE de l'image
+            x = (img_rgba.width - wm_width) // 2
+            y = (img_rgba.height - wm_height) // 2
 
-            # Couche transparente pour la fusion
+            # Fusion
             overlay = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
             overlay.paste(watermark, (x, y))
-
-            # Fusion finale image + filigrane
             watermarked = Image.alpha_composite(img_rgba, overlay)
 
             return watermarked.convert("RGB")
 
         except Exception as e:
             print(f"Watermark failed: {e}")
-            return img  # L'image originale est retournée en cas d'erreur
+            return img
 
     def save(self, *args, **kwargs):
         """Conversion WebP + Filigrane Loger Sénégal automatique."""
