@@ -189,41 +189,85 @@ class PropertyImage(models.Model):
     image_url = models.FileField(upload_to='properties/')
     is_primary = models.BooleanField(default=False)
 
+    def _apply_watermark(self, img):
+        """Applique le filigrane Loger Sénégal en bas à droite de l'image."""
+        try:
+            watermark_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'icon-192x192.png')
+            if not os.path.exists(watermark_path):
+                return img
+
+            watermark = Image.open(watermark_path).convert("RGBA")
+
+            # Taille du filigrane : 18% de la largeur de l'image principale
+            wm_width = int(img.width * 0.18)
+            wm_ratio = wm_width / watermark.width
+            wm_height = int(watermark.height * wm_ratio)
+            watermark = watermark.resize((wm_width, wm_height), Image.LANCZOS)
+
+            # Opacité à 40% (discret mais clairement visible)
+            r, g, b, a = watermark.split()
+            a = a.point(lambda p: int(p * 0.40))
+            watermark.putalpha(a)
+
+            # Image en RGBA pour supporter la transparence
+            img_rgba = img.convert("RGBA")
+
+            # Position : bas à droite avec marge de 15px
+            margin = 15
+            x = img_rgba.width - wm_width - margin
+            y = img_rgba.height - wm_height - margin
+
+            # Couche transparente pour la fusion
+            overlay = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
+            overlay.paste(watermark, (x, y))
+
+            # Fusion finale image + filigrane
+            watermarked = Image.alpha_composite(img_rgba, overlay)
+
+            return watermarked.convert("RGB")
+
+        except Exception as e:
+            print(f"Watermark failed: {e}")
+            return img  # L'image originale est retournée en cas d'erreur
+
     def save(self, *args, **kwargs):
-        """Conversion automatique en WebP et redimensionnement intelligent (Sécurisé)."""
+        """Conversion WebP + Filigrane Loger Sénégal automatique."""
         if self.image_url:
             try:
-                # On ne tente la conversion que si Pillow est disponible et le fichier n'est pas déjà webp
                 if not self.image_url.name.lower().endswith('.webp'):
                     img = Image.open(self.image_url)
-                    
+
                     # 1. Conversion en RGB
                     if img.mode in ("RGBA", "P"):
                         img = img.convert("RGB")
-                    
-                    # 2. Redimensionnement
+
+                    # 2. Redimensionnement (max 1200px)
                     max_width = 1200
                     if img.width > max_width:
                         output_size = (max_width, int((max_width / img.width) * img.height))
                         img = img.resize(output_size, Image.LANCZOS)
-                    
-                    # 3. Flux mémoire
+
+                    # 3. ✅ APPLICATION DU FILIGRANE LOGER SÉNÉGAL
+                    img = self._apply_watermark(img)
+
+                    # 4. Compression WebP haute qualité
                     output = io.BytesIO()
                     img.save(output, format='WEBP', quality=85)
                     output.seek(0)
-                    
-                    # 4. Changement de nom et sauvegarde du champ
+
+                    # 5. Remplacement du fichier
                     current_name = os.path.splitext(self.image_url.name)[0]
                     new_filename = f"{current_name}.webp"
                     self.image_url.save(new_filename, ContentFile(output.read()), save=False)
+
             except Exception as e:
-                # En cas d'erreur (PIL manquant, erreur de format, etc.), on ignore et on garde l'original
-                print(f"WebP conversion failed for {self.image_url.name}: {e}")
-            
+                print(f"Image processing failed for {self.image_url.name}: {e}")
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Image for {self.property.title}"
+
 
 class Transaction(models.Model):
     class TypeEnum(models.TextChoices):
