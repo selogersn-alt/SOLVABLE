@@ -35,29 +35,47 @@ WEBP_QUALITY = 85
 
 
 def apply_watermark(img: Image.Image) -> Image.Image:
-    """Applique le filigrane centré sur l'image."""
-    watermark = Image.open(WATERMARK_PATH).convert("RGBA")
+    """Applique le texte 'www.logersenegal.com' centré sur l'image."""
+    from PIL import ImageDraw, ImageFont
 
-    # Redimensionnement proportionnel
-    wm_width = int(img.width * WATERMARK_SIZE_RATIO)
-    wm_ratio = wm_width / watermark.width
-    wm_height = int(watermark.height * wm_ratio)
-    watermark = watermark.resize((wm_width, wm_height), Image.LANCZOS)
-
-    # Opacité
-    r, g, b, a = watermark.split()
-    a = a.point(lambda p: int(p * WATERMARK_OPACITY))
-    watermark.putalpha(a)
-
-    # Fusion — position CENTRE
     img_rgba = img.convert("RGBA")
-    x = (img_rgba.width - wm_width) // 2
-    y = (img_rgba.height - wm_height) // 2
+    make_watermark = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(make_watermark)
 
-    overlay = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
-    overlay.paste(watermark, (x, y))
-    watermarked = Image.alpha_composite(img_rgba, overlay)
+    text = "www.logersenegal.com"
+    
+    # Taille proportionnelle (5% de la largeur)
+    font_size = int(img_rgba.width * 0.05)
+    
+    # Fonts linux
+    try:
+        font_paths = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/liberation/LiberationSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+        ]
+        font = None
+        for path in font_paths:
+            if os.path.exists(path):
+                font = ImageFont.truetype(path, font_size)
+                break
+        if not font: font = ImageFont.load_default()
+    except:
+        font = ImageFont.load_default()
 
+    # Position
+    try:
+        left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+        text_width, text_height = right - left, bottom - top
+    except:
+        text_width, text_height = draw.textsize(text, font=font)
+
+    x, y = (img_rgba.width - text_width) // 2, (img_rgba.height - text_height) // 2
+
+    # Blanc à 25% (60/255)
+    draw.text((x, y), text, font=font, fill=(255, 255, 255, 60))
+
+    watermarked = Image.alpha_composite(img_rgba, make_watermark)
     return watermarked.convert("RGB")
 
 

@@ -190,41 +190,60 @@ class PropertyImage(models.Model):
     is_primary = models.BooleanField(default=False)
 
     def _apply_watermark(self, img):
-        """Applique le filigrane Loger Sénégal AU CENTRE de l'image, bien visible."""
+        """Applique le texte 'www.logersenegal.com' AU CENTRE de l'image."""
         try:
-            watermark_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'icon-192x192.png')
-            if not os.path.exists(watermark_path):
-                return img
-
-            watermark = Image.open(watermark_path).convert("RGBA")
-
-            # Taille : 20% de la largeur (discret mais visible)
-            wm_width = int(img.width * 0.20)
-            wm_ratio = wm_width / watermark.width
-            wm_height = int(watermark.height * wm_ratio)
-            watermark = watermark.resize((wm_width, wm_height), Image.LANCZOS)
-
-            # Opacité : 25% — subtil, comme un vrai filigrane pro
-            r, g, b, a = watermark.split()
-            a = a.point(lambda p: int(p * 0.25))
-            watermark.putalpha(a)
+            from PIL import ImageDraw, ImageFont
 
             # Image en RGBA
             img_rgba = img.convert("RGBA")
+            make_watermark = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
+            draw = ImageDraw.Draw(make_watermark)
 
-            # Position : CENTRE de l'image
-            x = (img_rgba.width - wm_width) // 2
-            y = (img_rgba.height - wm_height) // 2
+            text = "www.logersenegal.com"
+            
+            # Calcul de la taille de la police (environ 5% de la largeur de l'image)
+            font_size = int(img_rgba.width * 0.05)
+            
+            # Tentative de chargement d'une police TrueType, sinon police par défaut
+            try:
+                # Chemins courants sur Linux (O2switch)
+                font_paths = [
+                    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                    "/usr/share/fonts/liberation/LiberationSans-Bold.ttf",
+                    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+                ]
+                font = None
+                for path in font_paths:
+                    if os.path.exists(path):
+                        font = ImageFont.truetype(path, font_size)
+                        break
+                if not font:
+                    font = ImageFont.load_default()
+            except:
+                font = ImageFont.load_default()
+
+            # Calcul de la position (centré)
+            try:
+                # Pillow >= 9.2.0
+                left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+                text_width = right - left
+                text_height = bottom - top
+            except:
+                # Anciennes versions de Pillow
+                text_width, text_height = draw.textsize(text, font=font)
+
+            x = (img_rgba.width - text_width) // 2
+            y = (img_rgba.height - text_height) // 2
+
+            # Couleur blanche avec opacité (25%)
+            draw.text((x, y), text, font=font, fill=(255, 255, 255, 60))
 
             # Fusion
-            overlay = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
-            overlay.paste(watermark, (x, y))
-            watermarked = Image.alpha_composite(img_rgba, overlay)
-
+            watermarked = Image.alpha_composite(img_rgba, make_watermark)
             return watermarked.convert("RGB")
 
         except Exception as e:
-            print(f"Watermark failed: {e}")
+            print(f"Text Watermark failed: {e}")
             return img
 
     def save(self, *args, **kwargs):
