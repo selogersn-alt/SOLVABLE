@@ -29,8 +29,8 @@ from logersn.models import PropertyImage
 # Configuration
 # ─────────────────────────────────────────
 WATERMARK_PATH = os.path.join(settings.BASE_DIR, 'static', 'img', 'icon-192x192.png')
-WATERMARK_OPACITY = 0.55    # 55% — transparent mais bien remarquable
-WATERMARK_SIZE_RATIO = 0.35  # 35% de la largeur (centré, grand format)
+WATERMARK_OPACITY = 0.25    # 25% — très subtil et pro
+WATERMARK_SIZE_RATIO = 0.20  # 20% de la largeur (discret, centré)
 WEBP_QUALITY = 85
 
 

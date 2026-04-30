@@ -198,15 +198,15 @@ class PropertyImage(models.Model):
 
             watermark = Image.open(watermark_path).convert("RGBA")
 
-            # Taille : 35% de la largeur de l'image (bien visible)
-            wm_width = int(img.width * 0.35)
+            # Taille : 20% de la largeur (discret mais visible)
+            wm_width = int(img.width * 0.20)
             wm_ratio = wm_width / watermark.width
             wm_height = int(watermark.height * wm_ratio)
             watermark = watermark.resize((wm_width, wm_height), Image.LANCZOS)
 
-            # Opacité : 55% — transparent mais remarquable
+            # Opacité : 25% — subtil, comme un vrai filigrane pro
             r, g, b, a = watermark.split()
-            a = a.point(lambda p: int(p * 0.55))
+            a = a.point(lambda p: int(p * 0.25))
             watermark.putalpha(a)
 
             # Image en RGBA
