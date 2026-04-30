@@ -98,11 +98,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 24),
                   const Text('Je suis un :', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
                     children: [
-                      _buildRoleOption('TENANT', 'Locataire', Icons.home_rounded),
-                      const SizedBox(width: 12),
-                      _buildRoleOption('PROFESSIONAL', 'Pro', Icons.business_center_rounded),
+                      _buildRoleOption('TENANT', 'Locataire', Icons.person_rounded),
+                      _buildRoleOption('OWNER', 'Bailleur', Icons.home_work_rounded),
+                      _buildRoleOption('AGENCY', 'Agence', Icons.business_rounded),
+                      _buildRoleOption('BROKER', 'Courtier', Icons.handshake_rounded),
                     ],
                   ),
                   
@@ -149,7 +152,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildRoleOption(String role, String label, IconData icon) {
     bool isSelected = _selectedRole == role;
-    return Expanded(
+    return SizedBox(
+      width: (MediaQuery.of(context).size.width - 64 - 12) / 2,
       child: GestureDetector(
         onTap: () => setState(() => _selectedRole = role),
         child: AnimatedContainer(
@@ -164,7 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               Icon(icon, color: isSelected ? Colors.white : Colors.blueGrey, size: 24),
               const SizedBox(height: 8),
-              Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.blueGrey, fontWeight: FontWeight.bold)),
+              Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.blueGrey, fontWeight: FontWeight.bold, fontSize: 12)),
             ],
           ),
         ),

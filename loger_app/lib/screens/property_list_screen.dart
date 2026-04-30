@@ -9,7 +9,8 @@ import '../services/api_service.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'search_results_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:url_launcher/url_launcher.dart';
+import 'blog_screen.dart';
+import 'professionals_screen.dart';
 
 class PropertyListScreen extends StatefulWidget {
   final Function(Property) onPropertyTap;
@@ -38,39 +39,47 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     'LOCATION_VACANCES': 'VACATION',
   };
 
-  final Map<String, String> _cityMap = {
-    'TOUT': 'TOUT',
-    'DAKAR': 'DAKAR',
-    'THIES': 'THIES',
-    'MBOUR': 'MBOUR',
-    'SAINT-LOUIS': 'SAINT_LOUIS',
-    'ZIGUINCHOR': 'ZIGUINCHOR',
-  };
+  final Map<String, String> _typeMap = {'TOUT': 'TOUT'};
+  final Map<String, String> _cityMap = {'TOUT': 'TOUT'};
 
-  final Map<String, String> _typeMap = {
-    'TOUT': 'TOUT',
-    'APPARTEMENT': 'APARTMENT',
-    'VILLA': 'VILLA',
-    'STUDIO': 'STUDIO',
-    'CHAMBRE': 'CHAMBRE',
-    'TERRAIN': 'TERRAIN',
-  };
-
-  late final List<String> _cities = _cityMap.keys.toList();
-  late final List<String> _types = _typeMap.keys.toList();
+  List<String> _cities = ['TOUT'];
+  List<String> _types = ['TOUT'];
 
   @override
   void initState() {
     super.initState();
-    // Load cached properties first
-    final cached = _apiService.getCachedProperties();
-    if (cached.isNotEmpty) {
-      _pagingController.itemList = cached;
-    }
-
+    // IMPORTANT: Ajouter le listener AVANT de charger le cache
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
+    _loadMetadata();
+    // Afficher le cache en attendant le chargement réseau
+    final cached = _apiService.getCachedProperties();
+    if (cached.isNotEmpty) {
+      debugPrint('Loaded ${cached.length} properties from cache');
+    }
+  }
+
+  Future<void> _loadMetadata() async {
+    try {
+      final cities = await _apiService.fetchCities();
+      final types = await _apiService.fetchPropertyTypes();
+      
+      if (mounted) {
+        setState(() {
+          for (var c in cities) {
+            _cityMap[c['name']!.toUpperCase()] = c['id']!;
+          }
+          for (var t in types) {
+            _typeMap[t['name']!.toUpperCase()] = t['id']!;
+          }
+          _cities = _cityMap.keys.toList();
+          _types = _typeMap.keys.toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Metadata Load Error: $e');
+    }
   }
 
   Future<void> _fetchPage(int pageKey) async {
@@ -119,35 +128,61 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: Stack(
+        children: [
+          // WATERMARK LOGO IN BACKGROUND
+          Positioned(
+            top: 200,
+            right: -50,
+            child: Opacity(
+              opacity: 0.03,
+              child: Image.asset('assets/img/logo.png', width: 300),
+            ),
+          ),
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
         slivers: [
           // CUSTOM APP BAR LIKE IMAGE
           SliverAppBar(
             backgroundColor: Colors.white,
             elevation: 0,
             pinned: true,
-            leading: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Image.asset('assets/img/logo.png', fit: BoxFit.contain),
-            ),
-            title: RichText(
-              text: const TextSpan(
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                children: [
-                  TextSpan(text: 'Loger'),
-                  TextSpan(
-                    text: 'Sénégal',
-                    style: TextStyle(color: Color(0xFF27C66E)),
-                  ),
-                ],
+            centerTitle: true,
+            leading: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu_rounded, color: Color(0xFF0B4629)),
+                onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
-            actions: const [],
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/img/logo.png', height: 30),
+                const SizedBox(width: 8),
+                RichText(
+                  text: const TextSpan(
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    children: [
+                      TextSpan(text: 'Loger'),
+                      TextSpan(
+                        text: 'Sénégal',
+                        style: TextStyle(color: Color(0xFF27C66E)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF0B4629)),
+                onPressed: () {},
+              ),
+            ],
           ),
 
           // HERO SECTION WITH SEARCH CARD (Identique au site web)
@@ -173,7 +208,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0B4629).withOpacity(0.3),
+                          color: const Color(0xFF0B4629).withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -186,16 +221,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                           top: 60,
                           right: -30,
                           child: Opacity(
-                            opacity: 0.1,
-                            child: Transform.rotate(
-                              angle: -0.2,
-                              child: Image.asset(
-                                'assets/img/logo.png',
-                                width:
-                                    MediaQuery.of(context).size.width *
-                                    0.7, // Responsive width
-                                fit: BoxFit.contain,
-                              ),
+                            opacity: 0.08,
+                            child: Image.asset(
+                              'assets/img/logo.png',
+                              width: MediaQuery.of(context).size.width * 0.7,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
@@ -259,16 +289,16 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
-                              blurRadius: 40,
-                              offset: const Offset(0, 15),
+                              color: const Color(0xFF0B4629).withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
@@ -280,6 +310,8 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                             _buildTypeSelector(),
                             const Divider(height: 1, color: Color(0xFFF1F5F9)),
                             _buildCitySelector(),
+                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                            _buildNeighborhoodSelector(),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: () {
@@ -289,13 +321,16 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                                     builder: (context) => SearchResultsScreen(
                                       city: _selectedCity == 'TOUT'
                                           ? null
-                                          : _selectedCity,
+                                          : _cityMap[_selectedCity],
                                       type: _selectedType == 'TOUT'
                                           ? null
-                                          : _selectedType,
+                                          : _typeMap[_selectedType],
                                       category: _selectedCategory == 'TOUT'
                                           ? null
-                                          : _selectedCategory,
+                                          : _categoryMap[_selectedCategory],
+                                      neighborhood: _selectedNeighborhood == 'TOUT'
+                                          ? null
+                                          : _selectedNeighborhood,
                                       search: _searchController.text.isNotEmpty
                                           ? _searchController.text
                                           : null,
@@ -334,95 +369,32 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
             ),
           ),
 
-          // BLOC NILS (Identique à la page d'accueil web)
+          // QUICK LINKS (Annuaire & Blog)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: const Color(0xFFF1F5F9)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAction(
+                      title: "Annuaire Pro",
+                      subtitle: "Agences certifiées",
+                      icon: Icons.business_center_rounded,
+                      color: const Color(0xFF0B4629),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const ExploreProfessionalsScreen())),
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: const Color(0xFFF5C42F).withOpacity(0.2), shape: BoxShape.circle),
-                          child: const Icon(Icons.psychology_outlined, color: Color(0xFF0B4629), size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          "Système NILS",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildQuickAction(
+                      title: "Blog Immo",
+                      subtitle: "Conseils & Guides",
+                      icon: Icons.article_rounded,
+                      color: const Color(0xFFDAA520),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => const BlogScreen())),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Analysez la solvabilité d'un candidat avant de signer.",
-                      style: TextStyle(
-                        color: Colors.blueGrey,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: "Nom ou Numéro CNI",
-                        prefixIcon: const Icon(Icons.search, size: 20),
-                        filled: true,
-                        fillColor: const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final Uri url = Uri.parse(
-                          'https://logersenegal.com/nils/recherche/',
-                        );
-                        if (!await launchUrl(
-                          url,
-                          mode: LaunchMode.externalApplication,
-                        )) {
-                          debugPrint('Could not launch $url');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0B4629),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        "ANALYSER LE PROFIL",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -515,25 +487,49 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   ],
                 ),
               ),
-              firstPageErrorIndicatorBuilder: (context) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Erreur lors du chargement des annonces'),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () => _refresh(),
-                      child: const Text('Réessayer'),
+              firstPageErrorIndicatorBuilder: (context) => _buildErrorWidget(
+                _pagingController.error?.toString() ?? 'Erreur inconnue',
+                _refresh,
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 50)),
+          
+          // FOOTER WITH LOGO
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Column(
+                children: [
+                  Image.asset('assets/img/logo.png', height: 40, color: Colors.blueGrey.withValues(alpha: 0.2)),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "LOGER SÉNÉGAL ™",
+                    style: TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Le futur de l'immobilier au Sénégal",
+                    style: TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
-    );
+    ],
+  ),
+);
   }
 
   Widget _buildCategorySelector() {
@@ -584,6 +580,32 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                   }
                 },
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNeighborhoodSelector() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          const Icon(Icons.near_me_rounded, color: Color(0xFF0B4629), size: 20),
+          const SizedBox(width: 12),
+          const Text('Quartier', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey)),
+          const Spacer(),
+          Expanded(
+            flex: 2,
+            child: TextField(
+              onChanged: (val) => setState(() => _selectedNeighborhood = val.isEmpty ? 'TOUT' : val),
+              decoration: const InputDecoration(
+                hintText: 'Ex: Almadies',
+                hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                border: InputBorder.none,
+              ),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0B4629)),
             ),
           ),
         ],
@@ -705,7 +727,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20),
           ],
         ),
         child: Column(
@@ -714,134 +736,153 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   child: CachedNetworkImage(
-                    imageUrl: p.images.isNotEmpty
-                        ? p.images.first.imageUrl
-                        : '',
+                    imageUrl: p.images.isNotEmpty ? p.images.first.imageUrl : '',
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: Colors.grey.shade100, child: const Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                    errorWidget: (context, url, error) => Container(color: Colors.grey.shade100, child: const Icon(Icons.broken_image_outlined, color: Colors.grey)),
                   ),
                 ),
                 Positioned(
-                  top: 16,
-                  left: 16,
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          p.listingCategoryDisplay.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.black,
-                          ),
-                        ),
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      p.propertyTypeDisplay.toUpperCase(),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF0B4629)),
+                    ),
+                  ),
+                ),
+                if (p.listingCategory == 'SALE')
+                  Positioned(
+                    top: 45,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5C42F),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF27C66E),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          timeago.format(p.createdAt, locale: 'fr'),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ),
+                      child: const Text(
+                        'A VENDRE',
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF0B4629)),
                       ),
-                    ],
+                    ),
+                  ),
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF062B1A).withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${NumberFormat('#,###', 'fr_FR').format(p.price)} FCFA',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15),
+                    ),
                   ),
                 ),
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: GestureDetector(
-                    onTap: () async {
-                      final success = await _apiService.toggleFavorite(
-                        p.id.toString(),
-                      );
-                      if (success && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Favoris mis à jour'),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-                      }
-                    },
-                    child: const CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: 18,
-                      child: Icon(
-                        Icons.favorite_border_rounded,
-                        size: 18,
-                        color: Colors.black,
-                      ),
-                    ),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(color: Color(0xFF27C66E), shape: BoxShape.circle),
+                    child: const Icon(Icons.check, color: Colors.white, size: 14),
                   ),
                 ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     p.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${p.neighborhood}, ${p.city}',
-                    style: const TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Color(0xFF062B1A), height: 1.2),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
+                      const Icon(Icons.person_outline_rounded, size: 16, color: Color(0xFF27C66E)),
+                      const SizedBox(width: 6),
                       Text(
-                        '${NumberFormat.decimalPattern('fr').format(p.price)} F',
-                        style: const TextStyle(
-                          color: Color(0xFF27C66E),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
+                        p.owner.companyName ?? 'LOGER SÉNÉGAL ™',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF27C66E)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_on_rounded, size: 16, color: Colors.blueGrey),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${p.neighborhood}, ${p.city}',
+                                style: const TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.w500),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Spacer(),
-                      const Icon(
-                        Icons.bed_rounded,
-                        size: 16,
-                        color: Colors.blueGrey,
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time_rounded, size: 16, color: Color(0xFF27C66E)),
+                          const SizedBox(width: 4),
+                          Text(
+                            timeago.format(p.createdAt, locale: 'fr'),
+                            style: const TextStyle(fontSize: 13, color: Color(0xFF27C66E), fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${p.bedrooms}',
-                        style: const TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 12,
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  const SizedBox(height: 16),
+                  // Actions Row
+                  Row(
+                    children: [
+                      _buildMiniAction(Icons.message_rounded, const Color(0xFF25D366)),
+                      const SizedBox(width: 8),
+                      _buildMiniAction(Icons.phone_rounded, const Color(0xFF007BFF)),
+                      const Spacer(),
+                      ElevatedButton(
+                        onPressed: () => widget.onPropertyTap(p),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0B4629),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text('Détails', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                            SizedBox(width: 8),
+                            Icon(Icons.chevron_right_rounded, size: 18),
+                          ],
                         ),
                       ),
                     ],
@@ -855,7 +896,108 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     );
   }
 
-  Widget _buildSkeletonLoader() {
-    return Container(height: 200, color: Colors.grey[100]);
+  Widget _buildMiniAction(IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: color, size: 20),
+    );
+  }
+
+   Widget _buildSkeletonLoader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String errorMessage, VoidCallback onRetry) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.wifi_off_rounded, color: Colors.red.shade300, size: 40),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Connexion impossible',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF062B1A)),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Vérifiez votre connexion Internet et réessayez.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.blueGrey.shade300, fontSize: 11),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('RÉESSAYER', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B4629),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAction({required String title, required String subtitle, required IconData icon, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+            const SizedBox(height: 4),
+            Text(subtitle, style: const TextStyle(color: Colors.blueGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
   }
 }

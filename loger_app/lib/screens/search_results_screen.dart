@@ -120,6 +120,45 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 ),
               ),
           noItemsFoundIndicatorBuilder: (_) => _buildNoResults(),
+          firstPageErrorIndicatorBuilder: (context) => _buildSearchErrorWidget(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchErrorWidget() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.signal_wifi_connected_no_internet_4_rounded, size: 60, color: Colors.blueGrey.shade200),
+            const SizedBox(height: 24),
+            const Text(
+              'Impossible de charger les résultats',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Vérifiez votre connexion internet et réessayez.',
+              style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => _pagingController.refresh(),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('RÉESSAYER', style: TextStyle(fontWeight: FontWeight.w900)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B4629),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+          ],
         ),
       ),
     );

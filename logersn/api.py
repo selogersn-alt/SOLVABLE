@@ -10,6 +10,8 @@ from articles.serializers import BlogPostSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .constants import PROPERTY_TYPE_CHOICES, CITY_CHOICES
+
 class ProfessionalsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Répertoire des agences et courtiers vérifiés.
@@ -39,6 +41,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property_type = self.request.query_params.get('property_type')
         if property_type:
             queryset = queryset.filter(property_type=property_type)
+
+        listing_category = self.request.query_params.get('listing_category')
+        if listing_category:
+            queryset = queryset.filter(listing_category=listing_category)
             
         neighborhood = self.request.query_params.get('neighborhood')
         if neighborhood:
@@ -75,6 +81,14 @@ class PropertyViewSet(viewsets.ModelViewSet):
         properties = Property.objects.filter(owner=request.user).order_by('-created_at')
         serializer = self.get_serializer(properties, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def cities(self, request):
+        return Response([{'id': c[0], 'name': c[1]} for c in CITY_CHOICES])
+
+    @action(detail=False, methods=['get'], url_path='types')
+    def property_types(self, request):
+        return Response([{'id': t[0], 'name': t[1]} for t in PROPERTY_TYPE_CHOICES])
 
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = PropertyBookingSerializer

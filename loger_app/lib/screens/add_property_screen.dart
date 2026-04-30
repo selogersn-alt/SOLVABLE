@@ -18,21 +18,36 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
   final _descController = TextEditingController();
   final _cityController = TextEditingController();
 
-  String _category = 'LOCATION';
+  String _category = 'RENT';
   String _type = 'APPARTEMENT';
+  String _city = 'DAKAR';
   final List<XFile> _images = [];
   bool _isSubmitting = false;
 
-  final List<String> _categories = ['LOCATION', 'VENTE', 'VACANCES'];
-  final List<String> _types = [
-    'APPARTEMENT',
-    'VILLA',
-    'STUDIO',
-    'CHAMBRE',
-    'TERRAIN',
-    'BUREAU',
-    'MAGASIN',
-  ];
+  final List<String> _categories = ['RENT', 'SALE', 'VACATION'];
+  List<String> _types = ['APPARTEMENT', 'VILLA', 'STUDIO'];
+  List<String> _cities = ['DAKAR', 'THIES', 'MBOUR', 'SAINT_LOUIS'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMetadata();
+  }
+
+  Future<void> _loadMetadata() async {
+    try {
+      final cities = await ApiService().fetchCities();
+      final types = await ApiService().fetchPropertyTypes();
+      setState(() {
+        _cities = cities.map((c) => c['id']!).toList();
+        _types = types.map((t) => t['id']!).toList();
+        if (_cities.isNotEmpty) _city = _cities.first;
+        if (_types.isNotEmpty) _type = _types.first;
+      });
+    } catch (e) {
+      // Fallback
+    }
+  }
 
   Future<void> _pickImages() async {
     final picker = ImagePicker();
@@ -60,8 +75,9 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
         'description': _descController.text,
         'listing_category': _category,
         'property_type': _type,
-        'city_slug': _cityController.text.toLowerCase().replaceAll(' ', '-'),
-        'status': 'AVAILABLE',
+        'city': _city,
+        'neighborhood': _cityController.text, // On utilise le champ texte pour le quartier
+        'is_published': true,
       };
 
       final result = await ApiService().createProperty(propertyData);
@@ -174,16 +190,30 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                             ],
                           ),
                         ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildDropdown(
+                            'Ville',
+                            _city,
+                            _cities,
+                            (val) => setState(() => _city = val!),
+                          ),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel('Ville / Zone'),
+                              _buildLabel('Quartier'),
                               _buildTextField(
                                 _cityController,
-                                'Dakar',
-                                Icons.location_on_rounded,
+                                'Ex: Almadies',
+                                Icons.near_me_rounded,
                               ),
                             ],
                           ),

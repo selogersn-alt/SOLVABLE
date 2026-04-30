@@ -24,21 +24,23 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/properties/').replace(queryParameters: queryParameters);
 
     try {
-      final response = await http.get(uri);
+      final response = await http.get(uri).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw Exception('Délai de connexion dépassé (30s)'),
+      );
+      debugPrint('API GET Properties: $uri (Status: ${response.statusCode})');
+      
       if (response.statusCode == 200) {
-        final dynamic decodedData = json.decode(utf8.decode(response.bodyBytes));
-        debugPrint('API Response Type: ${decodedData.runtimeType}');
-        if (decodedData is Map) debugPrint('API Keys: ${decodedData.keys}');
+        final String decodedBody = utf8.decode(response.bodyBytes);
+        final dynamic decodedData = json.decode(decodedBody);
         
         List<dynamic> list;
         bool hasNext = false;
 
         if (decodedData is Map<String, dynamic>) {
-          // Paginated response
           list = decodedData['results'] ?? [];
           hasNext = decodedData['next'] != null;
-
-          // Caching logic for page 1 without filters
+          
           if (page == 1 && city == null && propertyType == null && (search == null || search.isEmpty)) {
             try {
               final box = Hive.box('properties_cache');
@@ -48,7 +50,6 @@ class ApiService {
             }
           }
         } else if (decodedData is List) {
-          // Legacy unpaginated response
           list = decodedData;
           hasNext = false;
         } else {
@@ -59,20 +60,23 @@ class ApiService {
           try {
             return Property.fromJson(Map<String, dynamic>.from(json));
           } catch (e) {
-            debugPrint('Property Parse Error: $e');
+            debugPrint('Property Parse Error: $e in data: $json');
             return null;
           }
         }).whereType<Property>().toList();
+
+        debugPrint('Fetched ${properties.length} properties');
 
         return {
           'properties': properties,
           'next': hasNext,
         };
       } else {
+        debugPrint('API Error Body: ${response.body}');
         throw Exception('Erreur serveur (${response.statusCode})');
       }
     } catch (e) {
-      debugPrint('ApiService Error: $e');
+      debugPrint('ApiService Exception: $e');
       throw Exception('Impossible de charger les annonces');
     }
   }
@@ -410,13 +414,43 @@ class ApiService {
 
   Future<Property?> fetchProperty(String id) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/logersn/properties/$id/'));
+      final response = await http.get(Uri.parse('$baseUrl/properties/$id/'));
       if (response.statusCode == 200) {
         return Property.fromJson(json.decode(utf8.decode(response.bodyBytes)));
       }
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<List<Map<String, String>>> fetchCities() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/properties/cities/'));
+      if (response.statusCode == 200) {
+        final List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+        debugPrint('Fetched ${list.length} cities');
+        return list.map((c) => {'id': c['id'].toString(), 'name': c['name'].toString()}).toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Fetch Cities Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<Map<String, String>>> fetchPropertyTypes() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/properties/types/'));
+      if (response.statusCode == 200) {
+        final List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+        debugPrint('Fetched ${list.length} property types');
+        return list.map((t) => {'id': t['id'].toString(), 'name': t['name'].toString()}).toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Fetch Types Error: $e');
+      return [];
     }
   }
 }

@@ -8,13 +8,16 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'screens/property_list_screen.dart';
 import 'screens/property_detail_screen.dart';
-import 'screens/professionals_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/add_property_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/nohan_chat_screen.dart';
+import 'screens/blog_screen.dart';
+import 'screens/professionals_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
+import 'services/api_service.dart';
+import 'models/property_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -115,13 +118,19 @@ class _SplashScreenState extends State<SplashScreen> {
       if (canAuthenticate) {
         final bool didAuthenticate = await auth.authenticate(
           localizedReason: 'Sécurisez votre accès à Loger Sénégal',
-          options: const AuthenticationOptions(stickyAuth: true),
+          options: const AuthenticationOptions(stickyAuth: false),
         );
-        if (didAuthenticate) _navigateToHome();
+        if (didAuthenticate) {
+          _navigateToHome();
+        } else {
+          // Si l'utilisateur annule, on navigue quand même
+          _navigateToHome();
+        }
       } else {
         _navigateToHome();
       }
     } catch (e) {
+      debugPrint('Biometric Error: $e');
       _navigateToHome();
     }
   }
@@ -183,21 +192,6 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Image.asset('assets/img/logo.png', height: 40),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded, color: Color(0xFF0B4629)),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF0B4629)),
-            onPressed: () {},
-          ),
-        ],
-      ),
       drawer: _buildDrawer(),
       body: IndexedStack(
         index: _selectedIndex,
@@ -287,15 +281,31 @@ class _MainNavigationState extends State<MainNavigation> {
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFF0B4629)),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0B4629),
+              image: DecorationImage(
+                image: AssetImage('assets/img/logo.png'),
+                opacity: 0.1,
+                alignment: Alignment.centerRight,
+              ),
+            ),
             currentAccountPicture: CircleAvatar(
               backgroundColor: const Color(0xFFDAA520),
               child: Text(
-                user?.firstName.substring(0, 1).toUpperCase() ?? 'L',
+                (user?.firstName.isNotEmpty == true)
+                    ? user!.firstName[0].toUpperCase()
+                    : 'L',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
-            accountName: Text(user != null ? '${user.firstName} ${user.lastName}' : 'Visiteur', style: const TextStyle(fontWeight: FontWeight.bold)),
+            accountName: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset('assets/img/logo.png', height: 25, color: Colors.white),
+                const SizedBox(height: 8),
+                Text(user != null ? '${user.firstName} ${user.lastName}' : 'Visiteur', style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
             accountEmail: Text(user?.phoneNumber ?? 'Loger Sénégal'),
           ),
           ListTile(
@@ -303,15 +313,7 @@ class _MainNavigationState extends State<MainNavigation> {
             title: const Text('Blog Immobilier'),
             onTap: () {
               Navigator.pop(context);
-              // Navigation vers Blog
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.shield_outlined, color: Color(0xFF0B4629)),
-            title: const Text('Liste Noire (Sécurité)'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigation vers Blacklist
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const BlogScreen()));
             },
           ),
           ListTile(
@@ -319,7 +321,7 @@ class _MainNavigationState extends State<MainNavigation> {
             title: const Text('Annuaire des Pros'),
             onTap: () {
               Navigator.pop(context);
-              _onTabTapped(1); // Nohan ou autre
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ExploreProfessionalsScreen()));
             },
           ),
           const Divider(),
@@ -408,7 +410,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Widget _buildFavoriteCard(Property p) {
     return Card(
-      margin: const EdgeInsets.bottom(16),
+      margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),

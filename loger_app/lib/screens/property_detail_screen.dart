@@ -141,7 +141,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                         child: const Icon(Icons.share_rounded, color: Colors.black, size: 20),
                       ),
                       onPressed: () {
-                        SharePlus.instance.share(
+                        Share.share(
                           'Découvrez ce bien sur Loger Sénégal : ${property.title}\nLien : https://logersenegal.com/annonces/${property.id}/',
                         );
                       },

@@ -92,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         return FadeInUp(
           delay: Duration(milliseconds: 100 * index),
           child: Card(
-            margin: const EdgeInsets.bottom(16),
+            margin: const EdgeInsets.only(bottom: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: ListTile(
               contentPadding: const EdgeInsets.all(12),
@@ -124,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       itemBuilder: (context, index) {
         final b = _myBookings[index];
         return Card(
-          margin: const EdgeInsets.bottom(12),
+          margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             title: Text('Réservation #$index'),
             subtitle: Text('Dates: ${b['start_date']} au ${b['end_date']}'),
@@ -143,7 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       itemBuilder: (context, index) {
         final v = _myVisits[index];
         return Card(
-          margin: const EdgeInsets.bottom(12),
+          margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             title: Text('Visite #$index'),
             subtitle: Text('Le ${v['preferred_date']} à ${v['preferred_time']}'),
@@ -162,7 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
       child: Text(status, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
