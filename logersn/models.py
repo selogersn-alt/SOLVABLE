@@ -189,96 +189,37 @@ class PropertyImage(models.Model):
     image_url = models.FileField(upload_to='properties/')
     is_primary = models.BooleanField(default=False)
 
-    def _apply_watermark(self, img):
-        """Applique le texte 'www.logersenegal.com' AU CENTRE de l'image."""
-        try:
-            from PIL import ImageDraw, ImageFont
-
-            # Image en RGBA
-            img_rgba = img.convert("RGBA")
-            make_watermark = Image.new("RGBA", img_rgba.size, (0, 0, 0, 0))
-            draw = ImageDraw.Draw(make_watermark)
-
-            text = "www.logersenegal.com"
-            
-            # Calcul de la taille de la police (environ 5% de la largeur de l'image)
-            font_size = int(img_rgba.width * 0.05)
-            
-            # Tentative de chargement d'une police TrueType, sinon police par défaut
-            try:
-                # Chemins courants sur Linux (O2switch)
-                font_paths = [
-                    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-                    "/usr/share/fonts/liberation/LiberationSans-Bold.ttf",
-                    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
-                ]
-                font = None
-                for path in font_paths:
-                    if os.path.exists(path):
-                        font = ImageFont.truetype(path, font_size)
-                        break
-                if not font:
-                    font = ImageFont.load_default()
-            except:
-                font = ImageFont.load_default()
-
-            # Calcul de la position (centré)
-            try:
-                # Pillow >= 9.2.0
-                left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-                text_width = right - left
-                text_height = bottom - top
-            except:
-                # Anciennes versions de Pillow
-                text_width, text_height = draw.textsize(text, font=font)
-
-            x = (img_rgba.width - text_width) // 2
-            y = (img_rgba.height - text_height) // 2
-
-            # Couleur blanche avec opacité (25%)
-            draw.text((x, y), text, font=font, fill=(255, 255, 255, 60))
-
-            # Fusion
-            watermarked = Image.alpha_composite(img_rgba, make_watermark)
-            return watermarked.convert("RGB")
-
-        except Exception as e:
-            print(f"Text Watermark failed: {e}")
-            return img
-
     def save(self, *args, **kwargs):
-        """Conversion WebP + Filigrane Loger Sénégal automatique."""
+        """Conversion automatique en WebP et redimensionnement intelligent (Sécurisé)."""
         if self.image_url:
             try:
+                # On ne tente la conversion que si Pillow est disponible et le fichier n'est pas déjà webp
                 if not self.image_url.name.lower().endswith('.webp'):
                     img = Image.open(self.image_url)
-
+                    
                     # 1. Conversion en RGB
                     if img.mode in ("RGBA", "P"):
                         img = img.convert("RGB")
-
-                    # 2. Redimensionnement (max 1200px)
+                    
+                    # 2. Redimensionnement
                     max_width = 1200
                     if img.width > max_width:
                         output_size = (max_width, int((max_width / img.width) * img.height))
                         img = img.resize(output_size, Image.LANCZOS)
-
-                    # 3. ✅ APPLICATION DU FILIGRANE LOGER SÉNÉGAL
-                    img = self._apply_watermark(img)
-
-                    # 4. Compression WebP haute qualité
+                    
+                    # 3. Flux mémoire
                     output = io.BytesIO()
                     img.save(output, format='WEBP', quality=85)
                     output.seek(0)
-
-                    # 5. Remplacement du fichier
+                    
+                    # 4. Changement de nom et sauvegarde du champ
                     current_name = os.path.splitext(self.image_url.name)[0]
                     new_filename = f"{current_name}.webp"
                     self.image_url.save(new_filename, ContentFile(output.read()), save=False)
-
             except Exception as e:
-                print(f"Image processing failed for {self.image_url.name}: {e}")
-
+                # En cas d'erreur (PIL manquant, erreur de format, etc.), on ignore et on garde l'original
+                print(f"WebP conversion failed for {self.image_url.name}: {e}")
+            
         super().save(*args, **kwargs)
 
     def __str__(self):
