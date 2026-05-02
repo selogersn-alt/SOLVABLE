@@ -392,7 +392,7 @@ def dashboard_view(request):
                     total_views=Sum('views_count'),
                     total_clicks=Sum('clicks_count')
                 )
-                pro_stats.update(stats)
+                pro_stats.update({k: (v or 0) for k, v in stats.items()})
                 # Bien le plus vu
                 pro_stats['most_viewed'] = all_pro_props.order_by('-views_count').first()
                 

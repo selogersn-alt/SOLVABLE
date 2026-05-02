@@ -55,18 +55,22 @@
                             <span class="badge bg-primary" title="Professionnel Vérifié par Logersenegal"><i class="fa-solid fa-certificate"></i> Vérifié</span>
                         </div>
                         <div class="mb-3">
-                            <small class="text-muted fw-bold d-block">{{ pro.nils_profile.nils_number }}</small>
+                            <small class="text-muted fw-bold d-block">{{ pro.nils_number }}</small>
                             <div class="text-warning mt-1">
-                                {% for i in "1234567891"|make_list %}
-                                    {% if forloop.counter <= pro.nils_profile.average_rating %}
-                                        <i class="fa-solid fa-star tiny"></i>
-                                    {% elif forloop.counter|add:"-0.5" <= pro.nils_profile.average_rating %}
-                                        <i class="fa-solid fa-star-half-stroke tiny"></i>
-                                    {% else %}
-                                        <i class="fa-regular fa-star tiny"></i>
-                                    {% endif %}
-                                {% endfor %}
-                                <span class="ms-1 tiny text-muted">({{ pro.nils_profile.average_rating }}/10)</span>
+                                {% if pro.nils_profile %}
+                                    {% for i in "1234567891"|make_list %}
+                                        {% if forloop.counter <= pro.nils_profile.average_rating %}
+                                            <i class="fa-solid fa-star tiny"></i>
+                                        {% elif forloop.counter|add:"-0.5" <= pro.nils_profile.average_rating %}
+                                            <i class="fa-solid fa-star-half-stroke tiny"></i>
+                                        {% else %}
+                                            <i class="fa-regular fa-star tiny"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-1 tiny text-muted">({{ pro.nils_profile.average_rating|default:0 }}/10)</span>
+                                {% else %}
+                                    <span class="tiny text-muted"><i class="fa-solid fa-star-half-stroke me-1"></i> Nouveau profil</span>
+                                {% endif %}
                             </div>
                         </div>
                         

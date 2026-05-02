@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import 'solvency_docs_screen.dart';
 import 'legal_screen.dart';
@@ -11,6 +12,7 @@ import 'edit_profile_screen.dart';
 import 'add_property_screen.dart';
 import 'blog_screen.dart';
 import 'nohan_chat_screen.dart';
+import '../main.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -81,9 +83,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen(user: user)));
             }
           }),
-          _buildNativeButton('Mes Annonces', Icons.list_alt_rounded, () {
-            // TODO: MyPropertiesScreen
-          }),
           _buildNativeButton('Vérification NILS', Icons.verified_user_rounded, () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const SolvencyDocsScreen()));
           }),
@@ -117,6 +116,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _autoUpdateContent,
             Icons.sync_rounded,
             (val) => _updateSetting('auto_update_content', val),
+          ),
+          
+          const SizedBox(height: 32),
+          _buildSectionHeader('Apparence'),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: themeNotifier,
+            builder: (context, mode, _) {
+              return _buildToggle(
+                'Mode Sombre',
+                'Activer le thème Mystic & Green',
+                mode == ThemeMode.dark,
+                Icons.dark_mode_rounded,
+                (val) {
+                  themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
+                },
+              );
+            },
           ),
           
           const SizedBox(height: 32),
@@ -162,8 +178,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const SizedBox(height: 48),
+          Center(
+            child: Column(
+              children: [
+                Image.asset('assets/img/logo.png', height: 30, color: Colors.blueGrey.withValues(alpha: 0.2)),
+                const SizedBox(height: 12),
+                const Text("LOGER SÉNÉGAL ™", style: TextStyle(color: Colors.blueGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                const SizedBox(height: 4),
+                const Text("Version 2.12", style: TextStyle(color: Colors.blueGrey, fontSize: 10)),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => launchUrl(Uri.parse('https://digitalh.net')),
+                  child: const Text(
+                    "Conçu par Digitalh",
+                    style: TextStyle(color: Color(0xFF0B4629), fontSize: 11, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (user != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
             FadeInUp(
               delay: const Duration(milliseconds: 100),
               child: ElevatedButton(

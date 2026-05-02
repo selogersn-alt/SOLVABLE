@@ -184,17 +184,15 @@
                         <strong>Conseil Pro :</strong> N'oubliez pas de mettre à jour la disponibilité de vos biens <strong>meublés</strong> chaque semaine.
                     </div>
                     {% endif %}
-                    <div class="mt-3 text-warning d-flex align-items-center justify-content-center">
-                        {% for i in "1234567891"|make_list %}{# Workaround for range 10 #}
-                            {% if forloop.counter <= user.nils_profile.average_rating %}
-                                <i class="fa-solid fa-star small"></i>
-                            {% elif forloop.counter|add:"-0.5" <= user.nils_profile.average_rating %}
-                                <i class="fa-solid fa-star-half-stroke small"></i>
+                                <span class="ms-2 small text-muted">({{ user.nils_profile.average_rating|default:"0" }}/10)</span>
                             {% else %}
-                                <i class="fa-regular fa-star small"></i>
+                                <span class="small text-muted"><i class="fa-solid fa-star-half-stroke me-1"></i> Nouveau profil (0/10)</span>
                             {% endif %}
-                        {% endfor %}
-                        <span class="ms-2 small text-muted">({{ user.nils_profile.average_rating|default:"0" }}/10)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="px-3">
+                         <small class="text-muted d-block">ID NILS: <strong>{{ user.nils_number }}</strong></small>
                     </div>
                 </div>
                 
@@ -326,7 +324,7 @@
                                                 <svg width="120" height="120" viewBox="0 0 120 120">
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-color)" stroke-width="8" />
                                                     <circle id="nils-gauge-circle" cx="60" cy="60" r="54" fill="none" 
-                                                            stroke="{% if user.nils_profile.reputation_status == 'GREEN' %}var(--color-light-green){% elif user.nils_profile.reputation_status == 'YELLOW' %}var(--color-yellow){% else %}#dc3545{% endif %}" 
+                                                            stroke="{% if user.nils_reputation == 'GREEN' %}var(--color-light-green){% elif user.nils_reputation == 'YELLOW' %}var(--color-yellow){% else %}#dc3545{% endif %}" 
                                                             stroke-width="12" 
                                                             stroke-dasharray="339.29" 
                                                             stroke-dashoffset="339.29" 
@@ -334,14 +332,14 @@
                                                             style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);" />
                                                 </svg>
                                                 <div class="position-absolute top-50 start-50 translate-middle text-center">
-                                                    <span class="d-block fw-800 fs-3">{{ user.nils_profile.score }}</span>
+                                                    <span class="d-block fw-800 fs-3">{{ user.nils_score }}</span>
                                                     <small class="text-muted" style="font-size: 0.6rem;">pts</small>
                                                 </div>
                                             </div>
                                             <script>
                                                 (function() {
                                                     const circle = document.getElementById('nils-gauge-circle');
-                                                     const nilsScoreVal = parseFloat("{{ user.nils_profile.score|default:0 }}");
+                                                     const nilsScoreVal = parseFloat("{{ user.nils_score }}");
                                                     const circumference = 339.29;
                                                     const nilsOffset = circumference - (nilsScoreVal / 100) * circumference;
                                                     setTimeout(() => {
@@ -349,11 +347,11 @@
                                                     }, 300);
                                                 })();
                                             </script>
-                                             <div class="mt-2 fw-bold text-uppercase {% if user.nils_profile.reputation_status == 'GREEN' %}status-green{% elif user.nils_profile.reputation_status == 'YELLOW' %}status-yellow{% else %}status-red{% endif %}">
-                                                Profil {{ user.nils_profile.get_reputation_status_display }}
+                                             <div class="mt-2 fw-bold text-uppercase {% if user.nils_reputation == 'GREEN' %}status-green{% elif user.nils_reputation == 'YELLOW' %}status-yellow{% elif user.nils_reputation == 'RED' %}status-red{% else %}text-muted{% endif %}">
+                                                Profil {{ user.nils_profile.get_reputation_status_display|default:"Non initialisé" }}
                                             </div>
                                         </div>
-                                        <p class="text-muted small">ID NILS: <strong>{{ user.nils_profile.nils_number }}</strong>. Votre score reflète votre historique de paiement certifié sur la plateforme.</p>
+                                        <p class="text-muted small">ID NILS: <strong>{{ user.nils_number }}</strong>. Votre score reflète votre historique de paiement certifié sur la plateforme.</p>
                                     {% else %}
                                         <div class="d-flex align-items-center mb-3">
                                             <div class="status-badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i> Profil non créé</div>
@@ -565,7 +563,7 @@
                                         {% for filiation in user.landlord_filiations.all %}
                                         <tr>
                                             <td>{{ filiation.property.title|default:"Non spécifié" }}</td>
-                                            <td>{{ filiation.tenant.phone_number }}<br><small class="text-muted">{{ filiation.tenant.nils_profile.nils_number|default:"-" }}</small></td>
+                                            <td>{{ filiation.tenant.phone_number }}<br><small class="text-muted">{{ filiation.tenant.nils_number }}</small></td>
                                             <td>{{ filiation.monthly_rent }} FCFA</td>
                                             <td>
                                                 <span class="badge {% if filiation.status == 'ACTIVE' %}bg-success{% elif filiation.status == 'PENDING_APPROVAL' %}bg-warning{% else %}bg-secondary{% endif %}">

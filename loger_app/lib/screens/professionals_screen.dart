@@ -31,9 +31,18 @@ class _ExploreProfessionalsScreenState extends State<ExploreProfessionalsScreen>
     try {
       final list = await _apiService.fetchProfessionals();
       final cities = await _apiService.fetchCities();
+      
+      // Filtrer uniquement les certifiés et trier par ordre alphabétique
+      final certified = list.where((p) => p['is_verified_pro'] == true).toList();
+      certified.sort((a, b) {
+        final nameA = (a['company_name'] ?? a['full_name'] ?? "").toString().toLowerCase();
+        final nameB = (b['company_name'] ?? b['full_name'] ?? "").toString().toLowerCase();
+        return nameA.compareTo(nameB);
+      });
+
       setState(() {
-        _allPros = list;
-        _filteredPros = list;
+        _allPros = certified;
+        _filteredPros = certified;
         _cities = ["SÉNÉGAL", ...cities.map((c) => c['name']!.toUpperCase())];
         _isLoading = false;
       });
@@ -197,7 +206,6 @@ class _ExploreProfessionalsScreenState extends State<ExploreProfessionalsScreen>
   }
 
   Widget _buildProCard(Map<String, dynamic> pro) {
-    final isVerified = pro['is_verified_pro'] == true;
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
@@ -231,18 +239,17 @@ class _ExploreProfessionalsScreenState extends State<ExploreProfessionalsScreen>
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (isVerified)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: const Color(0xFFDAA520).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.verified_rounded, color: Color(0xFFDAA520), size: 14),
-                                SizedBox(width: 4),
-                                Text('VÉRIFIÉ', style: TextStyle(color: Color(0xFFDAA520), fontSize: 10, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: const Color(0xFF27C66E).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.verified_rounded, color: Color(0xFF27C66E), size: 14),
+                              SizedBox(width: 4),
+                              Text('CERTIFIÉ', style: TextStyle(color: Color(0xFF27C66E), fontSize: 10, fontWeight: FontWeight.bold)),
+                            ],
                           ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),

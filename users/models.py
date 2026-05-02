@@ -167,7 +167,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def nils_profile(self):
         # Fallback for compatibility: returns the tenant profile if exists, or any other
+        if not self.pk: return None
         return self.nils_profiles.filter(nils_type=self.RoleEnum.TENANT).first() or self.nils_profiles.first()
+
+    @property
+    def nils_score(self):
+        p = self.nils_profile
+        return p.score if p else 0
+
+    @property
+    def nils_reputation(self):
+        p = self.nils_profile
+        return p.reputation_status if p else 'NONE'
+
+    @property
+    def nils_number(self):
+        p = self.nils_profile
+        return p.nils_number if p else "N/A"
 
     @property
     def kyc_photo(self):

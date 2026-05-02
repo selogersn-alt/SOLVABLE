@@ -20,15 +20,15 @@ class ApiService {
     }
     if (search != null && search.isNotEmpty) queryParameters['search'] = search;
     queryParameters['page'] = page.toString();
+    queryParameters['ordering'] = '-created_at';
 
     final uri = Uri.parse('$baseUrl/properties/').replace(queryParameters: queryParameters);
 
     try {
       final response = await http.get(uri).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () => throw Exception('Délai de connexion dépassé (30s)'),
+        const Duration(seconds: 15), // Réduit pour basculer plus vite sur le cache
+        onTimeout: () => throw Exception('Timeout'),
       );
-      debugPrint('API GET Properties: $uri (Status: ${response.statusCode})');
       
       if (response.statusCode == 200) {
         final String decodedBody = utf8.decode(response.bodyBytes);
@@ -41,43 +41,31 @@ class ApiService {
           list = decodedData['results'] ?? [];
           hasNext = decodedData['next'] != null;
           
+          // Mise en cache agressive pour la page 1 (accueil)
           if (page == 1 && city == null && propertyType == null && (search == null || search.isEmpty)) {
-            try {
-              final box = Hive.box('properties_cache');
-              box.put('home_properties', list);
-            } catch (e) {
-              debugPrint('Cache Save Error: $e');
-            }
+            final box = Hive.box('properties_cache');
+            box.put('home_properties', list);
           }
-        } else if (decodedData is List) {
-          list = decodedData;
-          hasNext = false;
         } else {
-          throw Exception('Format de données inconnu');
+          list = decodedData is List ? decodedData : [];
         }
 
-        final properties = list.map((json) {
-          try {
-            return Property.fromJson(Map<String, dynamic>.from(json));
-          } catch (e) {
-            debugPrint('Property Parse Error: $e in data: $json');
-            return null;
-          }
-        }).whereType<Property>().toList();
+        final properties = list.map((json) => Property.fromJson(Map<String, dynamic>.from(json))).toList();
 
-        debugPrint('Fetched ${properties.length} properties');
-
-        return {
-          'properties': properties,
-          'next': hasNext,
-        };
+        return {'properties': properties, 'next': hasNext};
       } else {
-        debugPrint('API Error Body: ${response.body}');
-        throw Exception('Erreur serveur (${response.statusCode})');
+        throw Exception('Server Error');
       }
     } catch (e) {
-      debugPrint('ApiService Exception: $e');
-      throw Exception('Impossible de charger les annonces');
+      debugPrint('ApiService Offline Mode: loading cache for $uri');
+      // En cas d'erreur (hors-ligne), on tente de charger le cache
+      if (page == 1) {
+        final cached = getCachedProperties();
+        if (cached.isNotEmpty) {
+          return {'properties': cached, 'next': false};
+        }
+      }
+      throw Exception('Impossible de se connecter au serveur');
     }
   }
 
@@ -90,16 +78,40 @@ class ApiService {
       final box = Hive.box('properties_cache');
       final List<dynamic>? cached = box.get('home_properties');
       if (cached != null) {
-        return cached.map((json) {
-          try {
-            return Property.fromJson(Map<String, dynamic>.from(json));
-          } catch (e) {
-            return null;
-          }
-        }).whereType<Property>().toList();
+        return cached.map((json) => Property.fromJson(Map<String, dynamic>.from(json))).toList();
       }
     } catch (e) {
       debugPrint('Cache Load Error: $e');
+    }
+    return [];
+  }
+
+  void cachePropertyDetails(Property p) {
+    try {
+      final box = Hive.box('properties_cache');
+      Map<String, dynamic> recently = box.get('recently_viewed', defaultValue: <String, dynamic>{});
+      recently[p.id] = p.toJson(); // Assurez-vous d'avoir toJson() dans votre modèle
+      
+      // Limiter à 20 annonces récentes
+      if (recently.length > 20) {
+        recently.remove(recently.keys.first);
+      }
+      
+      box.put('recently_viewed', recently);
+    } catch (e) {
+      debugPrint('Cache Detail Error: $e');
+    }
+  }
+
+  List<Property> getRecentlyViewed() {
+    try {
+      final box = Hive.box('properties_cache');
+      final Map<dynamic, dynamic>? recently = box.get('recently_viewed');
+      if (recently != null) {
+        return recently.values.map((v) => Property.fromJson(Map<String, dynamic>.from(v))).toList();
+      }
+    } catch (e) {
+      debugPrint('Load Recently Viewed Error: $e');
     }
     return [];
   }
@@ -191,13 +203,22 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/properties/favorites/'),
         headers: {'Authorization': 'Bearer $token'},
-      );
+      ).timeout(const Duration(seconds: 10));
+
       if (response.statusCode == 200) {
         final List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+        final box = Hive.box('properties_cache');
+        box.put('favorites_cache', list);
         return list.map((json) => Property.fromJson(json)).toList();
       }
-      return [];
+      throw Exception('Server Error');
     } catch (e) {
+      // Retourne le cache si hors-ligne
+      final box = Hive.box('properties_cache');
+      final List<dynamic>? cached = box.get('favorites_cache');
+      if (cached != null) {
+        return cached.map((json) => Property.fromJson(json)).toList();
+      }
       return [];
     }
   }

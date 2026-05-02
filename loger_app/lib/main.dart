@@ -13,14 +13,16 @@ import 'screens/dashboard_screen.dart';
 import 'screens/nohan_chat_screen.dart';
 import 'screens/blog_screen.dart';
 import 'screens/professionals_screen.dart';
+import 'screens/favorites_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
-import 'services/api_service.dart';
-import 'models/property_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() async {
   timeago.setLocaleMessages('fr', timeago.FrMessages());
@@ -53,31 +55,54 @@ class LogerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Loger Sénégal',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0B4629),
-          primary: const Color(0xFF0B4629),
-          secondary: const Color(0xFFDAA520),
-          surface: Colors.white,
-        ),
-        textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            color: Color(0xFF0B4629),
-            fontWeight: FontWeight.w900,
-            fontSize: 20,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (_, ThemeMode currentMode, __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Loger Sénégal',
+          themeMode: currentMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF0B4629),
+              primary: const Color(0xFF0B4629),
+              secondary: const Color(0xFFDAA520),
+              surface: Colors.white,
+            ),
+            textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
+            scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+              titleTextStyle: TextStyle(
+                color: Color(0xFF0B4629),
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+              ),
+            ),
           ),
-        ),
-      ),
-      home: const SplashScreen(),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF0B4629),
+              brightness: Brightness.dark,
+              primary: const Color(0xFF27C66E),
+              secondary: const Color(0xFFF5C42F),
+            ),
+            textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF121212),
+              elevation: 0,
+              centerTitle: true,
+            ),
+          ),
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }
@@ -340,6 +365,19 @@ class _MainNavigationState extends State<MainNavigation> {
             onTap: () => Navigator.pop(context),
           ),
           const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Text("Version 2.12", style: TextStyle(color: Colors.grey, fontSize: 10)),
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () => launchUrl(Uri.parse('https://digitalh.net')),
+                  child: const Text("Conçu par Digitalh", style: TextStyle(color: Color(0xFF0B4629), fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
           if (user != null)
             ListTile(
               leading: const Icon(Icons.logout_rounded, color: Colors.red),
@@ -350,100 +388,6 @@ class _MainNavigationState extends State<MainNavigation> {
               },
             ),
           const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-}
-
-class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({super.key});
-
-  @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
-}
-
-class _FavoritesScreenState extends State<FavoritesScreen> {
-  final ApiService _apiService = ApiService();
-  List<Property> _favorites = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavorites();
-  }
-
-  Future<void> _loadFavorites() async {
-    setState(() => _isLoading = true);
-    try {
-      final list = await _apiService.fetchFavorites();
-      setState(() {
-        _favorites = list;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Text('Favoris', style: TextStyle(fontWeight: FontWeight.w900)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : _favorites.isEmpty 
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: _favorites.length,
-              itemBuilder: (context, index) {
-                final p = _favorites[index];
-                return _buildFavoriteCard(p);
-              },
-            ),
-    );
-  }
-
-  Widget _buildFavoriteCard(Property p) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(p.images.isNotEmpty ? p.images.first.imageUrl : '', width: 70, height: 70, fit: BoxFit.cover),
-        ),
-        title: Text(p.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('${p.price} F'),
-        trailing: IconButton(
-          icon: const Icon(Icons.favorite, color: Colors.red),
-          onPressed: () async {
-            await _apiService.toggleFavorite(p.id);
-            _loadFavorites();
-          },
-        ),
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PropertyDetailScreen(property: p))),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.favorite_border_rounded, size: 80, color: Colors.blueGrey.shade100),
-          const SizedBox(height: 16),
-          const Text('Vos coups de coeur s\'afficheront ici', style: TextStyle(color: Colors.grey)),
         ],
       ),
     );

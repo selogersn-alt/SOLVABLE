@@ -97,6 +97,41 @@ class Property {
       isFavorite: json['is_favorite'] == true,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'slug': slug,
+      'description': description,
+      'price': price,
+      'price_per_night': pricePerNight,
+      'city': city,
+      'neighborhood': neighborhood,
+      'property_type': propertyType,
+      'property_type_display': propertyTypeDisplay,
+      'listing_category': listingCategory,
+      'listing_category_display': listingCategoryDisplay,
+      'bedrooms': bedrooms,
+      'toilets': toilets,
+      'total_rooms': totalRooms,
+      'salons': salons,
+      'kitchens': kitchens,
+      'has_garage': hasGarage,
+      'has_balcony': hasBalcony,
+      'has_terrace': hasTerrace,
+      'document_type': documentType,
+      'surface': surface,
+      'is_boosted': isBoosted,
+      'created_at': createdAt.toIso8601String(),
+      'images': images.map((i) => i.toJson()).toList(),
+      'owner': owner.toJson(),
+      'absolute_url': absoluteUrl,
+      'latitude': latitude,
+      'longitude': longitude,
+      'is_favorite': isFavorite,
+    };
+  }
 }
 
 class PropertyImage {
@@ -112,6 +147,13 @@ class PropertyImage {
       id: json['id'].toString(),
       imageUrl: url,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'image_url': imageUrl,
+    };
   }
 }
 
@@ -144,6 +186,18 @@ class Owner {
       isVerifiedPro: json['is_verified_pro'] == true,
       profilePicture: json['profile_picture']?.toString(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'first_name': firstName,
+      'last_name': lastName,
+      'company_name': companyName,
+      'phone_number': phoneNumber,
+      'is_verified_pro': isVerifiedPro,
+      'profile_picture': profilePicture,
+    };
   }
 
   String get displayName => companyName ?? '$firstName $lastName';
