@@ -310,117 +310,131 @@ def property_detail_view(request, property_id=None, slug=None):
 
 @login_required
 def dashboard_view(request):
-    try:
-        # Retrieve conversations for the logged in user to display in the chat tab
-        conversations = request.user.conversations.prefetch_related('messages').all()
+    # Retrieve conversations for the logged in user to display in the chat tab
+    conversations = request.user.conversations.prefetch_related('messages').all()
+    
+    # Règle DigitH : Si l'utilisateur est Staff/Superuser, il doit voir TOUTES les conversations Support
+    if request.user.is_staff:
+        from chat.models import Conversation
+        support_convs = Conversation.objects.filter(topic=Conversation.TopicEnum.SUPPORT).prefetch_related('messages')
+        conversations = (conversations | support_convs).distinct().order_by('-updated_at')
+    
+    # Gerer le chat actif via l'URL (ex: ?conv=ID_DE_LA_CONV)
+    active_conv_id = request.GET.get('conv')
+    active_conversation = None
+    
+    if active_conv_id:
+        active_conversation = conversations.filter(id=active_conv_id).first()
+    elif conversations.exists():
+        active_conversation = conversations.first()
+    
+    from solvable.models import PropertyApplication, RentalFiliation
+    
+    # --- FILTRES ANNONCES ---
+    properties = request.user.properties.all().order_by('-created_at')
+    
+    prop_type = request.GET.get('prop_type')
+    prop_status = request.GET.get('prop_status')
+    prop_date = request.GET.get('prop_date')
+    
+    if prop_type and prop_type != 'ALL':
+        properties = properties.filter(property_type=prop_type)
+    if prop_status == 'PAID':
+        properties = properties.filter(is_paid=True)
+    elif prop_status == 'UNPAID':
+        properties = properties.filter(is_paid=False)
+    elif prop_status == 'PUBLISHED':
+        properties = properties.filter(is_published=True)
         
-        # Logic to fetch support conversations if user is staff or customer support
-        if request.user.is_staff or request.user.role == 'CUSTOMER_SUPPORT':
-            support_convs = Conversation.objects.filter(topic='SUPPORT')
-            conversations = (conversations | support_convs).distinct().order_by('-updated_at')
-        
-        # Gerer le chat actif via l'URL (ex: ?conv=ID_DE_LA_CONV)
-        active_conv_id = request.GET.get('conv')
-        active_conversation = None
-        
-        if active_conv_id:
-            active_conversation = conversations.filter(id=active_conv_id).first()
-        elif conversations.exists():
-            active_conversation = conversations.first()
-        
-        from solvable.models import PropertyApplication, RentalFiliation
-        
-        # --- FILTRES ANNONCES ---
-        properties = request.user.properties.all().order_by('-created_at')
-        
-        prop_type = request.GET.get('prop_type')
-        prop_status = request.GET.get('prop_status')
-        prop_date = request.GET.get('prop_date')
-        
-        if prop_type and prop_type != 'ALL':
-            properties = properties.filter(property_type=prop_type)
-        if prop_status == 'PAID':
-            properties = properties.filter(is_paid=True)
-        elif prop_status == 'UNPAID':
-            properties = properties.filter(is_paid=False)
-            
-        approved_properties = properties.filter(is_published=True)
-        pending_properties = properties.filter(is_published=False)
-        
-        # --- FILTRES CANDIDATURES ---
-        my_applications = request.user.my_applications.all().order_by('-created_at')
-        
-        # Received applications for pros
-        received_applications = PropertyApplication.objects.filter(property__owner=request.user).select_related('applicant', 'property').order_by('-created_at')
-        
-        app_status = request.GET.get('app_status')
-        app_score = request.GET.get('app_score')
-        
-        if app_status and app_status != 'ALL':
-            received_applications = received_applications.filter(status=app_status)
-        
-        if app_score:
-            try:
-                score_min = int(app_score)
-                # Filter by applicant's NILS score
-                received_applications = received_applications.filter(applicant__nils_profiles__score__gte=score_min).distinct()
-            except: pass
-        
-        # Pendings filiations to approve
-        pending_approvals = request.user.landlord_filiations.filter(status=RentalFiliation.StatusEnum.PENDING_APPROVAL)
-
-        # --- STATISTIQUES AVANCÉES (POUR PROS) ---
-        from django.db.models import Avg, Max, Min, Sum
-        pro_stats = {'chart_labels': [], 'chart_data': [], 'total_spent': 0, 'avg_price': 0, 'max_price': 0, 'total_views': 0}
-        
-        if request.user.role != 'TENANT':
-            try:
-                all_pro_props = request.user.properties.all()
-                if all_pro_props.exists():
-                    stats = all_pro_props.aggregate(
-                        avg_price=Avg('price'),
-                        max_price=Max('price'),
-                        min_price=Min('price'),
-                        total_views=Sum('views_count'),
-                        total_clicks=Sum('clicks_count')
-                    )
-                    pro_stats.update({k: (v or 0) for k, v in stats.items()})
-                    
-                    # Top properties for chart (last 5)
-                    top_props = all_pro_props.order_by('-views_count')[:5]
-                    pro_stats['chart_labels'] = [ (p.title[:15] + '...') if p.title else "Sans titre" for p in top_props]
-                    pro_stats['chart_data'] = [p.views_count for p in top_props]
-                    pro_stats['most_viewed'] = all_pro_props.order_by('-views_count').first()
-            except Exception as e:
-                pro_stats['error'] = str(e)
-
-        from logersn.constants import PROPERTY_TYPE_CHOICES
-        
+    if prop_date:
         try:
-            from users.models import UserPoints
-            points_balance_obj, _ = UserPoints.objects.get_or_create(user=request.user)
-            points_balance = points_balance_obj.balance
-        except Exception:
-            points_balance = 0
+            properties = properties.filter(created_at__date=prop_date)
+        except: pass
+
+    approved_properties = properties.filter(is_published=True)
+    pending_properties = properties.filter(is_published=False)
+    
+    # --- FILTRES CANDIDATURES ---
+    my_applications = request.user.my_applications.all().order_by('-created_at')
+    
+    # Received applications for pros
+    received_applications = PropertyApplication.objects.filter(property__owner=request.user).select_related('applicant', 'property').order_by('-created_at')
+    
+    app_status = request.GET.get('app_status')
+    app_score = request.GET.get('app_score')
+    app_date = request.GET.get('app_date')
+    
+    if app_status and app_status != 'ALL':
+        received_applications = received_applications.filter(status=app_status)
+    
+    if app_date:
+        try:
+            received_applications = received_applications.filter(created_at__date=app_date)
+        except: pass
         
-        context = {
-            'conversations': conversations,
-            'active_conversation': active_conversation,
-            'properties': properties,
-            'approved_count': approved_properties.count(),
-            'pending_count': pending_properties.count(),
-            'my_applications': my_applications,
-            'received_applications': received_applications,
-            'pending_approvals': pending_approvals,
-            'property_types': PROPERTY_TYPE_CHOICES,
-            'filters': request.GET,
-            'points_balance': points_balance,
-            'pro_stats': pro_stats,
-        }
-        return render(request, 'dashboard.html', context)
-    except Exception as e:
-        import traceback
-        return HttpResponse(f"<h1>DEBUG ERROR 500</h1><pre>{traceback.format_exc()}</pre>", status=500)
+    if app_score:
+        try:
+            score_min = int(app_score)
+            # Filter by applicant's NILS score
+            received_applications = received_applications.filter(applicant__nils_profiles__score__gte=score_min).distinct()
+        except: pass
+    
+    # Pendings filiations to approve
+    pending_approvals = request.user.landlord_filiations.filter(status=RentalFiliation.StatusEnum.PENDING_APPROVAL)
+
+    # --- STATISTIQUES AVANCÉES (POUR PROS) ---
+    from django.db.models import Avg, Max, Min, Sum
+    pro_stats = {'chart_labels': [], 'chart_data': [], 'total_spent': 0, 'avg_price': 0, 'max_price': 0, 'total_views': 0}
+    
+    if request.user.role != 'TENANT':
+        try:
+            all_pro_props = request.user.properties.all()
+            if all_pro_props.exists():
+                stats = all_pro_props.aggregate(
+                    avg_price=Avg('price'),
+                    max_price=Max('price'),
+                    min_price=Min('price'),
+                    total_views=Sum('views_count'),
+                    total_clicks=Sum('clicks_count')
+                )
+                pro_stats.update({k: (v or 0) for k, v in stats.items()})
+                
+                # Top properties for chart (last 5)
+                top_props = all_pro_props.order_by('-views_count')[:5]
+                pro_stats['chart_labels'] = [ (p.title[:15] + '...') if p.title else "Sans titre" for p in top_props]
+                pro_stats['chart_data'] = [p.views_count for p in top_props]
+                pro_stats['most_viewed'] = all_pro_props.order_by('-views_count').first()
+            
+            # Dépenses totales
+            total_spent = request.user.transactions.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum']
+            pro_stats['total_spent'] = total_spent or 0
+        except Exception as e:
+            pro_stats['error'] = str(e)
+
+    from logersn.constants import PROPERTY_TYPE_CHOICES
+    
+    try:
+        from users.models import UserPoints
+        points_balance_obj, _ = UserPoints.objects.get_or_create(user=request.user)
+        points_balance = points_balance_obj.balance
+    except Exception:
+        points_balance = 0
+    
+    context = {
+        'conversations': conversations,
+        'active_conversation': active_conversation,
+        'properties': properties,
+        'approved_count': approved_properties.count(),
+        'pending_count': pending_properties.count(),
+        'my_applications': my_applications,
+        'received_applications': received_applications,
+        'pending_approvals': pending_approvals,
+        'property_types': PROPERTY_TYPE_CHOICES,
+        'filters': request.GET,
+        'points_balance': points_balance,
+        'pro_stats': pro_stats,
+    }
+    return render(request, 'dashboard.html', context)
 
 from logersn.utils import FedaPayBridge
 from logersn.models import Property, PropertyImage, Transaction

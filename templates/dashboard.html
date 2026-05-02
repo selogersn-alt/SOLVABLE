@@ -871,7 +871,7 @@
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                                 <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center fw-bold text-dark" style="width: 35px; height: 35px;">
-                                                                    {{ app.applicant.first_name|first|default:"?" }}{{ app.applicant.last_name|first|default:"" }}
+                                                                    {{ app.applicant.first_name|default:"U"|slice:":1" }}{{ app.applicant.last_name|default:""|slice:":1" }}
                                                                 </div>
                                                                 <div>
                                                                     <div class="fw-bold">{{ app.applicant.get_full_name|default:app.applicant.phone_number }}</div>

@@ -492,7 +492,7 @@
                             <img src="{{ property.owner.profile_picture.url }}" class="rounded-circle shadow-sm" style="width: 55px; height: 55px; object-fit: cover; border: 2px solid var(--color-light-green);">
                         {% else %}
                             <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 55px; height: 55px; font-weight: bold; font-size: 1.2rem;">
-                                {{ property.owner.first_name|first|default:"P" }}{{ property.owner.last_name|first|default:"" }}
+                                {{ property.owner.first_name|default:"P"|slice:":1" }}{{ property.owner.last_name|default:""|slice:":1" }}
                             </div>
                         {% endif %}
                     </div>
