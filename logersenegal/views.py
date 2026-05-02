@@ -410,8 +410,12 @@ def dashboard_view(request):
 
     from logersn.constants import PROPERTY_TYPE_CHOICES
     
-    from users.models import UserPoints
-    points_balance, _ = UserPoints.objects.get_or_create(user=request.user)
+    try:
+        from users.models import UserPoints
+        points_balance_obj, _ = UserPoints.objects.get_or_create(user=request.user)
+        points_balance = points_balance_obj.balance
+    except Exception:
+        points_balance = 0
     
     context = {
         'conversations': conversations,
@@ -424,7 +428,7 @@ def dashboard_view(request):
         'pending_approvals': pending_approvals,
         'property_types': PROPERTY_TYPE_CHOICES,
         'filters': request.GET,
-        'points_balance': points_balance.balance,
+        'points_balance': points_balance,
         'pro_stats': pro_stats,
     }
     return render(request, 'dashboard.html', context)
