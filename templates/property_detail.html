@@ -512,6 +512,18 @@
                         <i class="fa-brands fa-whatsapp me-2"></i> WhatsApp
                     </a>
                 </div>
+
+                {% if ads_sidebar %}
+                <hr class="my-4">
+                <div class="sidebar-ads-section">
+                    <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.7rem; letter-spacing: 1px;">Sponsorisé</h6>
+                    {% for ad in ads_sidebar %}
+                        <div class="mb-3">
+                            {% include 'partials/ad_card.html' with ad=ad %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

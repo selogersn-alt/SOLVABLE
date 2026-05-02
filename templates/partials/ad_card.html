@@ -1,0 +1,62 @@
+<div class="property-card shadow-sm border-0 h-100 animate__animated animate__fadeInUp position-relative" style="transition: transform 0.3s ease, box-shadow 0.3s ease;">
+    
+    <div class="property-image-wrapper position-relative" style="height: 240px; overflow: hidden; border-top-left-radius: 12px; border-top-right-radius: 12px; background-color: #f8f9fa;">
+        {% if ad.ad_type == 'BANNER' %}
+            {% if ad.image %}
+                <img src="{{ ad.image.url }}" class="property-img w-100 h-100" alt="{{ ad.title }}" style="object-fit: cover;">
+            {% else %}
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                    <i class="fa-solid fa-rectangle-ad" style="font-size: 4rem; color: var(--border-color);"></i>
+                </div>
+            {% endif %}
+            
+            <div style="position: absolute; top: 12px; left: 12px; z-index: 5;">
+                <div class="ads-tag" style="background: var(--color-yellow); color: var(--color-dark-green); padding: 4px 12px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">
+                    SPONSORISÉ
+                </div>
+            </div>
+            
+            <div class="property-price-tag" style="position: absolute; bottom: 12px; right: 12px; background: var(--color-dark-green); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.95rem; z-index: 5; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                OFFRE
+            </div>
+            
+            {% if ad.target_url %}
+            <a href="{{ ad.target_url }}" target="_blank" class="stretched-link" style="z-index: 10;"></a>
+            {% endif %}
+            
+        {% else %}
+            <!-- Cas Script (Google Ads, etc.) -->
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center p-2 overflow-hidden" style="background: #fff;">
+                <div class="w-100 h-100">
+                    {{ ad.script_content|safe }}
+                </div>
+            </div>
+            <div style="position: absolute; top: 12px; left: 12px; z-index: 5;">
+                <div class="ads-tag" style="background: var(--color-yellow); color: var(--color-dark-green); padding: 3px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">
+                    ADS
+                </div>
+            </div>
+        {% endif %}
+        
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; background: linear-gradient(transparent, rgba(0,0,0,0.2)); z-index: 1;"></div>
+    </div>
+
+    <div class="property-details p-3">
+        <h3 class="property-title h6 fw-bold mb-1 text-truncate" style="color: var(--color-dark-green);">{{ ad.title }}</h3>
+        
+        <div class="owner-info mb-2 small fw-bold" style="color: var(--color-light-green);">
+            <i class="fa-solid fa-star me-1"></i> PARTENAIRE LOGERSN
+        </div>
+
+        <div class="property-location mb-3 text-muted small">
+            <span><i class="fa-solid fa-circle-info me-1 text-success"></i> Publicité certifiée</span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Annonce sponsorisée</span>
+            {% if ad.ad_type == 'BANNER' %}
+                <span class="btn btn-success btn-sm px-3 rounded-pill fw-bold shadow-sm" style="font-size: 0.75rem;">Visiter <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i></span>
+            {% endif %}
+        </div>
+    </div>
+</div>

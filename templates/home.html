@@ -637,6 +637,15 @@
             <div class="col-md-4 col-sm-6">
                 {% include 'partials/property_card.html' %}
             </div>
+            
+            {% if forloop.counter|divisibleby:3 and ads_in_feed %}
+            <div class="col-md-4 col-sm-6">
+                {% with ads_in_feed|random as ad %}
+                    {% include 'partials/ad_card.html' with ad=ad %}
+                {% endwith %}
+            </div>
+            {% endif %}
+            
             {% empty %}
             <div class="col-12 text-center py-5">
                 <i class="fa-solid fa-house-circle-xmark text-muted mb-4" style="font-size:4rem;"></i>

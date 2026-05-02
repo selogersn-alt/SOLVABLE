@@ -435,25 +435,12 @@
             {% include 'partials/property_card.html' with property=property %}
         </div>
 
-        {% if forloop.counter|divisibleby:6 and ads_in_feed %}
-            <div class="col-12 mt-4 mb-4 animate__animated animate__fadeIn">
-                <div class="ad-container text-center py-3 bg-light rounded-4 shadow-sm border border-2 border-dashed border-success">
-                    <small class="text-uppercase fw-bold text-success d-block mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">Sponsorisé par DigitalH</small>
-                    {% with ads_in_feed|random as ad %}
-                        {% if ad.ad_type == 'BANNER' %}
-                        <a href="{{ ad.target_url }}" target="_blank">
-                            {% if ad.image %}
-                                <img src="{{ ad.image.url }}" class="img-fluid rounded-3" alt="{{ ad.title }}" style="max-height: 250px; width: auto;">
-                            {% endif %}
-                        </a>
-                        {% else %}
-                            <div class="p-2">
-                                {{ ad.script_content|safe }}
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                </div>
-            </div>
+        {% if forloop.counter|divisibleby:3 and ads_in_feed %}
+        <div class="col-md-6 col-lg-4">
+            {% with ads_in_feed|random as ad %}
+                {% include 'partials/ad_card.html' with ad=ad %}
+            {% endwith %}
+        </div>
         {% endif %}
         {% empty %}
         <div class="col-12 py-5 text-center">

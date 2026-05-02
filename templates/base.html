@@ -765,6 +765,11 @@
         {% endif %}
     {% endif %}
     
+    <!-- Scripts SEO / Tracking Footer -->
+    {% if seo_settings and seo_settings.footer_scripts %}
+        {{ seo_settings.footer_scripts|safe }}
+    {% endif %}
+
     <!-- Assistant IA NOHAN -->
     {% if nohan_active %}
         {% include 'components/nohan_widget.html' %}
