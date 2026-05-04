@@ -26,6 +26,11 @@ PROPERTY_TYPE_CHOICES = [
     ('BUREAU', 'Bureau'),
     ('SHOWROOM', 'Showroom'),
     ('USAGE_PRO', 'Usage professionnel'),
+    ('VERGER', 'Verger'),
+    ('CHAMPS', 'Champs'),
+    ('DOMAINE', 'Domaine'),
+    ('RANGE', 'Range'),
+    ('HOTEL', 'Hôtel'),
 ]
 
 LISTING_CATEGORY_CHOICES = [

@@ -49,6 +49,11 @@ class AppConstants {
     'BUREAU': 'Bureau',
     'SHOWROOM': 'Showroom',
     'USAGE_PRO': 'Usage professionnel',
+    'VERGER': 'Verger',
+    'CHAMPS': 'Champs',
+    'DOMAINE': 'Domaine',
+    'RANGE': 'Range',
+    'HOTEL': 'Hôtel',
   };
 
   static const Map<String, String> listingCategories = {
