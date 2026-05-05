@@ -64,8 +64,6 @@ def home_view(request):
         filters = Q()
         if name_q:
             filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
-        if phone_q:
-            filters &= Q(user__phone_number__icontains=phone_q)
         if doc_q:
             filters &= Q(user__cni_number__icontains=doc_q)
         

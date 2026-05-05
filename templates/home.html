@@ -565,58 +565,6 @@
     </div>
 </section>
 
-<!-- SECTION NILS DÉPLACÉE -->
-<section class="py-5" style="margin-top: 50px;">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-12">
-                <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: 30px; background-color: var(--bg-card); border: 1px solid var(--border-color) !important;">
-                    <h3 class="fw-bold mb-4"><i class="fa-solid fa-shield-halved text-danger me-2"></i> Système National de Solvabilité (NILS)</h3>
-                    <form method="get" action="{% url 'home' %}">
-                        <div class="row g-2">
-                            <div class="col-md-3 mb-2">
-                                <input type="text" name="name_query" class="form-control py-2 shadow-sm" placeholder="Nom ou Prénoms" value="{{ request.GET.name_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <input type="text" name="phone_query" class="form-control py-2 shadow-sm" placeholder="Téléphone" value="{{ request.GET.phone_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <input type="text" name="doc_query" class="form-control py-2 shadow-sm" placeholder="CNI / Passeport" value="{{ request.GET.doc_query }}" style="border-radius:10px; border: 1px solid var(--border-color);">
-                            </div>
-                            <div class="col-md-3 mb-2 d-grid">
-                                <button class="btn btn-dark py-2 fw-bold shadow" type="submit" style="border-radius:10px;">
-                                    <i class="fa-solid fa-bolt me-1"></i> ANALYSER
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {% if results is not None %}
-        <div id="nils_results_anchor" class="mt-4">
-            <div class="card border-0 shadow-lg" style="border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4">
-                    {% if results %}
-                        {% for profile in results %}
-                        <div class="d-flex align-items-center mb-3 p-3 border rounded-3">
-                            <div class="me-3 fw-bold">{{ profile.user.get_full_name }}</div>
-                            <div class="ms-auto badge bg-{% if profile.score >= 80 %}success{% else %}danger{% endif %}">{{ profile.score }}% Solvabilité</div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-center text-muted">Aucun profil correspondant.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <script>
-            document.getElementById('nils_results_anchor').scrollIntoView({ behavior: 'smooth' });
-        </script>
-        {% endif %}
-    </div>
-</section>
 
 
 <!-- SECTION NILS UNIFIÉE : RECHERCHE DE SOLVABILITÉ -->
