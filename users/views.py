@@ -129,7 +129,7 @@ def password_recovery_view(request):
             from django.utils.http import urlsafe_base64_encode
             from django.utils.encoding import force_bytes
             from django.contrib.auth.tokens import default_token_generator
-            from .emails import send_password_reset_email
+            from logersenegal.emails import send_password_reset_email
             
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
@@ -192,7 +192,7 @@ def admin_generate_reset_link(request, user_id):
     from django.utils.http import urlsafe_base64_encode
     from django.utils.encoding import force_bytes
     from django.contrib.auth.tokens import default_token_generator
-    from .emails import send_password_reset_email
+    from logersenegal.emails import send_password_reset_email
     
     if not request.user.is_staff:
         return JsonResponse({'error': 'Accès interdit'}, status=403)
