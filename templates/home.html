@@ -261,18 +261,17 @@
 </div>
 
 <!-- HERO SECTION : MOTEUR DE RECHERCHE IMMOBILIER -->
-<section class="hero-section py-5 position-relative" style="background: linear-gradient(135deg, var(--color-dark-green) 0%, #062b1a 100%); border-radius: 0 0 50px 50px; z-index: 10; margin-bottom: 0;">
-    <!-- Logo en filigrane optimisé : Utilisation de multiply pour enlever le fond blanc si présent -->
+<section class="hero-section py-5 position-relative" style="background: linear-gradient(135deg, var(--color-dark-green) 0%, #062b1a 100%); border-radius: 0 0 50px 50px; z-index: 1; overflow: hidden; margin-bottom: 20px;">
     <div class="position-absolute start-50 top-50 translate-middle opacity-20" style="width: 100%; max-width: 800px; height: 800px; background: url('{% static 'img/icon-512x512.png' %}') center/contain no-repeat; z-index: 1; mix-blend-mode: multiply; pointer-events: none;"></div>
     
     <div class="container position-relative" style="z-index: 2;">
         <div class="row justify-content-center">
             <div class="col-lg-10 text-center">
-                <h1 class="display-3 fw-bold text-white mb-3 animate__animated animate__fadeInDown" style="text-shadow: 0 4px 15px rgba(0,0,0,0.5);">Trouvez votre <span style="color: var(--color-yellow);">logement idéal</span> au Sénégal</h1>
-                <p class="lead text-white opacity-90 mb-5 animate__animated animate__fadeInUp fw-bold" style="text-shadow: 0 2px 10px rgba(0,0,0,0.5);">La plateforme immobilière la plus sécurisée pour louer ou acheter en toute sérénité.</p>
+                <h1 class="display-3 fw-bold text-white mb-3" style="text-shadow: 0 4px 15px rgba(0,0,0,0.5);">Trouvez votre <span style="color: var(--color-yellow);">logement idéal</span> au Sénégal</h1>
+                <p class="lead text-white opacity-90 mb-5 fw-bold">La plateforme immobilière la plus sécurisée pour louer ou acheter en toute sérénité.</p>
                 
-                <!-- LE MOTEUR DE RECHERCHE IMMOBILIER -->
-                <div class="card border-0 shadow-lg p-3" style="border-radius: 30px; background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2) !important;">
+                <!-- MOTEUR DE RECHERCHE PRINCIPAL -->
+                <div class="card border-0 shadow-lg p-3 mx-auto" style="border-radius: 30px; background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2) !important; max-width: 900px;">
                     <form method="get" action="{% url 'properties_list' %}" class="row g-2">
                         <div class="col-md-3">
                             <div class="form-floating">
@@ -282,7 +281,7 @@
                                         <option value="{{ val }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
-                                <label class="small fw-bold">Je cherche...</label>
+                                <label class="small fw-bold text-dark">Je cherche...</label>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -293,7 +292,7 @@
                                         <option value="{{ val }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
-                                <label class="small fw-bold">Type de bien</label>
+                                <label class="small fw-bold text-dark">Type de bien</label>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -304,113 +303,75 @@
                                         <option value="{{ val }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
-                                <label class="small fw-bold">Où ? (Ville)</label>
+                                <label class="small fw-bold text-dark">Où ? (Ville)</label>
                             </div>
                         </div>
                         <div class="col-md-3 d-grid">
-                            <button type="submit" class="btn btn-warning fw-bold shadow" style="border-radius: 20px; font-size: 1.1rem;">
-                                <i class="fa-solid fa-magnifying-glass me-2"></i> RECHERCHER
+                            <button type="submit" class="btn btn-warning fw-bold shadow-sm" style="border-radius: 20px; font-size: 1rem;">
+                                <i class="fa-solid fa-magnifying-glass me-1"></i> RECHERCHER
                             </button>
                         </div>
                     </form>
                 </div>
                 
-                <div class="mt-4 d-flex justify-content-center gap-3 animate__animated animate__fadeInUp">
-                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill small"><i class="fa-solid fa-check-circle me-1"></i> +15 000 Annonces</span>
-                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill small"><i class="fa-solid fa-check-circle me-1"></i> Pros Vérifiés</span>
-                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-2 rounded-pill small"><i class="fa-solid fa-check-circle me-1"></i> Protection NILS</span>
+                <div class="mt-4 d-flex justify-content-center gap-3">
+                    <span class="badge bg-white bg-opacity-10 text-white px-3 py-2 rounded-pill small border border-white border-opacity-25"><i class="fa-solid fa-check-circle me-1"></i> +15 000 Annonces</span>
+                    <span class="badge bg-white bg-opacity-10 text-white px-3 py-2 rounded-pill small border border-white border-opacity-25"><i class="fa-solid fa-check-circle me-1"></i> Pros Vérifiés</span>
+                    <span class="badge bg-white bg-opacity-10 text-white px-3 py-2 rounded-pill small border border-white border-opacity-25"><i class="fa-solid fa-check-circle me-1"></i> Protection NILS</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- BOOSTED PROPERTIES SLIDER — Défilement automatique des annonces à la Une -->
+<!-- 1. ANNONCES BOOSTÉES (DÉFILEMENT AUTOMATIQUE) -->
 {% if boosted_properties %}
-<section class="py-4 position-relative" style="background: var(--bg-body); border-bottom: 2px solid var(--color-yellow); z-index: 5;">
+<section class="boosted-section py-4 bg-light border-bottom border-warning border-3" style="position: relative; z-index: 2;">
     <div class="container">
-        <div class="d-flex align-items-center mb-3 px-1">
-            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold me-3">
-                <i class="fa-solid fa-bolt me-1"></i> BOOSTÉES
-            </span>
-            <h5 class="fw-bold m-0" style="color: var(--text-main);">Offres à la Une — Défilement automatique</h5>
-            <span class="ms-auto small text-muted d-none d-md-inline">
-                <i class="fa-solid fa-angles-left me-1"></i> Passez la souris pour stopper
-            </span>
+        <div class="d-flex align-items-center mb-3">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold me-2 shadow-sm"><i class="fa-solid fa-bolt me-1"></i> BOOSTÉES</span>
+            <h5 class="fw-bold m-0" style="color: var(--color-dark-green);">Annonces à la Une</h5>
         </div>
-        <div class="marquee-wrapper">
-            <div class="marquee-track">
+        <div class="marquee-wrapper" style="overflow: hidden; width: 100%;">
+            <div class="marquee-track d-flex gap-4" style="animation: scroll-boosted 30s linear infinite;">
                 {% for prop in boosted_properties %}
-                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
-                    <div class="position-relative" style="height:210px; overflow:hidden;">
+                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-sm border bg-white text-decoration-none text-dark" style="width: 280px; border-radius: 15px; overflow: hidden; flex-shrink: 0;">
+                    <div style="height: 160px; overflow: hidden; position: relative;">
                         {% with img=prop.images.first %}
                         {% if img %}
-                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
-                                 style="width:100%; height:100%; object-fit:cover; transition: transform 0.5s ease;">
+                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" style="width: 100%; height: 100%; object-fit: cover;">
                         {% else %}
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
-                            </div>
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light opacity-50"><i class="fa-solid fa-image fs-1 text-muted"></i></div>
                         {% endif %}
                         {% endwith %}
-                        <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
-                        </div>
-                        <div class="position-absolute bottom-0 end-0 m-2">
-                            <span class="badge bg-dark text-white rounded-pill">
-                                {% if prop.listing_category == 'SALE' %}
-                                    {{ prop.price|floatformat:0 }} F
-                                {% elif prop.listing_category == 'FURNISHED' %}
-                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
-                                {% else %}
-                                    {{ prop.price|floatformat:0 }} F/Mois
-                                {% endif %}
-                            </span>
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <span class="text-white fw-bold small">{% if prop.listing_category == 'SALE' %}{{ prop.price|floatformat:0 }} F{% else %}{{ prop.price|floatformat:0 }} F/mois{% endif %}</span>
                         </div>
                     </div>
                     <div class="p-3">
-                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
-                        <p class="small text-muted mb-0">
-                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
-                        </p>
+                        <h6 class="fw-bold text-truncate mb-1" style="font-size: 0.9rem;">{{ prop.title }}</h6>
+                        <div class="small text-muted"><i class="fa-solid fa-location-dot me-1 text-success"></i> {{ prop.neighborhood }}</div>
                     </div>
                 </a>
                 {% endfor %}
-                
-                {# Duplication pour effet infini #}
+                {# Duplication pour défilement fluide #}
                 {% for prop in boosted_properties %}
-                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
-                    <div class="position-relative" style="height:210px; overflow:hidden;">
+                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-sm border bg-white text-decoration-none text-dark" style="width: 280px; border-radius: 15px; overflow: hidden; flex-shrink: 0;">
+                    <div style="height: 160px; overflow: hidden; position: relative;">
                         {% with img=prop.images.first %}
                         {% if img %}
-                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
-                                 style="width:100%; height:100%; object-fit:cover; transition: transform 0.5s ease;">
+                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" style="width: 100%; height: 100%; object-fit: cover;">
                         {% else %}
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
-                            </div>
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light opacity-50"><i class="fa-solid fa-image fs-1 text-muted"></i></div>
                         {% endif %}
                         {% endwith %}
-                        <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
-                        </div>
-                        <div class="position-absolute bottom-0 end-0 m-2">
-                            <span class="badge bg-dark text-white rounded-pill">
-                                {% if prop.listing_category == 'SALE' %}
-                                    {{ prop.price|floatformat:0 }} F
-                                {% elif prop.listing_category == 'FURNISHED' %}
-                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
-                                {% else %}
-                                    {{ prop.price|floatformat:0 }} F/Mois
-                                {% endif %}
-                            </span>
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <span class="text-white fw-bold small">{% if prop.listing_category == 'SALE' %}{{ prop.price|floatformat:0 }} F{% else %}{{ prop.price|floatformat:0 }} F/mois{% endif %}</span>
                         </div>
                     </div>
                     <div class="p-3">
-                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
-                        <p class="small text-muted mb-0">
-                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
-                        </p>
+                        <h6 class="fw-bold text-truncate mb-1" style="font-size: 0.9rem;">{{ prop.title }}</h6>
+                        <div class="small text-muted"><i class="fa-solid fa-location-dot me-1 text-success"></i> {{ prop.neighborhood }}</div>
                     </div>
                 </a>
                 {% endfor %}
@@ -420,52 +381,39 @@
 </section>
 {% endif %}
 
-
-
-
-
-<!-- FEATURED PROFESSIONALS SECTION (Bandeau Défilant Infini) -->
-<section class="py-4 bg-white" style="border-bottom: 1px solid #eee; overflow: hidden;">
+<!-- 2. PROFESSIONNELS CERTIFIÉS (LOGOS) -->
+<section class="py-5 bg-white shadow-sm border-bottom" style="position: relative; z-index: 2; margin-top: 10px;">
     <div class="container-fluid px-0">
-        <div class="pro-marquee">
-            <div class="pro-track">
-                {# Premier groupe #}
+        <div class="pro-marquee" style="overflow: hidden; width: 100%;">
+            <div class="pro-track d-flex gap-5" style="animation: scroll-pro 40s linear infinite;">
                 {% for pro in featured_pros %}
-                <div class="pro-item text-center">
-                    <a href="{% url 'public_profile' pro.id %}" class="text-decoration-none">
-                        <div class="pro-avatar-wrapper position-relative mx-auto mb-2">
+                <div class="pro-item text-center" style="width: 120px; flex-shrink: 0;">
+                    <a href="{% url 'public_profile' pro.id %}" class="text-decoration-none text-dark">
+                        <div class="position-relative mx-auto mb-2" style="width: 80px; height: 80px;">
                             {% if pro.profile_picture %}
-                                <img src="{{ pro.profile_picture.url }}" class="rounded-circle shadow-sm border border-2 border-white w-100 h-100 pro-img" style="object-fit: cover;">
+                                <img src="{{ pro.profile_picture.url }}" class="rounded-circle shadow-sm border border-2 border-white w-100 h-100" style="object-fit: cover;">
                             {% else %}
-                                <div class="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center w-100 h-100">
-                                    <i class="fa-solid fa-user-tie text-muted opacity-25 fs-4"></i>
-                                </div>
+                                <div class="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center w-100 h-100"><i class="fa-solid fa-user-tie text-muted fs-4"></i></div>
                             {% endif %}
-                            <div class="verified-badge">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
+                            <div class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center border border-white" style="width: 24px; height: 24px; font-size: 0.7rem;"><i class="fa-solid fa-check"></i></div>
                         </div>
-                        <div class="small fw-bold text-dark text-truncate px-2">{{ pro.company_name|default:pro.get_full_name }}</div>
+                        <div class="small fw-bold text-truncate px-2">{{ pro.company_name|default:pro.get_full_name }}</div>
                     </a>
                 </div>
                 {% endfor %}
-                {# Deuxième groupe pour la boucle infinie #}
+                {# Duplication pour défilement infini #}
                 {% for pro in featured_pros %}
-                <div class="pro-item text-center">
-                    <a href="{% url 'public_profile' pro.id %}" class="text-decoration-none">
-                        <div class="pro-avatar-wrapper position-relative mx-auto mb-2">
+                <div class="pro-item text-center" style="width: 120px; flex-shrink: 0;">
+                    <a href="{% url 'public_profile' pro.id %}" class="text-decoration-none text-dark">
+                        <div class="position-relative mx-auto mb-2" style="width: 80px; height: 80px;">
                             {% if pro.profile_picture %}
-                                <img src="{{ pro.profile_picture.url }}" class="rounded-circle shadow-sm border border-2 border-white w-100 h-100 pro-img" style="object-fit: cover;">
+                                <img src="{{ pro.profile_picture.url }}" class="rounded-circle shadow-sm border border-2 border-white w-100 h-100" style="object-fit: cover;">
                             {% else %}
-                                <div class="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center w-100 h-100">
-                                    <i class="fa-solid fa-user-tie text-muted opacity-25 fs-4"></i>
-                                </div>
+                                <div class="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center w-100 h-100"><i class="fa-solid fa-user-tie text-muted fs-4"></i></div>
                             {% endif %}
-                            <div class="verified-badge">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
+                            <div class="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center border border-white" style="width: 24px; height: 24px; font-size: 0.7rem;"><i class="fa-solid fa-check"></i></div>
                         </div>
-                        <div class="small fw-bold text-dark text-truncate px-2">{{ pro.company_name|default:pro.get_full_name }}</div>
+                        <div class="small fw-bold text-truncate px-2">{{ pro.company_name|default:pro.get_full_name }}</div>
                     </a>
                 </div>
                 {% endfor %}
@@ -473,6 +421,12 @@
         </div>
     </div>
 </section>
+
+<style>
+@keyframes scroll-boosted { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+@keyframes scroll-pro { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.marquee-track:hover, .pro-track:hover { animation-play-state: paused; }
+</style>
 
 <style>
     /* Rail de défilement */
@@ -665,118 +619,78 @@
 </section>
 
 
-<!-- SECTION NILS : VÉRIFICATION DE SOLVABILITÉ (Second Plan) -->
-<section id="nils-section" class="py-5" style="background-color: #f8f9fa;">
-    <div class="container py-5">
-        <div class="row align-items-center">
-            <div class="col-lg-5 mb-5 mb-lg-0">
-                <span class="badge bg-danger rounded-pill px-3 py-2 mb-3">
-                    <i class="fa-solid fa-shield-halved me-1"></i> Réseau de Confiance National
-                </span>
-                <h2 class="fw-bold display-6 mb-4" style="color: var(--text-main);">Vérifiez la solvabilité de vos futurs locataires.</h2>
-                <p class="text-muted fs-5 mb-4">Ne prenez plus de risques. Interrogez instantanément la base NILS pour connaître l'historique de paiement d'un candidat avant de signer.</p>
-                
-                <div class="row g-3 mb-4">
-                    <div class="col-6">
-                        <div class="p-3 border rounded-3 bg-white shadow-sm">
-                            <div class="fw-bold text-danger fs-4">{{ stats.total_unpaid|floatformat:0 }}</div>
-                            <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Dettes cumulées (CFA)</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 border rounded-3 bg-white shadow-sm">
-                            <div class="fw-bold text-primary fs-4">{{ stats.profiles_flagged }}</div>
-                            <div class="small text-muted text-uppercase" style="font-size: 0.6rem;">Profils répertoriés</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-6 offset-lg-1">
-                <div class="card border-0 shadow-lg p-4 p-md-5" style="border-radius: 30px; background-color: var(--bg-card); border: 1px solid var(--border-color) !important;">
-                    <h4 class="fw-bold mb-4">Lancer une recherche NILS</h4>
-                    <form method="get" action="{% url 'home' %}">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Nom complet</label>
-                            <input type="text" name="name_query" class="form-control py-3" placeholder="Ex: Mamadou Diop" value="{{ request.GET.name_query }}" style="border-radius:15px;">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Téléphone</label>
-                            <input type="text" name="phone_query" class="form-control py-3" placeholder="Ex: 77 123 45 67" value="{{ request.GET.phone_query }}" style="border-radius:15px;">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">CNI / Passeport (Recommandé)</label>
-                            <input type="text" name="doc_query" class="form-control py-3" placeholder="Numéro de document" value="{{ request.GET.doc_query }}" style="border-radius:15px;">
-                        </div>
-                        <button class="btn btn-dark w-100 py-3 fw-bold fs-5 shadow" type="submit" style="border-radius:15px;">
-                            <i class="fa-solid fa-bolt me-2 text-warning"></i> ANALYSER LE PROFIL
-                        </button>
-                    </form>
-                </div>
-            </div>
+<!-- SECTION NILS UNIFIÉE : RECHERCHE DE SOLVABILITÉ -->
+<section id="nils-section" class="py-5" style="background-color: #f8f9fa; border-top: 2px solid var(--color-dark-green);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-danger rounded-pill px-3 py-2 mb-3">
+                <i class="fa-solid fa-shield-halved me-1"></i> RÉSEAU DE CONFIANCE NILS
+            </span>
+            <h2 class="fw-bold" style="color: var(--text-main);">Vérifiez la solvabilité de vos futurs locataires</h2>
+            <p class="text-muted">Interrogez la base nationale pour sécuriser vos contrats de location.</p>
         </div>
 
-        <!-- RÉSULTATS NILS DÉTAILLÉS (Si recherche effectuée) -->
-        {% if results is not None %}
-        <div id="nils_results_anchor" class="mt-5 pt-4">
-            <div class="card border-0 shadow-lg" style="border-radius: 20px; background: var(--bg-card); overflow: hidden; border: 1px solid var(--border-color) !important;">
-                <div class="card-header bg-dark text-white p-4 border-0">
-                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clipboard-list me-2"></i> Résultats de l'Audit : {{ request.GET.name_query|default:request.GET.phone_query }}</h5>
-                </div>
-                <div class="card-body p-4 p-md-5">
+        <div class="card border-0 shadow-lg mx-auto" style="max-width: 900px; border-radius: 25px; overflow: hidden;">
+            <div class="card-body p-4 p-md-5 bg-white">
+                <form method="get" action="{% url 'home' %}#nils-section">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">NOM COMPLET</label>
+                            <input type="text" name="name_query" class="form-control py-3 shadow-sm" placeholder="Ex: Mamadou Diop" value="{{ request.GET.name_query }}" style="border-radius: 15px;">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">TÉLÉPHONE</label>
+                            <input type="text" name="phone_query" class="form-control py-3 shadow-sm" placeholder="Ex: 77 000 00 00" value="{{ request.GET.phone_query }}" style="border-radius: 15px;">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">CNI / PASSEPORT</label>
+                            <input type="text" name="doc_query" class="form-control py-3 shadow-sm" placeholder="Numéro de document" value="{{ request.GET.doc_query }}" style="border-radius: 15px;">
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <button type="submit" class="btn btn-dark btn-lg px-5 py-3 fw-bold shadow-sm" style="border-radius: 15px;">
+                            <i class="fa-solid fa-magnifying-glass me-2 text-warning"></i> LANCER L'ANALYSE NILS
+                        </button>
+                    </div>
+                </form>
+
+                {% if results is not None %}
+                <div class="mt-5 border-top pt-4">
                     {% if results %}
-                        <div class="row g-4">
-                            {% for profile in results %}
-                            <div class="col-md-6">
-                                <div class="p-4 border rounded-4 bg-light bg-opacity-10 h-100" style="border-color: var(--border-color) !important;">
-                                    <div class="d-flex align-items-center mb-4">
-                                        <div class="avatar me-3 shadow-sm" style="width: 60px; height: 60px; background: #000; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                            {{ profile.user.first_name|default:""|slice:":1" }}{{ profile.user.last_name|default:""|slice:":1" }}
+                        <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2"></i> Résultats trouvés :</h5>
+                            <div class="row g-3">
+                                {% for profile in results %}
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-white rounded-3 border d-flex align-items-center">
+                                        <div class="me-3">
+                                            <div class="avatar bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px;">
+                                                {{ profile.user.first_name|slice:":1" }}{{ profile.user.last_name|slice:":1" }}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h5 class="mb-1 fw-bold">{{ profile.user.get_full_name }}</h5>
-                                            <span class="badge bg-dark">NILS: {{ profile.nils_number }}</span>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold">{{ profile.user.get_full_name }}</div>
+                                            <div class="small text-muted">NILS: {{ profile.nils_number }}</div>
+                                        </div>
+                                        <div class="ms-2">
+                                            <span class="badge {% if profile.score >= 80 %}bg-success{% else %}bg-danger{% endif %}">{{ profile.score }}%</span>
                                         </div>
                                     </div>
-                                    <div class="row g-2 text-center mb-4">
-                                        <div class="col-4">
-                                            <div class="p-2 border rounded-3 bg-white">
-                                                <div class="small text-muted" style="font-size: 0.6rem;">Score</div>
-                                                <div class="fw-bold fs-5 {% if profile.score >= 80 %}text-success{% elif profile.score >= 50 %}text-warning{% else %}text-danger{% endif %}">{{ profile.score }}%</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="p-2 border rounded-3 bg-white">
-                                                <div class="small text-muted" style="font-size: 0.6rem;">Dette</div>
-                                                <div class="fw-bold fs-5 text-danger">{{ profile.amount_unpaid|floatformat:0 }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="p-2 border rounded-3 bg-white">
-                                                <div class="small text-muted" style="font-size: 0.6rem;">Statut</div>
-                                                <div class="small fw-bold pt-1">{{ profile.total_incidents }} Inc.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <a href="{% url 'public_profile' profile.user.id %}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">Voir le profil complet</a>
                                 </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         </div>
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="fa-solid fa-user-check text-success mb-3" style="font-size: 3rem;"></i>
-                            <h4 class="fw-bold">Aucun incident trouvé</h4>
-                            <p class="text-muted">Ce profil ne présente aucun incident de paiement répertorié dans le réseau NILS.</p>
+                        <div class="text-center py-4">
+                            <div class="display-1 text-success opacity-25 mb-3"><i class="fa-solid fa-user-shield"></i></div>
+                            <h4 class="fw-bold">Aucun incident répertorié</h4>
+                            <p class="text-muted">Ce profil est conforme aux standards de solvabilité NILS.</p>
                         </div>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
-        <script>
-            document.getElementById('nils_results_anchor').scrollIntoView({ behavior: 'smooth' });
-        </script>
-        {% endif %}
     </div>
 </section>
 
