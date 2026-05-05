@@ -111,10 +111,15 @@ def password_recovery_view(request):
         from users.models import User
         user = User.objects.filter(phone_number__icontains=phone).first()
         if user:
+            email_masked = ""
+            if user.email and '@' in user.email:
+                parts = user.email.split('@')
+                email_masked = f"{parts[0][:3]}****@{parts[1]}"
+            
             return JsonResponse({
                 'exists': True, 
                 'has_email': bool(user.email),
-                'email_masked': (user.email[:3] + '****' + user.email[user.email.find('@'):]) if user.email else ''
+                'email_masked': email_masked
             })
         return JsonResponse({'exists': False})
 
@@ -142,7 +147,6 @@ def password_recovery_view(request):
                 messages.success(request, f"Un lien de réinitialisation sécurisé a été envoyé à l'adresse {user.email}")
                 return redirect('login')
             else:
-                # On prépare pour le template
                 return render(request, 'recovery.html', {'phone': phone, 'show_wa_link': True, 'reset_url': reset_url})
         else:
             messages.error(request, "Numéro de téléphone inconnu.")
@@ -201,3 +205,14 @@ def admin_generate_reset_link(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
+    
+    reset_url = request.build_absolute_uri(
+        reverse('password_reset_confirm_public', kwargs={'uidb64': uid, 'token': token})
+    )
+    
+    if request.GET.get('email') == '1' and user.email:
+        from logersenegal.emails import send_password_reset_email
+        send_password_reset_email(user, reset_url)
+        return JsonResponse({'status': 'sent', 'email': user.email})
+        
+    return JsonResponse({'status': 'success', 'link': reset_url})
