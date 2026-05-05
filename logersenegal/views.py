@@ -53,13 +53,26 @@ def home_view(request):
         }
         recent_incidents = []
 
-    results = None
-    
-    # Recherche
-    name_q = request.GET.get('name_query', '')
-    phone_q = request.GET.get('phone_query', '')
-    doc_q = request.GET.get('doc_query', '')
+    # DigitalH: Recherche NILS intégrée à l'accueil
+    name_q = request.GET.get('name_query', '').strip()
+    phone_q = request.GET.get('phone_query', '').strip()
+    doc_q = request.GET.get('doc_query', '').strip()
     query_str = name_q or phone_q or doc_q
+    
+    results = None
+    if query_str:
+        filters = Q()
+        if name_q:
+            filters &= (Q(user__first_name__icontains=name_q) | Q(user__last_name__icontains=name_q))
+        if phone_q:
+            filters &= Q(user__phone_number__icontains=phone_q)
+        if doc_q:
+            filters &= Q(user__cni_number__icontains=doc_q)
+        
+        try:
+            results = NILS_Profile.objects.filter(filters).distinct()
+        except Exception:
+            results = NILS_Profile.objects.none()
     
     from django.core.paginator import Paginator
 

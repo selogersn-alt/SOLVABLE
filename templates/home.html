@@ -260,8 +260,8 @@
     </div>
 </div>
 
-<!-- HERO SECTION : MOTEUR DE RECHERCHE IMMOBILIER (Priorité #1) -->
-<section class="hero-section py-5 position-relative" style="background: linear-gradient(135deg, var(--color-dark-green) 0%, #062b1a 100%); min-height: 600px; display: flex; align-items: center; border-radius: 0 0 50px 50px; margin-bottom: -50px; z-index: 5; overflow: hidden;">
+<!-- HERO SECTION : MOTEUR DE RECHERCHE IMMOBILIER -->
+<section class="hero-section py-5 position-relative" style="background: linear-gradient(135deg, var(--color-dark-green) 0%, #062b1a 100%); border-radius: 0 0 50px 50px; z-index: 10; margin-bottom: 0;">
     <!-- Logo en filigrane optimisé : Utilisation de multiply pour enlever le fond blanc si présent -->
     <div class="position-absolute start-50 top-50 translate-middle opacity-20" style="width: 100%; max-width: 800px; height: 800px; background: url('{% static 'img/icon-512x512.png' %}') center/contain no-repeat; z-index: 1; mix-blend-mode: multiply; pointer-events: none;"></div>
     
@@ -325,10 +325,9 @@
     </div>
 </section>
 
-
-<!-- BOOSTED PROPERTIES SLIDER (Point 2) — Déplacement au-dessus de NILS -->
+<!-- BOOSTED PROPERTIES SLIDER — Défilement automatique des annonces à la Une -->
 {% if boosted_properties %}
-<section class="py-4" style="background: var(--bg-body); border-bottom: 2px solid var(--color-yellow);">
+<section class="py-4 position-relative" style="background: var(--bg-body); border-bottom: 2px solid var(--color-yellow); z-index: 5;">
     <div class="container">
         <div class="d-flex align-items-center mb-3 px-1">
             <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold me-3">
@@ -341,7 +340,6 @@
         </div>
         <div class="marquee-wrapper">
             <div class="marquee-track">
-                {# Double boucle identique pour un effet infini parfait avec translateX(-50%) #}
                 {% for prop in boosted_properties %}
                 <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
                     <div class="position-relative" style="height:210px; overflow:hidden;">
@@ -379,6 +377,7 @@
                 </a>
                 {% endfor %}
                 
+                {# Duplication pour effet infini #}
                 {% for prop in boosted_properties %}
                 <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
                     <div class="position-relative" style="height:210px; overflow:hidden;">
@@ -420,6 +419,7 @@
     </div>
 </section>
 {% endif %}
+
 
 
 
