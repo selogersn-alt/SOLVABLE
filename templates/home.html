@@ -325,7 +325,104 @@
     </div>
 </section>
 
+
+<!-- BOOSTED PROPERTIES SLIDER (Point 2) — Déplacement au-dessus de NILS -->
+{% if boosted_properties %}
+<section class="py-4" style="background: var(--bg-body); border-bottom: 2px solid var(--color-yellow);">
+    <div class="container">
+        <div class="d-flex align-items-center mb-3 px-1">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold me-3">
+                <i class="fa-solid fa-bolt me-1"></i> BOOSTÉES
+            </span>
+            <h5 class="fw-bold m-0" style="color: var(--text-main);">Offres à la Une — Défilement automatique</h5>
+            <span class="ms-auto small text-muted d-none d-md-inline">
+                <i class="fa-solid fa-angles-left me-1"></i> Passez la souris pour stopper
+            </span>
+        </div>
+        <div class="marquee-wrapper">
+            <div class="marquee-track">
+                {# Double boucle identique pour un effet infini parfait avec translateX(-50%) #}
+                {% for prop in boosted_properties %}
+                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
+                    <div class="position-relative" style="height:210px; overflow:hidden;">
+                        {% with img=prop.images.first %}
+                        {% if img %}
+                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
+                                 style="width:100%; height:100%; object-fit:cover; transition: transform 0.5s ease;">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
+                            </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
+                        </div>
+                        <div class="position-absolute bottom-0 end-0 m-2">
+                            <span class="badge bg-dark text-white rounded-pill">
+                                {% if prop.listing_category == 'SALE' %}
+                                    {{ prop.price|floatformat:0 }} F
+                                {% elif prop.listing_category == 'FURNISHED' %}
+                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
+                                {% else %}
+                                    {{ prop.price|floatformat:0 }} F/Mois
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
+                        <p class="small text-muted mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
+                
+                {% for prop in boosted_properties %}
+                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
+                    <div class="position-relative" style="height:210px; overflow:hidden;">
+                        {% with img=prop.images.first %}
+                        {% if img %}
+                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
+                                 style="width:100%; height:100%; object-fit:cover; transition: transform 0.5s ease;">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
+                            </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
+                        </div>
+                        <div class="position-absolute bottom-0 end-0 m-2">
+                            <span class="badge bg-dark text-white rounded-pill">
+                                {% if prop.listing_category == 'SALE' %}
+                                    {{ prop.price|floatformat:0 }} F
+                                {% elif prop.listing_category == 'FURNISHED' %}
+                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
+                                {% else %}
+                                    {{ prop.price|floatformat:0 }} F/Mois
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
+                        <p class="small text-muted mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
+                        </p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- SECTION NILS DÉPLACÉE -->
+
 <section class="py-5" style="margin-top: 50px;">
     <div class="container">
         <div class="row align-items-center">
@@ -378,128 +475,7 @@
     </div>
 </section>
 
-<!-- BOOSTED PROPERTIES SLIDER (Point 2) -->
-{% if boosted_properties %}
-<section class="py-4" style="background: var(--bg-body); border-bottom: 2px solid var(--color-yellow);">
-    <div class="container">
-        <div class="d-flex align-items-center mb-3 px-1">
-            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold me-3">
-                <i class="fa-solid fa-bolt me-1"></i> BOOSTÉES
-            </span>
-            <h5 class="fw-bold m-0" style="color: var(--text-main);">Offres à la Une — Défilement automatique</h5>
-            <span class="ms-auto small text-muted d-none d-md-inline">
-                <i class="fa-solid fa-angles-left me-1"></i> Passez la souris pour stopper
-            </span>
-        </div>
-        <div class="marquee-wrapper">
-            <div class="marquee-track">
-                {# Double boucle pour effet infini parfait #}
-                {% for prop in boosted_properties %}
-                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg" title="{{ prop.title }}">
-                    <div class="position-relative" style="height:210px; overflow:hidden;">
-                        {% with img=prop.images.first %}
-                        {% if img %}
-                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
-                                 style="width:100%; height:100%; object-fit:cover; transition: transform 0.5s ease;">
-                        {% else %}
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
-                            </div>
-                        {% endif %}
-                        {% endwith %}
-                        <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
-                        </div>
-                        <div class="position-absolute bottom-0 end-0 m-2">
-                            <span class="badge bg-dark text-white rounded-pill">
-                                {% if prop.listing_category == 'SALE' %}
-                                    {{ prop.price|floatformat:0 }} F
-                                {% elif prop.listing_category == 'FURNISHED' %}
-                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
-                                {% else %}
-                                    {{ prop.price|floatformat:0 }} F/Mois
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-3">
-                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
-                        <p class="small text-muted mb-0">
-                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
-                        </p>
-                    </div>
-                </a>
-                {% endfor %}
-                {# Duplication pour boucle infinie fluide #}
-                {% for prop in boosted_properties %}
-                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-sm" title="{{ prop.title }}">
-                    <div class="position-relative" style="height:190px; overflow:hidden;">
-                        {% with img=prop.images.first %}
-                        {% if img %}
-                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
-                                 style="width:100%; height:100%; object-fit:cover;">
-                        {% else %}
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                <i class="fa-solid fa-house-chimney opacity-25" style="font-size:3rem;"></i>
-                            </div>
-                        {% endif %}
-                        {% endwith %}
-                        <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge bg-warning text-dark rounded-pill small fw-bold">⚡ BOOSTÉ</span>
-                        </div>
-                        <div class="position-absolute bottom-0 end-0 m-2">
-                            <span class="badge bg-dark text-white rounded-pill">
-                                {% if prop.listing_category == 'SALE' %}
-                                    {{ prop.price|floatformat:0 }} F
-                                {% elif prop.listing_category == 'FURNISHED' %}
-                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
-                                {% else %}
-                                    {{ prop.price|floatformat:0 }} F/Mois
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-3">
-                        <h6 class="fw-bold text-truncate mb-1" style="color:var(--text-main);">{{ prop.title }}</h6>
-                        <p class="small text-muted mb-0">
-                            <i class="fa-solid fa-location-dot me-1 text-success"></i>{{ prop.neighborhood }}, {{ prop.city }}
-                        </p>
-                    </div>
-                </a>
-                {% endfor %}
-                {# Répétition pour la fluidité infinie #}
-                {% for prop in boosted_properties %}
-                <a href="{% url 'property_detail' prop.id %}" class="boosted-card shadow-lg">
-                    <div class="position-relative" style="height:210px; overflow:hidden;">
-                        {% with img=prop.images.first %}
-                        {% if img %}
-                            <img src="{{ img.image_url.url }}" alt="{{ prop.title }}" loading="lazy"
-                                 style="width:100%; height:100%; object-fit:cover;">
-                        {% endif %}
-                        {% endwith %}
-                        <div class="position-absolute bottom-0 end-0 m-2">
-                            <span class="badge bg-dark text-white rounded-pill">
-                                {% if prop.listing_category == 'SALE' %}
-                                    {{ prop.price|floatformat:0 }} F
-                                {% elif prop.listing_category == 'FURNISHED' %}
-                                    {{ prop.price_per_night|default:prop.price|floatformat:0 }} F/Nuit
-                                {% else %}
-                                    {{ prop.price|floatformat:0 }} F/Mois
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-3">
-                        <h6 class="fw-bold text-truncate mb-1">{{ prop.title }}</h6>
-                        <div class="text-success fw-bold small">Voir l'offre <i class="fa-solid fa-arrow-right ms-1"></i></div>
-                    </div>
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
+
 
 <!-- FEATURED PROFESSIONALS SECTION (Bandeau Défilant Infini) -->
 <section class="py-4 bg-white" style="border-bottom: 1px solid #eee; overflow: hidden;">

@@ -14,7 +14,7 @@ from logersn.models import Property, PricingConfig
 from solvable.models import RentalFiliation, IncidentReport
 
 def seed_master_data():
-    print("🚀 Démarrage du transfert des meilleures données (Master Seed)...")
+    print("START: Demarrage du transfert des meilleures donnees (Master Seed)...")
     password = "pass1234"
 
     # 1. Configuration des Tarifs (Péage DigitalH)
@@ -25,7 +25,7 @@ def seed_master_data():
     pricing.boost_daily_fee = 500
     pricing.popup_daily_fee = 1000
     pricing.save()
-    print("✅ Tarifs configurés avec succès.")
+    print("OK: Tarifs configures avec succes.")
 
     # 2. Création des Profils Professionnels de Référence
     pros = [
@@ -62,7 +62,7 @@ def seed_master_data():
         if created:
             user.set_password(password)
             user.save()
-            print(f"✅ Compte créé : {p['first']} {p['last']} ({p['role']})")
+            print(f"OK: Compte cree : {p['first']} {p['last']} ({p['role']})")
         
         # Profil NILS
         NILS_Profile.objects.get_or_create(
@@ -98,14 +98,15 @@ def seed_master_data():
                 'total_rooms': pd['rooms'],
                 'is_published': True,
                 'is_paid': True,
-                'is_boosted': True
+                'is_boosted': True,
+                'boost_status': 'ACTIVE'
             }
         )
         if created:
-            print(f"✅ Annonce créée : {pd['title']}")
+            print(f"OK: Annonce creee : {pd['title']}")
 
-    print("\n🏁 Transfert des meilleures données terminé !")
-    print(f"🔑 Accès Admin principal : {pros[0]['phone']} / {password}")
+    print("\nFIN: Transfert des meilleures donnees termine !")
+    print(f"KEY: Acces Admin principal : {pros[0]['phone']} / {password}")
 
 if __name__ == "__main__":
     seed_master_data()
