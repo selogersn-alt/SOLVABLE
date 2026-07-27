@@ -15,8 +15,12 @@ RUN pip install --upgrade pip && \
 # Copy project
 COPY . /app/
 
+RUN chmod +x /app/entrypoint.sh
+
 # Expose port
 EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Run the application
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
