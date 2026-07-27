@@ -31,5 +31,11 @@ services:
 
 volumes:
   postgres_data:
+    name: app_logersenegal_postgres_data
+    external: true
   static_volume:
+    name: app_logersenegal_static_files
+    external: true
   media_volume:
+    name: app_logersenegal_media_files
+    external: true
