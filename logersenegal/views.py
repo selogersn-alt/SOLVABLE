@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
 import datetime
+import uuid
 from django.http import JsonResponse, HttpResponse
 # from django.contrib.gis.db.models.functions import Distance  # Removed to avoid GDAL dependency on O2Switch
 from django.contrib.admin.views.decorators import staff_member_required
@@ -17,7 +18,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
-from logersn.models import Property, Favorite
+from logersn.models import Property, Favorite, PropertyImage, PropertyEquipment
 from logersn.forms import PropertyForm
 from logersn.constants import CITY_CHOICES, PROPERTY_TYPE_CHOICES, LISTING_CATEGORY_CHOICES
 from users.models import User, NILS_Profile, SearchLog
@@ -1242,13 +1243,16 @@ def duplicate_property_view(request, property_id):
     Duplique une annonce existante pour permettre au pro de la faire remonter sans tout ressaisir.
     Status réinitialisé à 'En attente' et 'Non payé'.
     """
-    original = get_object_or_404(Property, id=property_id, owner=request.user)
+    if request.user.is_staff:
+        original = get_object_or_404(Property, id=property_id)
+    else:
+        original = get_object_or_404(Property, id=property_id, owner=request.user)
     
-    # 1. Cloner l'objet Property
-    new_prop = original
+    # 1. Cloner l'objet Property (en chargeant une instance propre)
+    new_prop = Property.objects.get(pk=original.pk)
     new_prop.pk = None # Django crée un nouvel ID
     new_prop.id = uuid.uuid4() # Générer un nouvel UUID
-    new_prop.title = f"{original.title} (Copie)"
+    new_prop.title = original.title
     new_prop.is_published = False
     new_prop.is_paid = False
     new_prop.is_boosted = False
@@ -1265,6 +1269,15 @@ def duplicate_property_view(request, property_id):
             property=new_prop,
             image_url=img.image_url,
             is_primary=img.is_primary
+        )
+        
+    # 3. Cloner les équipements
+    for eq in original.interior_equipments.all():
+        PropertyEquipment.objects.create(
+            property=new_prop,
+            name=eq.name,
+            brand=eq.brand,
+            icon_class=eq.icon_class
         )
         
     messages.success(request, "L'annonce a été dupliquée avec succès. Vous pouvez maintenant la modifier ou la publier.")
@@ -1505,6 +1518,27 @@ def nohan_chat_view(request):
         
     return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
 
+
+
+def serve_wp_uploads(request, path):
+    """
+    Fallback pour servir les anciens fichiers WordPress directement si Nginx/Apache 
+    ne les intercepte pas ou si les liens sont restés en /wp-content/.
+    """
+    from django.views.static import serve
+    from django.conf import settings
+    
+    # Cherche dans media/wp-content/uploads/
+    media_path = os.path.join(settings.MEDIA_ROOT, 'wp-content', 'uploads', path)
+    if os.path.exists(media_path):
+        return serve(request, path, document_root=os.path.join(settings.MEDIA_ROOT, 'wp-content', 'uploads'))
+    
+    # Cherche dans le dossier wp-content/uploads/ à la racine par sécurité
+    root_path = os.path.join(settings.BASE_DIR, 'wp-content', 'uploads', path)
+    if os.path.exists(root_path):
+        return serve(request, path, document_root=os.path.join(settings.BASE_DIR, 'wp-content', 'uploads'))
+        
+    raise Http404("Fichier de migration introuvable.")
 
 
 def custom_404_view(request, exception=None):

@@ -69,7 +69,7 @@ from .views import (
     report_pro_fraud_view, fraud_list_view, submit_solvency_docs_view,
     guide_locataires_view, guide_bailleurs_view, guide_agences_view, guide_courtiers_view,
     increment_click_view, duplicate_property_view, seo_directory_view,
-    switch_to_pro_view, nohan_chat_view
+    switch_to_pro_view, nohan_chat_view, serve_wp_uploads
 )
 from users.views import (
     login_view, register_view, logout_view, 
@@ -196,6 +196,7 @@ urlpatterns = [
     path('seo-directory/', seo_directory_view, name='seo_directory'),
     path('recherche/<slug:type_slug>/<slug:city_slug>/', seo_search_view, name='seo_search_city'),
     path('recherche/<str:type_slug>/<str:city_slug>/<str:neighborhood_slug>/', seo_search_view, name='seo_search_neighborhood'),
+    path('wp-content/uploads/<path:path>', serve_wp_uploads, name='serve_wp_uploads'),
 ]
 from django.conf import settings
 from django.conf.urls.static import static
