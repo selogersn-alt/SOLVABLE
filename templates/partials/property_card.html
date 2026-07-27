@@ -3,9 +3,9 @@
     
     <div class="property-image-wrapper position-relative" style="height: 240px; overflow: hidden; border-top-left-radius: 12px; border-top-right-radius: 12px;">
         {% if property.images.all %}
-            <!-- Image Carousel (DÉFILAGE AUTOMATIQUE - Pointer events none pour favoriser le clic annonce) -->
-            <div id="carousel-{{ property.id }}" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="3000" style="pointer-events: none;">
-                <div class="carousel-inner h-100">
+            <!-- Image Carousel (DÉFILAGE AUTOMATIQUE ASYNCHRONE - Pointer events none sur images, flèches cliquables) -->
+            <div id="carousel-{{ property.id }}" class="carousel slide carousel-fade h-100">
+                <div class="carousel-inner h-100" style="pointer-events: none;">
                     {% for image in property.images.all %}
                     <div class="carousel-item h-100 {% if forloop.first %}active{% endif %}">
                         <img src="{{ image.image_url.url }}" 
@@ -16,6 +16,18 @@
                     </div>
                     {% endfor %}
                 </div>
+                
+                {% if property.images.count > 1 %}
+                <!-- Controls (Affichés au survol de la carte) -->
+                <button class="carousel-control-prev card-carousel-btn" type="button" data-bs-target="#carousel-{{ property.id }}" data-bs-slide="prev" style="z-index: 8; pointer-events: auto; width: 40px; opacity: 0; transition: opacity 0.3s;" onclick="event.stopPropagation();">
+                    <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px; background-color: rgba(0,0,0,0.6); border-radius: 50%; padding: 12px; background-size: 50%;"></span>
+                    <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next card-carousel-btn" type="button" data-bs-target="#carousel-{{ property.id }}" data-bs-slide="next" style="z-index: 8; pointer-events: auto; width: 40px; opacity: 0; transition: opacity 0.3s;" onclick="event.stopPropagation();">
+                    <span class="carousel-control-next-icon" aria-hidden="true" style="width: 20px; height: 20px; background-color: rgba(0,0,0,0.6); border-radius: 50%; padding: 12px; background-size: 50%;"></span>
+                    <span class="visually-hidden">Suivant</span>
+                </button>
+                {% endif %}
             </div>
         {% else %}
             <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">

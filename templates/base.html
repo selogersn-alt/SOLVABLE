@@ -354,6 +354,13 @@
             z-index: 2000;
             max-width: 350px;
         }
+        /* Styles pour afficher les flèches du carrousel de carte uniquement au survol */
+        .property-card:hover .card-carousel-btn {
+            opacity: 0.85 !important;
+        }
+        .card-carousel-btn:hover {
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body class="{% if dark_mode %}dark-theme{% endif %} {% if ad_left_skin %}has-left-skin{% endif %} {% if ad_right_skin %}has-right-skin{% endif %}">
@@ -738,6 +745,21 @@
                 } else {
                     t.style.display = 'none';
                 }
+            });
+
+            // Désynchroniser les carrousels de cartes d'annonces (effet pro asynchrone)
+            const cardCarousels = document.querySelectorAll('.property-card .carousel');
+            cardCarousels.forEach((carousel, index) => {
+                const interval = 3500 + (index * 750) % 3000; // Intervalle aléatoire entre 3.5s et 6.5s
+                const bsCarousel = new bootstrap.Carousel(carousel, {
+                    interval: interval,
+                    ride: 'carousel',
+                    pause: 'hover'
+                });
+                // Décaler le démarrage des animations
+                setTimeout(() => {
+                    bsCarousel.cycle();
+                }, (index * 600) % 2500);
             });
         });
     })();
