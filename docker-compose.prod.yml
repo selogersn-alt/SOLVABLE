@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: logersn_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-gaak4328_loger_app}
+      MYSQL_USER: ${DB_USER:-loger_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-loger_password}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-loger_root_password}
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3306:3306"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: logersn_web
+    restart: always
+    command: sh -c "python manage.py collectstatic --no-input && gunicorn logersenegal.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:
